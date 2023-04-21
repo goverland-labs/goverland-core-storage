@@ -203,5 +203,5 @@ func convertToInternalTreasures(list []aggevents.TreasuryPayload) Treasuries {
 }
 
 func AutoMigrate(conn *gorm.DB) {
-	conn.AutoMigrate(Dao{})
+	_ = conn.AutoMigrate(Dao{})
 }

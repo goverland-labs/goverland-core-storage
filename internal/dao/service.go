@@ -11,17 +11,25 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockgen -destination=dao_mocks_test.go -package=dao . DataProvider,Publisher
+
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error
 }
 
+type DataProvider interface {
+	Create(dao Dao) error
+	Update(dao Dao) error
+	GetByID(id string) (*Dao, error)
+}
+
 // todo: convert types to interfaces for unit testing
 type Service struct {
-	repo   *Repo
+	repo   DataProvider
 	events Publisher
 }
 
-func NewService(r *Repo, p Publisher) (*Service, error) {
+func NewService(r DataProvider, p Publisher) (*Service, error) {
 	return &Service{
 		repo:   r,
 		events: p,

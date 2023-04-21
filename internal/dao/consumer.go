@@ -62,10 +62,8 @@ func (c *Consumer) Start(ctx context.Context) error {
 	log.Info().Msg("dao consumers is started")
 
 	// todo: handle correct stopping the consumer by context
-	select {
-	case <-ctx.Done():
-		return c.stop()
-	}
+	<-ctx.Done()
+	return c.stop()
 }
 
 func (c *Consumer) stop() error {
