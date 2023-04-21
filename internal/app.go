@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -49,7 +48,6 @@ func (a *Application) Run() {
 	a.registerShutdown()
 }
 
-// todo: add application global context
 func (a *Application) bootstrap() error {
 	initializers := []func() error{
 		a.initDB,
@@ -71,14 +69,21 @@ func (a *Application) bootstrap() error {
 	return nil
 }
 
-// todo: think about postgres options
 func (a *Application) initDB() error {
-	db, err := gorm.Open(postgres.Open(a.cfg.DB.DSN))
+	db, err := gorm.Open(postgres.Open(a.cfg.DB.DSN), &gorm.Config{})
 	if err != nil {
 		return err
 	}
 
+	ps, err := db.DB()
+	if err != nil {
+		return err
+	}
+	ps.SetMaxOpenConns(a.cfg.DB.MaxOpenConnections)
+
 	a.db = db
+
+	// todo: remove automigrations
 	dao.AutoMigrate(db)
 
 	return err
@@ -115,12 +120,12 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 		return fmt.Errorf("dao service: %w", err)
 	}
 
-	cs, err := dao.NewConsumer(context.Background(), nc, service)
+	cs, err := dao.NewConsumer(nc, service)
 	if err != nil {
 		return fmt.Errorf("dao consumer: %w", err)
 	}
 
-	a.manager.AddWorker(cs)
+	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
 
 	return nil
 }
