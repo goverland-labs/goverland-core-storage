@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/gorilla/mux v1.8.0
-	github.com/goverland-labs/platform-events v0.0.2-0.20230420125100-1649ef05e1bc
+	github.com/goverland-labs/platform-events v0.0.2
 	github.com/nats-io/nats.go v1.25.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rs/zerolog v1.29.0
