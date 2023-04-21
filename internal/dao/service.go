@@ -7,8 +7,8 @@ import (
 	"reflect"
 
 	coreevents "github.com/goverland-labs/platform-events/events/core"
-	"github.com/jinzhu/gorm"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
 
 type Publisher interface {
@@ -62,6 +62,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 		return nil
 	}
 
+	new.CreatedAt = existed.CreatedAt
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)

@@ -3,7 +3,7 @@ package dao
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Repo struct {
@@ -28,13 +28,9 @@ func (r *Repo) Update(dao Dao) error {
 
 func (r *Repo) GetByID(id string) (*Dao, error) {
 	dao := Dao{ID: id}
-	request := r.db.Find(&dao)
+	request := r.db.Take(&dao)
 	if err := request.Error; err != nil {
 		return nil, fmt.Errorf("get dao by id #%s: %w", id, err)
-	}
-
-	if request.RecordNotFound() {
-		return nil, fmt.Errorf("get dao #%s: %w", gorm.ErrRecordNotFound)
 	}
 
 	return &dao, nil

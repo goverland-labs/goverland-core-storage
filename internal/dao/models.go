@@ -1,13 +1,11 @@
 package dao
 
 import (
-	"database/sql/driver"
-	"encoding/json"
 	"time"
 
 	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
 	events "github.com/goverland-labs/platform-events/events/core"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Treasury struct {
@@ -19,37 +17,19 @@ type Treasury struct {
 type Treasuries []Treasury
 
 func convertToTreasures(list Treasuries) []events.TreasuryPayload {
-	res := make([]events.TreasuryPayload, len(list), 0)
-	for _, treasury := range list {
-		res = append(res, events.TreasuryPayload{
+	res := make([]events.TreasuryPayload, len(list))
+	for i, treasury := range list {
+		res[i] = events.TreasuryPayload{
 			Name:    treasury.Name,
 			Address: treasury.Address,
 			Network: treasury.Network,
-		})
+		}
 	}
 
 	return res
 }
 
-func (t *Treasuries) Scan(src interface{}) error {
-	return json.Unmarshal(src.([]byte), &t)
-}
-
-func (t Treasuries) Value() (driver.Value, error) {
-	data, err := json.Marshal(t)
-	return string(data), err
-}
-
 type Categories []string
-
-func (c *Categories) Scan(src interface{}) error {
-	return json.Unmarshal(src.([]byte), &c)
-}
-
-func (c Categories) Value() (driver.Value, error) {
-	valueString, err := json.Marshal(c)
-	return string(valueString), err
-}
 
 type Strategy struct {
 	Name    string
@@ -59,24 +39,15 @@ type Strategy struct {
 type Strategies []Strategy
 
 func convertToStrategies(list Strategies) []events.StrategyPayload {
-	result := make([]events.StrategyPayload, len(list), 0)
-	for _, strategy := range list {
-		result = append(result, events.StrategyPayload{
+	result := make([]events.StrategyPayload, len(list))
+	for i, strategy := range list {
+		result[i] = events.StrategyPayload{
 			Name:    strategy.Name,
 			Network: strategy.Network,
-		})
+		}
 	}
 
 	return result
-}
-
-func (s *Strategies) Scan(src interface{}) error {
-	return json.Unmarshal(src.([]byte), &s)
-}
-
-func (s Strategies) Value() (driver.Value, error) {
-	data, err := json.Marshal(s)
-	return string(data), err
 }
 
 type Voting struct {
@@ -103,15 +74,6 @@ func convertToVoting(v Voting) events.VotingPayload {
 	}
 }
 
-func (v *Voting) Scan(src interface{}) error {
-	return json.Unmarshal(src.([]byte), &v)
-}
-
-func (v Voting) Value() (driver.Value, error) {
-	data, err := json.Marshal(v)
-	return string(data), err
-}
-
 type Dao struct {
 	ID             string `gorm:"primary_key"`
 	CreatedAt      time.Time
@@ -131,10 +93,10 @@ type Dao struct {
 	Symbol         string
 	Skin           string
 	Domain         string
-	Strategies     Strategies
-	Voting         Voting
-	Categories     Categories
-	Treasures      Treasuries
+	Strategies     Strategies `gorm:"serializer:json"`
+	Voting         Voting     `gorm:"serializer:json"`
+	Categories     Categories `gorm:"serializer:json"`
+	Treasures      Treasuries `gorm:"serializer:json"`
 	FollowersCount int
 	ProposalsCount int
 	Guidelines     string
@@ -203,12 +165,12 @@ func convertToDao(e aggevents.DaoPayload) Dao {
 }
 
 func convertToInternalStrategies(s []aggevents.StrategyPayload) Strategies {
-	res := make(Strategies, len(s), 0)
-	for _, item := range s {
-		res = append(res, Strategy{
+	res := make(Strategies, len(s))
+	for i, item := range s {
+		res[i] = Strategy{
 			Name:    item.Name,
 			Network: item.Network,
-		})
+		}
 	}
 
 	return res
@@ -228,13 +190,13 @@ func convertToInternalVoting(v aggevents.VotingPayload) Voting {
 }
 
 func convertToInternalTreasures(list []aggevents.TreasuryPayload) Treasuries {
-	res := make(Treasuries, len(list), 0)
-	for _, item := range list {
-		res = append(res, Treasury{
+	res := make(Treasuries, len(list))
+	for i, item := range list {
+		res[i] = Treasury{
 			Name:    item.Name,
 			Address: item.Address,
 			Network: item.Network,
-		})
+		}
 	}
 
 	return res

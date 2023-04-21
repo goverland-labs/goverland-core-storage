@@ -34,9 +34,15 @@ func NewConsumer(ctx context.Context, nc *nats.Conn, s *Service) (*Consumer, err
 
 // fixme: measure execution time
 // fixme: measure processed events: [subject?, cnt]
+// fixme: add counting err
 func (c *Consumer) handleCreate() pevents.DaoHandler {
 	return func(payload pevents.DaoPayload) error {
-		return c.service.HandleDao(c.ctx, convertToDao(payload))
+		err := c.service.HandleDao(c.ctx, convertToDao(payload))
+		if err != nil {
+			log.Error().Err(err).Msg("process dao")
+		}
+
+		return err
 	}
 }
 
