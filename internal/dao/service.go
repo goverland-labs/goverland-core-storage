@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-//go:generate mockgen -destination=dao_mocks_test.go -package=dao . DataProvider,Publisher
+//go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error

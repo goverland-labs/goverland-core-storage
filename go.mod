@@ -6,7 +6,7 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/golang/mock v1.4.4
 	github.com/gorilla/mux v1.8.0
-	github.com/goverland-labs/platform-events v0.0.2
+	github.com/goverland-labs/platform-events v0.0.3-0.20230423105925-8a4a0abe8d8f
 	github.com/nats-io/nats.go v1.25.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rs/zerolog v1.29.0
