@@ -30,7 +30,7 @@ create table daos
     parent_id       text
 );
 
-create table public.proposals
+create table proposals
 (
     id             text not null
         primary key,
