@@ -1,4 +1,4 @@
-create table public.daos
+create table daos
 (
     id              text not null
         primary key,
