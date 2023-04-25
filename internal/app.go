@@ -14,6 +14,7 @@ import (
 	"github.com/goverland-labs/core-storage/internal/communicate"
 	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/dao"
+	"github.com/goverland-labs/core-storage/internal/proposal"
 	"github.com/goverland-labs/core-storage/pkg/health"
 	"github.com/goverland-labs/core-storage/pkg/prometheus"
 )
@@ -85,6 +86,7 @@ func (a *Application) initDB() error {
 
 	// todo: remove automigrations
 	dao.AutoMigrate(db)
+	proposal.AutoMigrate(db)
 
 	return err
 }
@@ -110,6 +112,11 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init dao: %w", err)
 	}
 
+	err = a.initProposal(nc, pb)
+	if err != nil {
+		return fmt.Errorf("init proposal: %w", err)
+	}
+
 	return nil
 }
 
@@ -126,6 +133,23 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 	}
 
 	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
+
+	return nil
+}
+
+func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) error {
+	repo := proposal.NewRepo(a.db)
+	service, err := proposal.NewService(repo, pb)
+	if err != nil {
+		return fmt.Errorf("proposal service: %w", err)
+	}
+
+	cs, err := proposal.NewConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("dao consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
 
 	return nil
 }

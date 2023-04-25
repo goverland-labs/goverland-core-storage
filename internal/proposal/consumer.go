@@ -1,4 +1,4 @@
-package dao
+package proposal
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	groupName = "dao"
+	groupName = "proposal"
 )
 
 type Consumer struct {
@@ -33,39 +33,39 @@ func NewConsumer(nc *nats.Conn, s *Service) (*Consumer, error) {
 	return c, nil
 }
 
-func (c *Consumer) handler() pevents.DaoHandler {
-	return func(payload pevents.DaoPayload) error {
+func (c *Consumer) handler() pevents.ProposalHandler {
+	return func(payload pevents.ProposalPayload) error {
 		var err error
 		defer func(start time.Time) {
 			metricHandleHistogram.
-				WithLabelValues("handle_dao", metrics.ErrLabelValue(err)).
+				WithLabelValues("handle_proposal", metrics.ErrLabelValue(err)).
 				Observe(time.Since(start).Seconds())
 		}(time.Now())
 
-		err = c.service.HandleDao(context.TODO(), convertToDao(payload))
+		err = c.service.HandleProposal(context.TODO(), convertToProposal(payload))
 		if err != nil {
-			log.Error().Err(err).Msg("process dao")
+			log.Error().Err(err).Msg("process proposal")
 		}
 
-		log.Debug().Msgf("dao was processed: %s", payload.ID)
+		log.Debug().Msgf("proposal was processed: %s", payload.ID)
 
 		return err
 	}
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
-	cc, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectDaoCreated, c.handler())
+	cc, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectProposalCreated, c.handler())
 	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectDaoCreated, err)
+		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectProposalCreated, err)
 	}
-	cu, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectDaoUpdated, c.handler())
+	cu, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectProposalUpdated, c.handler())
 	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectDaoUpdated, err)
+		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectProposalUpdated, err)
 	}
 
 	c.consumers = append(c.consumers, cc, cu)
 
-	log.Info().Msg("dao consumers is started")
+	log.Info().Msg("proposal consumers is started")
 
 	// todo: handle correct stopping the consumer by context
 	<-ctx.Done()
@@ -75,7 +75,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 func (c *Consumer) stop() error {
 	for _, cs := range c.consumers {
 		if err := cs.Close(); err != nil {
-			log.Error().Err(err).Msg("cant close dao consumer")
+			log.Error().Err(err).Msg("cant close proposal consumer")
 		}
 	}
 

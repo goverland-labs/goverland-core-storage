@@ -9,3 +9,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 - Basic schema for storing daos
+- Basic schema for storing proposals

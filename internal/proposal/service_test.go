@@ -1,4 +1,4 @@
-package dao
+package proposal
 
 import (
 	"context"
@@ -15,42 +15,42 @@ import (
 
 func TestUnitCompare(t *testing.T) {
 	for name, tc := range map[string]struct {
-		d1       Dao
-		d2       Dao
+		p1       Proposal
+		p2       Proposal
 		expected bool
 	}{
 		"equal": {
-			d1:       Dao{ID: "id", Name: "name", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
-			d2:       Dao{ID: "id", Name: "name", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
+			p1:       Proposal{ID: "id", Title: "title", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
+			p2:       Proposal{ID: "id", Title: "title", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
 			expected: true,
 		},
 		"different ID": {
-			d1:       Dao{ID: "id-1", Name: "name", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
-			d2:       Dao{ID: "id-2", Name: "name", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
+			p1:       Proposal{ID: "id-1", Title: "title", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
+			p2:       Proposal{ID: "id-2", Title: "title", Strategies: Strategies{{Name: "name1"}, {Name: "name2"}}},
 			expected: false,
 		},
 		"different created at": {
-			d1:       Dao{ID: "id-1", CreatedAt: time.Now()},
-			d2:       Dao{ID: "id-1", CreatedAt: time.Now().Add(time.Second)},
+			p1:       Proposal{ID: "id-1", CreatedAt: time.Now()},
+			p2:       Proposal{ID: "id-1", CreatedAt: time.Now().Add(time.Second)},
 			expected: true,
 		},
 		"different updated at": {
-			d1:       Dao{ID: "id-1", UpdatedAt: time.Now()},
-			d2:       Dao{ID: "id-1", UpdatedAt: time.Now().Add(time.Second)},
+			p1:       Proposal{ID: "id-1", UpdatedAt: time.Now()},
+			p2:       Proposal{ID: "id-1", UpdatedAt: time.Now().Add(time.Second)},
 			expected: true,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			require.Equal(t, tc.expected, compare(tc.d1, tc.d2))
+			require.Equal(t, tc.expected, compare(tc.p1, tc.p2))
 		})
 	}
 }
 
-func TestUnitHandleDao(t *testing.T) {
+func TestUnitHandleProposal(t *testing.T) {
 	for name, tc := range map[string]struct {
 		dp       func(ctrl *gomock.Controller) DataProvider
 		p        func(ctrl *gomock.Controller) Publisher
-		event    Dao
+		event    Proposal
 		expected error
 	}{
 		"correct creating": {
@@ -65,13 +65,13 @@ func TestUnitHandleDao(t *testing.T) {
 				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
 				return m
 			},
-			event:    Dao{ID: "id-1"},
+			event:    Proposal{ID: "id-1"},
 			expected: nil,
 		},
 		"correct updating": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "updated"}, nil)
+				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Proposal{ID: "id-1", Title: "updated"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
@@ -80,20 +80,20 @@ func TestUnitHandleDao(t *testing.T) {
 				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
 				return m
 			},
-			event:    Dao{ID: "id-1", Name: "name"},
+			event:    Proposal{ID: "id-1", Title: "name"},
 			expected: nil,
 		},
 		"do not update for equal objects": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1"}, nil)
+				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Proposal{ID: "id-1"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(0).Return(nil)
 				return m
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				return NewMockPublisher(ctrl)
 			},
-			event:    Dao{ID: "id-1"},
+			event:    Proposal{ID: "id-1"},
 			expected: nil,
 		},
 		"raise err on problems with reading from DB": {
@@ -105,7 +105,7 @@ func TestUnitHandleDao(t *testing.T) {
 			p: func(ctrl *gomock.Controller) Publisher {
 				return NewMockPublisher(ctrl)
 			},
-			event:    Dao{ID: "id-1"},
+			event:    Proposal{ID: "id-1"},
 			expected: errors.New("unexpected error"),
 		},
 		"raise err on problems with creating in DB": {
@@ -118,7 +118,7 @@ func TestUnitHandleDao(t *testing.T) {
 			p: func(ctrl *gomock.Controller) Publisher {
 				return NewMockPublisher(ctrl)
 			},
-			event:    Dao{ID: "id-1"},
+			event:    Proposal{ID: "id-1"},
 			expected: errors.New("unexpected error"),
 		},
 		"allow do not send event after creating": {
@@ -133,26 +133,26 @@ func TestUnitHandleDao(t *testing.T) {
 				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(errors.New("unexpected error"))
 				return m
 			},
-			event:    Dao{ID: "id-1"},
+			event:    Proposal{ID: "id-1"},
 			expected: nil,
 		},
 		"raise err on problems with updating in DB": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "name"}, nil)
+				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Proposal{ID: "id-1", Title: "name"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(errors.New("unexpected error"))
 				return m
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				return NewMockPublisher(ctrl)
 			},
-			event:    Dao{ID: "id-1"},
+			event:    Proposal{ID: "id-1"},
 			expected: errors.New("unexpected error"),
 		},
 		"allow do not send event after updating": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "name"}, nil)
+				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Proposal{ID: "id-1", Title: "name"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
@@ -161,7 +161,7 @@ func TestUnitHandleDao(t *testing.T) {
 				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(errors.New("unexpected error"))
 				return m
 			},
-			event:    Dao{ID: "id-1"},
+			event:    Proposal{ID: "id-1"},
 			expected: nil,
 		},
 	} {
@@ -170,7 +170,7 @@ func TestUnitHandleDao(t *testing.T) {
 			s, err := NewService(tc.dp(ctrl), tc.p(ctrl))
 			require.Nil(t, err)
 
-			err = s.HandleDao(context.Background(), tc.event)
+			err = s.HandleProposal(context.Background(), tc.event)
 			if tc.expected == nil {
 				require.Nil(t, err)
 				return
