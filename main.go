@@ -2,12 +2,14 @@ package main
 
 import (
 	"github.com/caarlos0/env/v6"
+	_ "github.com/golang/mock/mockgen/model"
 	"github.com/rs/zerolog"
 	"github.com/s-larionov/process-manager"
 	"github.com/shopspring/decimal"
 
 	"github.com/goverland-labs/core-storage/internal"
 	"github.com/goverland-labs/core-storage/internal/config"
+	"github.com/goverland-labs/core-storage/internal/logger"
 )
 
 const decimalDivisionPrecision = 32
@@ -28,7 +30,7 @@ func init() {
 		panic(err)
 	}
 	zerolog.SetGlobalLevel(level)
-	process.SetLogger(&ProcessManagerLogger{})
+	process.SetLogger(&logger.ProcessManagerLogger{})
 }
 
 func main() {

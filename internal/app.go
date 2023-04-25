@@ -1,13 +1,20 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
+	"github.com/goverland-labs/core-storage/internal/communicate"
 	"github.com/goverland-labs/core-storage/internal/config"
+	"github.com/goverland-labs/core-storage/internal/dao"
+	"github.com/goverland-labs/core-storage/internal/proposal"
 	"github.com/goverland-labs/core-storage/pkg/health"
 	"github.com/goverland-labs/core-storage/pkg/prometheus"
 )
@@ -16,6 +23,7 @@ type Application struct {
 	sigChan <-chan os.Signal
 	manager *process.Manager
 	cfg     config.App
+	db      *gorm.DB
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -43,11 +51,10 @@ func (a *Application) Run() {
 
 func (a *Application) bootstrap() error {
 	initializers := []func() error{
+		a.initDB,
+
 		// Init Dependencies
 		a.initServices,
-
-		// Init Workers: Application
-		// TODO
 
 		// Init Workers: System
 		a.initPrometheusWorker,
@@ -63,8 +70,86 @@ func (a *Application) bootstrap() error {
 	return nil
 }
 
+func (a *Application) initDB() error {
+	db, err := gorm.Open(postgres.Open(a.cfg.DB.DSN), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+
+	ps, err := db.DB()
+	if err != nil {
+		return err
+	}
+	ps.SetMaxOpenConns(a.cfg.DB.MaxOpenConnections)
+
+	a.db = db
+
+	// todo: remove automigrations
+	dao.AutoMigrate(db)
+	proposal.AutoMigrate(db)
+
+	return err
+}
+
 func (a *Application) initServices() error {
-	// TODO
+	nc, err := nats.Connect(
+		a.cfg.Nats.URL,
+		nats.RetryOnFailedConnect(true),
+		nats.MaxReconnects(a.cfg.Nats.MaxReconnects),
+		nats.ReconnectWait(a.cfg.Nats.ReconnectTimeout),
+	)
+	if err != nil {
+		return err
+	}
+
+	pb, err := communicate.NewPublisher(nc)
+	if err != nil {
+		return err
+	}
+
+	err = a.initDao(nc, pb)
+	if err != nil {
+		return fmt.Errorf("init dao: %w", err)
+	}
+
+	err = a.initProposal(nc, pb)
+	if err != nil {
+		return fmt.Errorf("init proposal: %w", err)
+	}
+
+	return nil
+}
+
+func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
+	repo := dao.NewRepo(a.db)
+	service, err := dao.NewService(repo, pb)
+	if err != nil {
+		return fmt.Errorf("dao service: %w", err)
+	}
+
+	cs, err := dao.NewConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("dao consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
+
+	return nil
+}
+
+func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) error {
+	repo := proposal.NewRepo(a.db)
+	service, err := proposal.NewService(repo, pb)
+	if err != nil {
+		return fmt.Errorf("proposal service: %w", err)
+	}
+
+	cs, err := proposal.NewConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("dao consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
 
 	return nil
 }
