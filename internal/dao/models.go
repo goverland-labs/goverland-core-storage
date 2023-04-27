@@ -5,7 +5,6 @@ import (
 
 	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
 	events "github.com/goverland-labs/platform-events/events/core"
-	"gorm.io/gorm"
 )
 
 type Treasury struct {
@@ -200,8 +199,4 @@ func convertToInternalTreasures(list []aggevents.TreasuryPayload) Treasuries {
 	}
 
 	return res
-}
-
-func AutoMigrate(conn *gorm.DB) {
-	_ = conn.AutoMigrate(Dao{})
 }

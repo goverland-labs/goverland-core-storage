@@ -167,7 +167,7 @@ func TestUnitHandleProposal(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			s, err := NewService(tc.dp(ctrl), tc.p(ctrl))
+			s, err := NewService(tc.dp(ctrl), tc.p(ctrl), NewMockEventRegistered(ctrl))
 			require.Nil(t, err)
 
 			err = s.HandleProposal(context.Background(), tc.event)
