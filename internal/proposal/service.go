@@ -70,7 +70,7 @@ func (s *Service) processNew(ctx context.Context, p Proposal) error {
 		return fmt.Errorf("can't create proposal: %w", err)
 	}
 
-	go s.registerEvent(ctx, p, coreevents.SubjectProposalCreated)
+	go s.registerEvent(ctx, p, groupName, coreevents.SubjectProposalCreated)
 
 	return nil
 }
@@ -87,19 +87,19 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 		return fmt.Errorf("update proposal #%s: %w", new.ID, err)
 	}
 
-	go s.registerEvent(ctx, new, coreevents.SubjectProposalUpdated)
+	go s.registerEvent(ctx, new, groupName, coreevents.SubjectProposalUpdated)
 	go s.checkSpecificUpdate(ctx, new, existed)
 
 	return nil
 }
 
 func (s *Service) checkSpecificUpdate(ctx context.Context, new, existed Proposal) {
-	if float64(new.ScoresTotal) > new.Quorum {
+	if float64(new.ScoresTotal) >= new.Quorum {
 		go s.registerEventOnce(ctx, new, groupName, coreevents.SubjectProposalVotingReached)
 	}
 
 	if new.State != existed.State {
-		go s.registerEvent(ctx, new, coreevents.SubjectProposalUpdatedState)
+		go s.registerEvent(ctx, new, groupName, coreevents.SubjectProposalUpdatedState)
 	}
 }
 
@@ -109,16 +109,7 @@ func (s *Service) registerEventOnce(ctx context.Context, p Proposal, group, subj
 		return
 	}
 
-	defer func(group, subject string) {
-		metricSendEventGauge.
-			WithLabelValues(group, subject, metrics.ErrLabelValue(err)).
-			Inc()
-	}(group, subject)
-
-	if err = s.publisher.PublishJSON(ctx, subject, convertToCoreEvent(p)); err != nil {
-		log.Error().Err(err).Msgf("publish event #%s", p.ID)
-		return
-	}
+	s.registerEvent(ctx, p, group, subject)
 
 	if err = s.er.RegisterEvent(ctx, p.ID, group, subject); err != nil {
 		log.Error().Err(err).Msgf("register event #%s", p.ID)
@@ -126,13 +117,13 @@ func (s *Service) registerEventOnce(ctx context.Context, p Proposal, group, subj
 	}
 }
 
-func (s *Service) registerEvent(ctx context.Context, p Proposal, subject string) {
+func (s *Service) registerEvent(ctx context.Context, p Proposal, group, subject string) {
 	var err error
 	defer func(group, subject string) {
 		metricSendEventGauge.
 			WithLabelValues(group, subject, metrics.ErrLabelValue(err)).
 			Inc()
-	}(groupName, subject)
+	}(group, subject)
 
 	if err = s.publisher.PublishJSON(ctx, subject, convertToCoreEvent(p)); err != nil {
 		log.Error().Err(err).Msgf("publish event #%s", p.ID)
@@ -156,16 +147,16 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 
 	for _, pr := range active {
 		startsAt := time.Unix(int64(pr.Start), 0)
+		endedAt := time.Unix(int64(pr.End), 0)
 
 		// voting has started
 		// do not spam with voting started if proposal was created in our system after start voting
-		if pr.CreatedAt.Before(startsAt) && time.Now().After(startsAt) {
+		if pr.CreatedAt.Before(startsAt) && time.Now().After(startsAt) && time.Now().Before(endedAt) {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingStarted)
 		}
 
 		// voting has ended
-		endedAt := time.Unix(int64(pr.End), 0)
-		if time.Now().After(endedAt) {
+		if pr.CreatedAt.Before(endedAt) && time.Now().After(endedAt) {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingEnded)
 		}
 
