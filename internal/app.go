@@ -14,7 +14,9 @@ import (
 	"github.com/goverland-labs/core-storage/internal/communicate"
 	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/dao"
+	"github.com/goverland-labs/core-storage/internal/events"
 	"github.com/goverland-labs/core-storage/internal/proposal"
+	"github.com/goverland-labs/core-storage/internal/vote"
 	"github.com/goverland-labs/core-storage/pkg/health"
 	"github.com/goverland-labs/core-storage/pkg/prometheus"
 )
@@ -82,11 +84,8 @@ func (a *Application) initDB() error {
 	}
 	ps.SetMaxOpenConns(a.cfg.DB.MaxOpenConnections)
 
-	a.db = db
-
-	// todo: remove automigrations
-	dao.AutoMigrate(db)
-	proposal.AutoMigrate(db)
+	// todo: remove debug after testing
+	a.db = db.Debug()
 
 	return err
 }
@@ -117,6 +116,11 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init proposal: %w", err)
 	}
 
+	err = a.initVote(nc)
+	if err != nil {
+		return fmt.Errorf("init vote: %w", err)
+	}
+
 	return nil
 }
 
@@ -138,18 +142,44 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 }
 
 func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) error {
+	erRepo := events.NewRepo(a.db)
+	erService, err := events.NewService(erRepo)
+	if err != nil {
+		return fmt.Errorf("new events service: %w", err)
+	}
+
 	repo := proposal.NewRepo(a.db)
-	service, err := proposal.NewService(repo, pb)
+	service, err := proposal.NewService(repo, pb, erService)
 	if err != nil {
 		return fmt.Errorf("proposal service: %w", err)
 	}
 
 	cs, err := proposal.NewConsumer(nc, service)
 	if err != nil {
-		return fmt.Errorf("dao consumer: %w", err)
+		return fmt.Errorf("proposal consumer: %w", err)
 	}
 
 	a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
+
+	vw := proposal.NewVotingWorker(service)
+	a.manager.AddWorker(process.NewCallbackWorker("voting-worker", vw.Start))
+
+	return nil
+}
+
+func (a *Application) initVote(nc *nats.Conn) error {
+	repo := vote.NewRepo(a.db)
+	service, err := vote.NewService(repo)
+	if err != nil {
+		return fmt.Errorf("vote service: %w", err)
+	}
+
+	cs, err := vote.NewConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("vote consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
 
 	return nil
 }

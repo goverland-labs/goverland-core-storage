@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Add vote handling
+
+### Added
+- Describe basic internal events
+
 ## [0.0.2] - 2023-04-25
 
 ### Added

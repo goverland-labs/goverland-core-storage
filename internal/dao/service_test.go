@@ -167,6 +167,10 @@ func TestUnitHandleDao(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer func() {
+				<-time.After(10 * time.Millisecond)
+				ctrl.Finish()
+			}()
 			s, err := NewService(tc.dp(ctrl), tc.p(ctrl))
 			require.Nil(t, err)
 

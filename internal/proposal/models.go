@@ -5,7 +5,6 @@ import (
 
 	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
 	events "github.com/goverland-labs/platform-events/events/core"
-	"gorm.io/gorm"
 )
 
 type Choices []string
@@ -31,6 +30,8 @@ func convertToStrategies(list Strategies) []events.StrategyPayload {
 	return result
 }
 
+// Proposal model
+// todo: check queries to the DB and add indexes
 type Proposal struct {
 	ID        string `gorm:"primary_key"`
 	CreatedAt time.Time
@@ -136,8 +137,4 @@ func convertToInternalStrategies(s []aggevents.StrategyPayload) Strategies {
 	}
 
 	return res
-}
-
-func AutoMigrate(conn *gorm.DB) {
-	_ = conn.AutoMigrate(Proposal{})
 }

@@ -23,7 +23,6 @@ type DataProvider interface {
 	GetByID(id string) (*Dao, error)
 }
 
-// todo: convert types to interfaces for unit testing
 type Service struct {
 	repo   DataProvider
 	events Publisher

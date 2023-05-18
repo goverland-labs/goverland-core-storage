@@ -1,4 +1,4 @@
-package proposal
+package vote
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,16 +12,7 @@ var metricHandleHistogram = promauto.NewHistogramVec(
 		Namespace: metrics.Namespace,
 		Subsystem: groupName,
 		Name:      "handle_duration_seconds",
-		Help:      "Handle proposal event duration seconds",
+		Help:      "Handle vote event duration seconds",
 		Buckets:   []float64{.001, .005, .01, .025, .05, .1, .5, 1, 2.5, 5, 10},
 	}, []string{"type", "error"},
-)
-
-var metricSendEventGauge = promauto.NewGaugeVec(
-	prometheus.GaugeOpts{
-		Namespace: metrics.Namespace,
-		Subsystem: groupName,
-		Name:      "events",
-		Help:      "Send events summary",
-	}, []string{"group", "event", metrics.ErrLabel},
 )
