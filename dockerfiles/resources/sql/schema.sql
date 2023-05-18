@@ -63,6 +63,9 @@ create table proposals
     votes          bigint
 );
 
+create index idx_proposal_dao_id
+    on proposals (dao_id);
+
 create table registered_events
 (
     id         bigserial
@@ -81,3 +84,19 @@ create index idx_registered_events_deleted_at
 alter table registered_events
     add constraint idx_unique_registered_events
         unique (type, type_id, event);
+
+create table votes
+(
+    id          text not null
+        primary key,
+    created_at  timestamp with time zone,
+    updated_at  timestamp with time zone,
+    proposal_id text,
+    ipfs        text,
+    voter       text,
+    created     bigint,
+    reason      text
+);
+
+create index idx_votes_proposal_id
+    on votes (proposal_id);
