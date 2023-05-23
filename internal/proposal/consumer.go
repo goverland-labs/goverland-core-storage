@@ -10,6 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 
+	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/metrics"
 )
 
@@ -54,13 +55,14 @@ func (c *Consumer) handler() pevents.ProposalHandler {
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
-	cc, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectProposalCreated, c.handler())
+	group := config.GenerateGroupName(groupName)
+	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalCreated, c.handler())
 	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectProposalCreated, err)
+		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalCreated, err)
 	}
-	cu, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectProposalUpdated, c.handler())
+	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalUpdated, c.handler())
 	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectProposalUpdated, err)
+		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
 	}
 
 	c.consumers = append(c.consumers, cc, cu)

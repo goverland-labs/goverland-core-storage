@@ -84,8 +84,10 @@ func (a *Application) initDB() error {
 	}
 	ps.SetMaxOpenConns(a.cfg.DB.MaxOpenConnections)
 
-	// todo: remove debug after testing
-	a.db = db.Debug()
+	a.db = db
+	if a.cfg.DB.Debug {
+		a.db = db.Debug()
+	}
 
 	return err
 }

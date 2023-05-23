@@ -134,8 +134,6 @@ github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5m
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGaHF6qqu48+N2wcFQ5qg5FXgOdqsJ5d8=
 github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
-github.com/goverland-labs/platform-events v0.0.5-0.20230517120522-612f623d4813 h1:nLcdmmj+n1nBGJda24Y97yfNmQwaPcnJwUJlUYbKjNo=
-github.com/goverland-labs/platform-events v0.0.5-0.20230517120522-612f623d4813/go.mod h1:ZJnl4Bd/QUeGnpMw0WBPBxBpxt9wOP9Yc6ZpTVz640A=
 github.com/goverland-labs/platform-events v0.0.5 h1:JOCOlkPB0RWb3qmy9XWZOSoSedLnkgnfqNog0zyTXnM=
 github.com/goverland-labs/platform-events v0.0.5/go.mod h1:ZJnl4Bd/QUeGnpMw0WBPBxBpxt9wOP9Yc6ZpTVz640A=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
