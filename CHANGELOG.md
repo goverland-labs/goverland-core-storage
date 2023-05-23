@@ -7,6 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.4] - 2023-05-23
+
+### Added
+- Configure debugging DB queries by env
+
+### Update
+- Using group name in consumers
+
 ## [0.0.3] - 2023-05-18
 
 ### Added
