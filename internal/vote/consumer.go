@@ -10,6 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 
+	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/metrics"
 )
 
@@ -54,9 +55,10 @@ func (c *Consumer) handler() pevents.VotesHandler {
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
-	cc, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectVoteCreated, c.handler())
+	group := config.GenerateGroupName(groupName)
+	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectVoteCreated, c.handler())
 	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectVoteCreated, err)
+		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectVoteCreated, err)
 	}
 
 	c.consumers = append(c.consumers, cc)
