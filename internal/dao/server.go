@@ -13,23 +13,25 @@ import (
 	proto "github.com/goverland-labs/core-storage/protobuf/internalapi"
 )
 
-type Servicer interface {
-	GetByID(id string) (*Dao, error)
-}
+const (
+	defaultDaoLimit           = 50
+	defaultOffset             = 0
+	defaultTopCategoriesLimit = 10
+)
 
 type Server struct {
 	proto.UnimplementedDaoServer
 
-	sp Servicer
+	sp *Service
 }
 
-func NewServer(sp Servicer) *Server {
+func NewServer(sp *Service) *Server {
 	return &Server{
 		sp: sp,
 	}
 }
 
-func (s *Server) GetByID(_ context.Context, req *proto.DaoByIDRequest) (*proto.DaoResponse, error) {
+func (s *Server) GetByID(_ context.Context, req *proto.DaoByIDRequest) (*proto.DaoByIDResponse, error) {
 	if req.GetDaoId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
@@ -44,8 +46,62 @@ func (s *Server) GetByID(_ context.Context, req *proto.DaoByIDRequest) (*proto.D
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &proto.DaoResponse{
+	return &proto.DaoByIDResponse{
 		Dao: convertDaoToAPI(dao),
+	}, nil
+}
+
+func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (*proto.DaoByFilterResponse, error) {
+	limit, offset := defaultDaoLimit, defaultOffset
+	if req.GetLimit() > 0 {
+		limit = int(req.GetLimit())
+	}
+	if req.GetOffset() > 0 {
+		offset = int(req.GetOffset())
+	}
+	filters := []Filter{
+		PageFilter{Limit: limit, Offset: offset},
+	}
+
+	if req.GetQuery() != "" {
+		filters = append(filters, NameFilter{Name: req.GetQuery()})
+	}
+
+	if req.GetCategory() != "" {
+		filters = append(filters, CategoryFilter{Category: req.GetCategory()})
+	}
+
+	list, err := s.sp.GetByFilters(filters)
+	if err != nil {
+		log.Error().Err(err).Msgf("get daos by filter: %+v", req)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	res := &proto.DaoByFilterResponse{
+		Daos: make([]*proto.DaoInfo, len(list)),
+	}
+
+	for i, info := range list {
+		res.Daos[i] = convertDaoToAPI(&info)
+	}
+
+	return res, nil
+}
+
+func (s *Server) GetTopCategories(_ context.Context, req *proto.TopCategoriesRequest) (*proto.TopCategoriesResponse, error) {
+	lim := defaultTopCategoriesLimit
+	if req.GetLimit() > 0 {
+		lim = int(req.GetLimit())
+	}
+
+	list, err := s.sp.GetTopCategories(lim)
+	if err != nil {
+		log.Error().Err(err).Msgf("get top categories: %d", lim)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &proto.TopCategoriesResponse{
+		Categories: list,
 	}, nil
 }
 

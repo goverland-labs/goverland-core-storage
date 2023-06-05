@@ -22,7 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DaoClient interface {
-	GetByID(ctx context.Context, in *DaoByIDRequest, opts ...grpc.CallOption) (*DaoResponse, error)
+	GetByID(ctx context.Context, in *DaoByIDRequest, opts ...grpc.CallOption) (*DaoByIDResponse, error)
+	GetByFilter(ctx context.Context, in *DaoByFilterRequest, opts ...grpc.CallOption) (*DaoByFilterResponse, error)
+	GetTopCategories(ctx context.Context, in *TopCategoriesRequest, opts ...grpc.CallOption) (*TopCategoriesResponse, error)
 }
 
 type daoClient struct {
@@ -33,9 +35,27 @@ func NewDaoClient(cc grpc.ClientConnInterface) DaoClient {
 	return &daoClient{cc}
 }
 
-func (c *daoClient) GetByID(ctx context.Context, in *DaoByIDRequest, opts ...grpc.CallOption) (*DaoResponse, error) {
-	out := new(DaoResponse)
+func (c *daoClient) GetByID(ctx context.Context, in *DaoByIDRequest, opts ...grpc.CallOption) (*DaoByIDResponse, error) {
+	out := new(DaoByIDResponse)
 	err := c.cc.Invoke(ctx, "/internalapi.Dao/GetByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daoClient) GetByFilter(ctx context.Context, in *DaoByFilterRequest, opts ...grpc.CallOption) (*DaoByFilterResponse, error) {
+	out := new(DaoByFilterResponse)
+	err := c.cc.Invoke(ctx, "/internalapi.Dao/GetByFilter", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daoClient) GetTopCategories(ctx context.Context, in *TopCategoriesRequest, opts ...grpc.CallOption) (*TopCategoriesResponse, error) {
+	out := new(TopCategoriesResponse)
+	err := c.cc.Invoke(ctx, "/internalapi.Dao/GetTopCategories", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +66,9 @@ func (c *daoClient) GetByID(ctx context.Context, in *DaoByIDRequest, opts ...grp
 // All implementations must embed UnimplementedDaoServer
 // for forward compatibility
 type DaoServer interface {
-	GetByID(context.Context, *DaoByIDRequest) (*DaoResponse, error)
+	GetByID(context.Context, *DaoByIDRequest) (*DaoByIDResponse, error)
+	GetByFilter(context.Context, *DaoByFilterRequest) (*DaoByFilterResponse, error)
+	GetTopCategories(context.Context, *TopCategoriesRequest) (*TopCategoriesResponse, error)
 	mustEmbedUnimplementedDaoServer()
 }
 
@@ -54,8 +76,14 @@ type DaoServer interface {
 type UnimplementedDaoServer struct {
 }
 
-func (UnimplementedDaoServer) GetByID(context.Context, *DaoByIDRequest) (*DaoResponse, error) {
+func (UnimplementedDaoServer) GetByID(context.Context, *DaoByIDRequest) (*DaoByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetByID not implemented")
+}
+func (UnimplementedDaoServer) GetByFilter(context.Context, *DaoByFilterRequest) (*DaoByFilterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByFilter not implemented")
+}
+func (UnimplementedDaoServer) GetTopCategories(context.Context, *TopCategoriesRequest) (*TopCategoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopCategories not implemented")
 }
 func (UnimplementedDaoServer) mustEmbedUnimplementedDaoServer() {}
 
@@ -88,6 +116,42 @@ func _Dao_GetByID_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dao_GetByFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DaoByFilterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaoServer).GetByFilter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/internalapi.Dao/GetByFilter",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaoServer).GetByFilter(ctx, req.(*DaoByFilterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dao_GetTopCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopCategoriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaoServer).GetTopCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/internalapi.Dao/GetTopCategories",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaoServer).GetTopCategories(ctx, req.(*TopCategoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Dao_ServiceDesc is the grpc.ServiceDesc for Dao service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +162,14 @@ var Dao_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetByID",
 			Handler:    _Dao_GetByID_Handler,
+		},
+		{
+			MethodName: "GetByFilter",
+			Handler:    _Dao_GetByFilter_Handler,
+		},
+		{
+			MethodName: "GetTopCategories",
+			Handler:    _Dao_GetTopCategories_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -30,6 +30,9 @@ create table daos
     parent_id       text
 );
 
+CREATE INDEX idx_gin_dao_categories ON daos
+    USING gin (categories jsonb_path_ops);
+
 create table proposals
 (
     id             text not null

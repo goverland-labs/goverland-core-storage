@@ -35,3 +35,40 @@ func (r *Repo) GetByID(id string) (*Dao, error) {
 
 	return &dao, nil
 }
+
+func (r *Repo) GetTopCategories(limit int) ([]string, error) {
+	var res []struct {
+		Category string
+		Cnt      int
+	}
+	err := r.db.Raw(`
+WITH categories AS (SELECT JSONB_ARRAY_ELEMENTS_TEXT(categories) AS category FROM daos)
+SELECT category, COUNT(category) AS cnt
+FROM categories
+GROUP BY category
+ORDER BY cnt DESC, category
+LIMIT ?
+`, limit).Scan(&res).Error
+
+	list := make([]string, len(res))
+	for i, info := range res {
+		list[i] = info.Category
+	}
+
+	return list, err
+}
+
+func (r *Repo) GetByFilters(filters []Filter) ([]Dao, error) {
+	db := r.db
+	for _, f := range filters {
+		db = f.Apply(db)
+	}
+
+	var daos []Dao
+	err := db.Find(&daos).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return daos, nil
+}
