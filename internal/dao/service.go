@@ -90,3 +90,12 @@ func compare(d1, d2 Dao) bool {
 
 	return reflect.DeepEqual(d1, d2)
 }
+
+func (s *Service) GetByID(id string) (*Dao, error) {
+	dao, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("get by id: %w", err)
+	}
+
+	return dao, nil
+}

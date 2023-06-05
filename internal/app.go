@@ -17,8 +17,10 @@ import (
 	"github.com/goverland-labs/core-storage/internal/events"
 	"github.com/goverland-labs/core-storage/internal/proposal"
 	"github.com/goverland-labs/core-storage/internal/vote"
+	"github.com/goverland-labs/core-storage/pkg/grpcsrv"
 	"github.com/goverland-labs/core-storage/pkg/health"
 	"github.com/goverland-labs/core-storage/pkg/prometheus"
+	"github.com/goverland-labs/core-storage/protobuf/internalapi"
 )
 
 type Application struct {
@@ -26,6 +28,8 @@ type Application struct {
 	manager *process.Manager
 	cfg     config.App
 	db      *gorm.DB
+
+	daoService *dao.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -123,6 +127,11 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init vote: %w", err)
 	}
 
+	err = a.initAPI()
+	if err != nil {
+		return fmt.Errorf("init api: %w", err)
+	}
+
 	return nil
 }
 
@@ -132,6 +141,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
+	a.daoService = service
 
 	cs, err := dao.NewConsumer(nc, service)
 	if err != nil {
@@ -182,6 +192,22 @@ func (a *Application) initVote(nc *nats.Conn) error {
 	}
 
 	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
+
+	return nil
+}
+
+func (a *Application) initAPI() error {
+	authInterceptor := grpcsrv.NewAuthInterceptor()
+	srv := grpcsrv.NewGrpcServer(
+		[]string{
+			"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo",
+		},
+		authInterceptor.AuthAndIdentifyTickerFunc,
+	)
+
+	internalapi.RegisterDaoServer(srv, dao.NewServer(a.daoService))
+
+	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 
 	return nil
 }
