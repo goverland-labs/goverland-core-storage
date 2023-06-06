@@ -78,10 +78,11 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (
 	}
 
 	res := &proto.DaoByFilterResponse{
-		Daos: make([]*proto.DaoInfo, len(list)),
+		Daos:       make([]*proto.DaoInfo, len(list.Daos)),
+		TotalCount: uint64(list.TotalCount),
 	}
 
-	for i, info := range list {
+	for i, info := range list.Daos {
 		res.Daos[i] = convertDaoToAPI(&info)
 	}
 
@@ -89,20 +90,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (
 }
 
 func (s *Server) GetTopCategories(_ context.Context, req *proto.TopCategoriesRequest) (*proto.TopCategoriesResponse, error) {
-	lim := defaultTopCategoriesLimit
-	if req.GetLimit() > 0 {
-		lim = int(req.GetLimit())
-	}
-
-	list, err := s.sp.GetTopCategories(lim)
-	if err != nil {
-		log.Error().Err(err).Msgf("get top categories: %d", lim)
-		return nil, status.Error(codes.Internal, "internal error")
-	}
-
-	return &proto.TopCategoriesResponse{
-		Categories: list,
-	}, nil
+	return nil, status.Error(codes.Unimplemented, "implement me")
 }
 
 func convertDaoToAPI(dao *Dao) *proto.DaoInfo {

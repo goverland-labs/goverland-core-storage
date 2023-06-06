@@ -21,8 +21,7 @@ type DataProvider interface {
 	Create(dao Dao) error
 	Update(dao Dao) error
 	GetByID(id string) (*Dao, error)
-	GetByFilters(filters []Filter) ([]Dao, error)
-	GetTopCategories(limit int) ([]string, error)
+	GetByFilters(filters []Filter) (DaoList, error)
 }
 
 type Service struct {
@@ -102,19 +101,10 @@ func (s *Service) GetByID(id string) (*Dao, error) {
 	return dao, nil
 }
 
-func (s *Service) GetByFilters(filters []Filter) ([]Dao, error) {
+func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {
 	list, err := s.repo.GetByFilters(filters)
 	if err != nil {
-		return nil, fmt.Errorf("get by filters: %w", err)
-	}
-
-	return list, nil
-}
-
-func (s *Service) GetTopCategories(limit int) ([]string, error) {
-	list, err := s.repo.GetTopCategories(limit)
-	if err != nil {
-		return nil, fmt.Errorf("get top categories: %w", err)
+		return DaoList{}, fmt.Errorf("get by filters: %w", err)
 	}
 
 	return list, nil

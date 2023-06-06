@@ -81,6 +81,12 @@ message DaoByFilterRequest {
 
 message DaoByFilterResponse {
   repeated DaoInfo daos = 1;
+  uint64 total_count = 2;
+}
+
+message TopCategory {
+  string category = 1;
+  repeated DaoInfo daos = 2;
 }
 
 message TopCategoriesRequest {
@@ -88,5 +94,5 @@ message TopCategoriesRequest {
 }
 
 message TopCategoriesResponse {
-  repeated string categories = 1;
+  repeated TopCategory categories = 1;
 }
