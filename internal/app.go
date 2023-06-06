@@ -29,7 +29,8 @@ type Application struct {
 	cfg     config.App
 	db      *gorm.DB
 
-	daoService *dao.Service
+	daoService      *dao.Service
+	proposalService *proposal.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -165,6 +166,7 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 	if err != nil {
 		return fmt.Errorf("proposal service: %w", err)
 	}
+	a.proposalService = service
 
 	cs, err := proposal.NewConsumer(nc, service)
 	if err != nil {
@@ -206,6 +208,7 @@ func (a *Application) initAPI() error {
 	)
 
 	internalapi.RegisterDaoServer(srv, dao.NewServer(a.daoService))
+	internalapi.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 

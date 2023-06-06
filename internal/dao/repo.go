@@ -41,6 +41,7 @@ type DaoList struct {
 	TotalCount int64
 }
 
+// todo: add order by
 func (r *Repo) GetByFilters(filters []Filter) (DaoList, error) {
 	db := r.db.Model(&Dao{})
 	for _, f := range filters {

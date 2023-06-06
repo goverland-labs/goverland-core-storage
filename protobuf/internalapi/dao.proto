@@ -3,6 +3,7 @@ syntax = "proto3";
 package internalapi;
 
 import "google/protobuf/timestamp.proto";
+import "base.proto";
 
 option go_package = ".;internalapi";
 
@@ -14,11 +15,6 @@ service Dao {
 
 message DaoByIDRequest {
   string dao_id = 1;
-}
-
-message  Strategy {
-  string name = 1;
-  string network = 2;
 }
 
 message Voting  {

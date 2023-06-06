@@ -29,6 +29,7 @@ type DataProvider interface {
 	Update(proposal Proposal) error
 	GetByID(string) (*Proposal, error)
 	GetAvailableForVoting(time.Duration) ([]*Proposal, error)
+	GetByFilters(filters []Filter) (ProposalList, error)
 }
 
 type EventRegistered interface {
@@ -167,4 +168,22 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (s *Service) GetByID(id string) (*Proposal, error) {
+	pro, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("get by id: %w", err)
+	}
+
+	return pro, nil
+}
+
+func (s *Service) GetByFilters(filters []Filter) (ProposalList, error) {
+	list, err := s.repo.GetByFilters(filters)
+	if err != nil {
+		return ProposalList{}, fmt.Errorf("get by filters: %w", err)
+	}
+
+	return list, nil
 }

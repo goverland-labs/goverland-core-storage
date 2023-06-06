@@ -47,3 +47,42 @@ func (r *Repo) GetAvailableForVoting(window time.Duration) ([]*Proposal, error) 
 
 	return items, nil
 }
+
+type ProposalList struct {
+	Proposals  []Proposal
+	TotalCount int64
+}
+
+// todo: add order by
+func (r *Repo) GetByFilters(filters []Filter) (ProposalList, error) {
+	db := r.db.Model(&Proposal{}).InnerJoins("inner join daos on daos.id = proposals.dao_id")
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			continue
+		}
+		db = f.Apply(db)
+	}
+
+	var cnt int64
+	err := db.Count(&cnt).Error
+	if err != nil {
+		return ProposalList{}, err
+	}
+
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			db = f.Apply(db)
+		}
+	}
+
+	var list []Proposal
+	err = db.Find(&list).Error
+	if err != nil {
+		return ProposalList{}, err
+	}
+
+	return ProposalList{
+		Proposals:  list,
+		TotalCount: cnt,
+	}, nil
+}

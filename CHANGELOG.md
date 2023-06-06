@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 - Dao gRPC server 
+- Proposal gRPC server 
 
 ## [0.0.4] - 2023-05-23
 
