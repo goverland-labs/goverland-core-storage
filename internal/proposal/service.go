@@ -96,7 +96,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 
 func (s *Service) checkSpecificUpdate(ctx context.Context, new, existed Proposal) {
 	if float64(new.ScoresTotal) >= new.Quorum {
-		go s.registerEventOnce(ctx, new, groupName, coreevents.SubjectProposalVotingReached)
+		go s.registerEventOnce(ctx, new, groupName, coreevents.SubjectProposalVotingQuorumReached)
 	}
 
 	if new.State != existed.State {
@@ -161,9 +161,9 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingEnded)
 		}
 
-		// voting is coming
+		// voting will starts soon
 		if time.Now().Sub(startsAt) < startVotingWindow {
-			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingComing)
+			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingStartsSoon)
 		}
 	}
 
