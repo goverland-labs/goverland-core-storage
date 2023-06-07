@@ -31,6 +31,7 @@ type Application struct {
 
 	daoService      *dao.Service
 	proposalService *proposal.Service
+	voteService     *vote.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -187,6 +188,7 @@ func (a *Application) initVote(nc *nats.Conn) error {
 	if err != nil {
 		return fmt.Errorf("vote service: %w", err)
 	}
+	a.voteService = service
 
 	cs, err := vote.NewConsumer(nc, service)
 	if err != nil {
@@ -209,6 +211,7 @@ func (a *Application) initAPI() error {
 
 	internalapi.RegisterDaoServer(srv, dao.NewServer(a.daoService))
 	internalapi.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
+	internalapi.RegisterVoteServer(srv, vote.NewServer(a.voteService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 

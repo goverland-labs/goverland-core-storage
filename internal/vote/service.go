@@ -2,10 +2,12 @@ package vote
 
 import (
 	"context"
+	"fmt"
 )
 
 type DataProvider interface {
 	BatchCreate(data []Vote) error
+	GetByFilters(filters []Filter) (List, error)
 }
 
 type Service struct {
@@ -20,4 +22,13 @@ func NewService(r DataProvider) (*Service, error) {
 
 func (s *Service) HandleVotes(_ context.Context, votes []Vote) error {
 	return s.repo.BatchCreate(votes)
+}
+
+func (s *Service) GetByFilters(filters []Filter) (List, error) {
+	list, err := s.repo.GetByFilters(filters)
+	if err != nil {
+		return List{}, fmt.Errorf("get by filters: %w", err)
+	}
+
+	return list, nil
 }

@@ -23,3 +23,41 @@ func (r *Repo) BatchCreate(data []Vote) error {
 		UpdateAll: true,
 	}).CreateInBatches(data, defaultBatchSize).Error
 }
+
+type List struct {
+	Votes      []Vote
+	TotalCount int64
+}
+
+func (r *Repo) GetByFilters(filters []Filter) (List, error) {
+	db := r.db.Model(&Vote{})
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			continue
+		}
+		db = f.Apply(db)
+	}
+
+	var cnt int64
+	err := db.Count(&cnt).Error
+	if err != nil {
+		return List{}, err
+	}
+
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			db = f.Apply(db)
+		}
+	}
+
+	var list []Vote
+	err = db.Find(&list).Error
+	if err != nil {
+		return List{}, err
+	}
+
+	return List{
+		Votes:      list,
+		TotalCount: cnt,
+	}, nil
+}
