@@ -90,10 +90,6 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 	return res, nil
 }
 
-func (s *Server) GetTopCategories(_ context.Context, req *proto.TopCategoriesRequest) (*proto.TopCategoriesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "implement me")
-}
-
 func convertProposalToAPI(info *Proposal) *proto.ProposalInfo {
 	return &proto.ProposalInfo{
 		Id:            info.ID,

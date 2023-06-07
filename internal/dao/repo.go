@@ -42,7 +42,7 @@ type DaoList struct {
 }
 
 // todo: add order by
-func (r *Repo) GetByFilters(filters []Filter) (DaoList, error) {
+func (r *Repo) GetByFilters(filters []Filter, count bool) (DaoList, error) {
 	db := r.db.Model(&Dao{})
 	for _, f := range filters {
 		if _, ok := f.(PageFilter); ok {
@@ -73,4 +73,11 @@ func (r *Repo) GetByFilters(filters []Filter) (DaoList, error) {
 		Daos:       daos,
 		TotalCount: cnt,
 	}, nil
+}
+
+func (r *Repo) GetCategories() ([]string, error) {
+	var res []string
+	err := r.db.Raw(`SELECT distinct JSONB_ARRAY_ELEMENTS_TEXT(categories) AS category FROM daos ORDER BY category`).Scan(&res).Error
+
+	return res, err
 }

@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type DaoClient interface {
 	GetByID(ctx context.Context, in *DaoByIDRequest, opts ...grpc.CallOption) (*DaoByIDResponse, error)
 	GetByFilter(ctx context.Context, in *DaoByFilterRequest, opts ...grpc.CallOption) (*DaoByFilterResponse, error)
-	GetTopCategories(ctx context.Context, in *TopCategoriesRequest, opts ...grpc.CallOption) (*TopCategoriesResponse, error)
+	GetTopByCategories(ctx context.Context, in *TopByCategoriesRequest, opts ...grpc.CallOption) (*TopByCategoriesResponse, error)
 }
 
 type daoClient struct {
@@ -53,9 +53,9 @@ func (c *daoClient) GetByFilter(ctx context.Context, in *DaoByFilterRequest, opt
 	return out, nil
 }
 
-func (c *daoClient) GetTopCategories(ctx context.Context, in *TopCategoriesRequest, opts ...grpc.CallOption) (*TopCategoriesResponse, error) {
-	out := new(TopCategoriesResponse)
-	err := c.cc.Invoke(ctx, "/internalapi.Dao/GetTopCategories", in, out, opts...)
+func (c *daoClient) GetTopByCategories(ctx context.Context, in *TopByCategoriesRequest, opts ...grpc.CallOption) (*TopByCategoriesResponse, error) {
+	out := new(TopByCategoriesResponse)
+	err := c.cc.Invoke(ctx, "/internalapi.Dao/GetTopByCategories", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (c *daoClient) GetTopCategories(ctx context.Context, in *TopCategoriesReque
 type DaoServer interface {
 	GetByID(context.Context, *DaoByIDRequest) (*DaoByIDResponse, error)
 	GetByFilter(context.Context, *DaoByFilterRequest) (*DaoByFilterResponse, error)
-	GetTopCategories(context.Context, *TopCategoriesRequest) (*TopCategoriesResponse, error)
+	GetTopByCategories(context.Context, *TopByCategoriesRequest) (*TopByCategoriesResponse, error)
 	mustEmbedUnimplementedDaoServer()
 }
 
@@ -82,8 +82,8 @@ func (UnimplementedDaoServer) GetByID(context.Context, *DaoByIDRequest) (*DaoByI
 func (UnimplementedDaoServer) GetByFilter(context.Context, *DaoByFilterRequest) (*DaoByFilterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetByFilter not implemented")
 }
-func (UnimplementedDaoServer) GetTopCategories(context.Context, *TopCategoriesRequest) (*TopCategoriesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopCategories not implemented")
+func (UnimplementedDaoServer) GetTopByCategories(context.Context, *TopByCategoriesRequest) (*TopByCategoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopByCategories not implemented")
 }
 func (UnimplementedDaoServer) mustEmbedUnimplementedDaoServer() {}
 
@@ -134,20 +134,20 @@ func _Dao_GetByFilter_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Dao_GetTopCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TopCategoriesRequest)
+func _Dao_GetTopByCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopByCategoriesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DaoServer).GetTopCategories(ctx, in)
+		return srv.(DaoServer).GetTopByCategories(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/internalapi.Dao/GetTopCategories",
+		FullMethod: "/internalapi.Dao/GetTopByCategories",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DaoServer).GetTopCategories(ctx, req.(*TopCategoriesRequest))
+		return srv.(DaoServer).GetTopByCategories(ctx, req.(*TopByCategoriesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -168,8 +168,8 @@ var Dao_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Dao_GetByFilter_Handler,
 		},
 		{
-			MethodName: "GetTopCategories",
-			Handler:    _Dao_GetTopCategories_Handler,
+			MethodName: "GetTopByCategories",
+			Handler:    _Dao_GetTopByCategories_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

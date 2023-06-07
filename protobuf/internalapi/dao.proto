@@ -10,7 +10,7 @@ option go_package = ".;internalapi";
 service Dao {
   rpc GetByID(DaoByIDRequest) returns (DaoByIDResponse);
   rpc GetByFilter(DaoByFilterRequest) returns (DaoByFilterResponse);
-  rpc GetTopCategories(TopCategoriesRequest) returns (TopCategoriesResponse);
+  rpc GetTopByCategories(TopByCategoriesRequest) returns (TopByCategoriesResponse);
 }
 
 message DaoByIDRequest {
@@ -85,10 +85,10 @@ message TopCategory {
   repeated DaoInfo daos = 2;
 }
 
-message TopCategoriesRequest {
+message TopByCategoriesRequest {
   uint64 limit = 1;
 }
 
-message TopCategoriesResponse {
+message TopByCategoriesResponse {
   repeated TopCategory categories = 1;
 }

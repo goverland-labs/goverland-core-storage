@@ -21,7 +21,8 @@ type DataProvider interface {
 	Create(dao Dao) error
 	Update(dao Dao) error
 	GetByID(id string) (*Dao, error)
-	GetByFilters(filters []Filter) (DaoList, error)
+	GetByFilters(filters []Filter, count bool) (DaoList, error)
+	GetCategories() ([]string, error)
 }
 
 type Service struct {
@@ -102,9 +103,35 @@ func (s *Service) GetByID(id string) (*Dao, error) {
 }
 
 func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {
-	list, err := s.repo.GetByFilters(filters)
+	list, err := s.repo.GetByFilters(filters, true)
 	if err != nil {
 		return DaoList{}, fmt.Errorf("get by filters: %w", err)
+	}
+
+	return list, nil
+}
+
+// todo: use caching here!
+func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string][]Dao, error) {
+	categories, err := s.repo.GetCategories()
+	if err != nil {
+		return nil, fmt.Errorf("get categories: %w", err)
+	}
+
+	list := make(map[string][]Dao)
+	for _, category := range categories {
+		filters := []Filter{
+			CategoryFilter{Category: category},
+			PageFilter{Limit: limit, Offset: 0},
+			OrderByFollowersFilter{},
+		}
+
+		data, err := s.repo.GetByFilters(filters, false)
+		if err != nil {
+			return nil, fmt.Errorf("get by category %s: %w", category, err)
+		}
+
+		list[category] = data.Daos
 	}
 
 	return list, nil
