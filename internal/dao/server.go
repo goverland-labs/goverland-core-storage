@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 
-	proto "github.com/goverland-labs/core-storage/protobuf/internalapi"
+	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
 )
 
 const (

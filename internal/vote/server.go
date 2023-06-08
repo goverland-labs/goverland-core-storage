@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	proto "github.com/goverland-labs/core-storage/protobuf/internalapi"
+	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
 )
 
 const (
