@@ -64,6 +64,7 @@ func (s *Server) GetVotes(_ context.Context, req *proto.VotesFilterRequest) (*pr
 
 func convertVoteToAPI(info *Vote) *proto.VoteInfo {
 	return &proto.VoteInfo{
+		Id:         info.ID,
 		ProposalId: info.ProposalID,
 		Ipfs:       info.Ipfs,
 		Voter:      info.Voter,
