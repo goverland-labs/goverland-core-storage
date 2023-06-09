@@ -111,14 +111,19 @@ func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {
 	return list, nil
 }
 
+type topList struct {
+	List  []Dao
+	Total int64
+}
+
 // todo: use caching here!
-func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string][]Dao, error) {
+func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]topList, error) {
 	categories, err := s.repo.GetCategories()
 	if err != nil {
 		return nil, fmt.Errorf("get categories: %w", err)
 	}
 
-	list := make(map[string][]Dao)
+	list := make(map[string]topList)
 	for _, category := range categories {
 		filters := []Filter{
 			CategoryFilter{Category: category},
@@ -126,12 +131,15 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string][
 			OrderByFollowersFilter{},
 		}
 
-		data, err := s.repo.GetByFilters(filters, false)
+		data, err := s.repo.GetByFilters(filters, true)
 		if err != nil {
 			return nil, fmt.Errorf("get by category %s: %w", category, err)
 		}
 
-		list[category] = data.Daos
+		list[category] = topList{
+			List:  data.Daos,
+			Total: data.TotalCount,
+		}
 	}
 
 	return list, nil

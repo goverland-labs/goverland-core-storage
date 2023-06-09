@@ -17,6 +17,7 @@ const (
 	defaultDaoLimit           = 50
 	defaultOffset             = 0
 	defaultTopCategoriesLimit = 10
+	maxPerTop                 = 20
 )
 
 type Server struct {
@@ -94,6 +95,9 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *proto.TopByCategor
 	if req.GetLimit() != 0 {
 		limit = int(req.GetLimit())
 	}
+	if limit > maxPerTop {
+		limit = maxPerTop
+	}
 
 	list, err := s.sp.GetTopByCategories(ctx, limit)
 	if err != nil {
@@ -106,12 +110,13 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *proto.TopByCategor
 	}
 
 	idx := 0
-	for cat, daos := range list {
+	for cat, details := range list {
 		info := &proto.TopCategory{
-			Category: cat,
-			Daos:     make([]*proto.DaoInfo, len(daos)),
+			Category:   cat,
+			TotalCount: uint64(details.Total),
+			Daos:       make([]*proto.DaoInfo, len(details.List)),
 		}
-		for i, dao := range daos {
+		for i, dao := range details.List {
 			info.Daos[i] = convertDaoToAPI(&dao)
 		}
 
