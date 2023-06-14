@@ -21,6 +21,8 @@ type DataProvider interface {
 	Create(dao Dao) error
 	Update(dao Dao) error
 	GetByID(id string) (*Dao, error)
+	GetByFilters(filters []Filter, count bool) (DaoList, error)
+	GetCategories() ([]string, error)
 }
 
 type Service struct {
@@ -89,4 +91,56 @@ func compare(d1, d2 Dao) bool {
 	d1.UpdatedAt = d2.UpdatedAt
 
 	return reflect.DeepEqual(d1, d2)
+}
+
+func (s *Service) GetByID(id string) (*Dao, error) {
+	dao, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("get by id: %w", err)
+	}
+
+	return dao, nil
+}
+
+func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {
+	list, err := s.repo.GetByFilters(filters, true)
+	if err != nil {
+		return DaoList{}, fmt.Errorf("get by filters: %w", err)
+	}
+
+	return list, nil
+}
+
+type topList struct {
+	List  []Dao
+	Total int64
+}
+
+// todo: use caching here!
+func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]topList, error) {
+	categories, err := s.repo.GetCategories()
+	if err != nil {
+		return nil, fmt.Errorf("get categories: %w", err)
+	}
+
+	list := make(map[string]topList)
+	for _, category := range categories {
+		filters := []Filter{
+			CategoryFilter{Category: category},
+			PageFilter{Limit: limit, Offset: 0},
+			OrderByFollowersFilter{},
+		}
+
+		data, err := s.repo.GetByFilters(filters, true)
+		if err != nil {
+			return nil, fmt.Errorf("get by category %s: %w", category, err)
+		}
+
+		list[category] = topList{
+			List:  data.Daos,
+			Total: data.TotalCount,
+		}
+	}
+
+	return list, nil
 }

@@ -35,3 +35,49 @@ func (r *Repo) GetByID(id string) (*Dao, error) {
 
 	return &dao, nil
 }
+
+type DaoList struct {
+	Daos       []Dao
+	TotalCount int64
+}
+
+// todo: add order by
+func (r *Repo) GetByFilters(filters []Filter, count bool) (DaoList, error) {
+	db := r.db.Model(&Dao{})
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			continue
+		}
+		db = f.Apply(db)
+	}
+
+	var cnt int64
+	err := db.Count(&cnt).Error
+	if err != nil {
+		return DaoList{}, err
+	}
+
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			db = f.Apply(db)
+		}
+	}
+
+	var daos []Dao
+	err = db.Find(&daos).Error
+	if err != nil {
+		return DaoList{}, err
+	}
+
+	return DaoList{
+		Daos:       daos,
+		TotalCount: cnt,
+	}, nil
+}
+
+func (r *Repo) GetCategories() ([]string, error) {
+	var res []string
+	err := r.db.Raw(`SELECT distinct JSONB_ARRAY_ELEMENTS_TEXT(categories) AS category FROM daos ORDER BY category`).Scan(&res).Error
+
+	return res, err
+}

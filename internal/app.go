@@ -11,12 +11,15 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/goverland-labs/core-api/protobuf/internalapi"
+
 	"github.com/goverland-labs/core-storage/internal/communicate"
 	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/dao"
 	"github.com/goverland-labs/core-storage/internal/events"
 	"github.com/goverland-labs/core-storage/internal/proposal"
 	"github.com/goverland-labs/core-storage/internal/vote"
+	"github.com/goverland-labs/core-storage/pkg/grpcsrv"
 	"github.com/goverland-labs/core-storage/pkg/health"
 	"github.com/goverland-labs/core-storage/pkg/prometheus"
 )
@@ -26,6 +29,10 @@ type Application struct {
 	manager *process.Manager
 	cfg     config.App
 	db      *gorm.DB
+
+	daoService      *dao.Service
+	proposalService *proposal.Service
+	voteService     *vote.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -123,6 +130,11 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init vote: %w", err)
 	}
 
+	err = a.initAPI()
+	if err != nil {
+		return fmt.Errorf("init api: %w", err)
+	}
+
 	return nil
 }
 
@@ -132,6 +144,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
+	a.daoService = service
 
 	cs, err := dao.NewConsumer(nc, service)
 	if err != nil {
@@ -155,6 +168,7 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 	if err != nil {
 		return fmt.Errorf("proposal service: %w", err)
 	}
+	a.proposalService = service
 
 	cs, err := proposal.NewConsumer(nc, service)
 	if err != nil {
@@ -175,6 +189,7 @@ func (a *Application) initVote(nc *nats.Conn) error {
 	if err != nil {
 		return fmt.Errorf("vote service: %w", err)
 	}
+	a.voteService = service
 
 	cs, err := vote.NewConsumer(nc, service)
 	if err != nil {
@@ -182,6 +197,24 @@ func (a *Application) initVote(nc *nats.Conn) error {
 	}
 
 	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
+
+	return nil
+}
+
+func (a *Application) initAPI() error {
+	authInterceptor := grpcsrv.NewAuthInterceptor()
+	srv := grpcsrv.NewGrpcServer(
+		[]string{
+			"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo",
+		},
+		authInterceptor.AuthAndIdentifyTickerFunc,
+	)
+
+	internalapi.RegisterDaoServer(srv, dao.NewServer(a.daoService))
+	internalapi.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
+	internalapi.RegisterVoteServer(srv, vote.NewServer(a.voteService))
+
+	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 
 	return nil
 }
