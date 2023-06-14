@@ -64,6 +64,21 @@ func (mr *MockDataProviderMockRecorder) GetAvailableForVoting(arg0 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableForVoting", reflect.TypeOf((*MockDataProvider)(nil).GetAvailableForVoting), arg0)
 }
 
+// GetByFilters mocks base method.
+func (m *MockDataProvider) GetByFilters(arg0 []Filter) (ProposalList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByFilters", arg0)
+	ret0, _ := ret[0].(ProposalList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByFilters indicates an expected call of GetByFilters.
+func (mr *MockDataProviderMockRecorder) GetByFilters(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByFilters", reflect.TypeOf((*MockDataProvider)(nil).GetByFilters), arg0)
+}
+
 // GetByID mocks base method.
 func (m *MockDataProvider) GetByID(arg0 string) (*Proposal, error) {
 	m.ctrl.T.Helper()

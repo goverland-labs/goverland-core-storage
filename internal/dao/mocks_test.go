@@ -48,6 +48,21 @@ func (mr *MockDataProviderMockRecorder) Create(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDataProvider)(nil).Create), arg0)
 }
 
+// GetByFilters mocks base method.
+func (m *MockDataProvider) GetByFilters(arg0 []Filter, arg1 bool) (DaoList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByFilters", arg0, arg1)
+	ret0, _ := ret[0].(DaoList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByFilters indicates an expected call of GetByFilters.
+func (mr *MockDataProviderMockRecorder) GetByFilters(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByFilters", reflect.TypeOf((*MockDataProvider)(nil).GetByFilters), arg0, arg1)
+}
+
 // GetByID mocks base method.
 func (m *MockDataProvider) GetByID(arg0 string) (*Dao, error) {
 	m.ctrl.T.Helper()
@@ -61,6 +76,21 @@ func (m *MockDataProvider) GetByID(arg0 string) (*Dao, error) {
 func (mr *MockDataProviderMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockDataProvider)(nil).GetByID), arg0)
+}
+
+// GetCategories mocks base method.
+func (m *MockDataProvider) GetCategories() ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCategories")
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCategories indicates an expected call of GetCategories.
+func (mr *MockDataProviderMockRecorder) GetCategories() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategories", reflect.TypeOf((*MockDataProvider)(nil).GetCategories))
 }
 
 // Update mocks base method.

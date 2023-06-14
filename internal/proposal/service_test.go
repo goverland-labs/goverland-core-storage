@@ -281,8 +281,8 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 				m.EXPECT().EventExist(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 				m.EXPECT().RegisterEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).
 					DoAndReturn(func(_ context.Context, _, _, event string) error {
-						if coreevents.SubjectProposalVotingComing != event {
-							ctrl.T.Errorf("wrong subject event: %s instead of %s", event, coreevents.SubjectProposalVotingComing)
+						if coreevents.SubjectProposalVotingStartsSoon != event {
+							ctrl.T.Errorf("wrong subject event: %s instead of %s", event, coreevents.SubjectProposalVotingStartsSoon)
 						}
 
 						return nil
@@ -347,8 +347,8 @@ func TestUnitCheckSpecificUpdate(t *testing.T) {
 				m.EXPECT().EventExist(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
 				m.EXPECT().RegisterEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).
 					DoAndReturn(func(_ context.Context, _, _, event string) error {
-						if coreevents.SubjectProposalVotingReached != event {
-							ctrl.T.Errorf("wrong subject event: %s instead of %s", event, coreevents.SubjectProposalVotingReached)
+						if coreevents.SubjectProposalVotingQuorumReached != event {
+							ctrl.T.Errorf("wrong subject event: %s instead of %s", event, coreevents.SubjectProposalVotingQuorumReached)
 						}
 
 						return nil
