@@ -72,6 +72,12 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (
 		filters = append(filters, CategoryFilter{Category: req.GetCategory()})
 	}
 
+	if len(req.GetDaoIds()) != 0 {
+		filters = append(filters, DaoIDsFilter{
+			DaoIDs: req.GetDaoIds(),
+		})
+	}
+
 	list, err := s.sp.GetByFilters(filters)
 	if err != nil {
 		log.Error().Err(err).Msgf("get daos by filter: %+v", req)

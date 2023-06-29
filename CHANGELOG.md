@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Filter dao by ids
+
 ## [0.0.5] - 2023-06-14
 
 ### Added
