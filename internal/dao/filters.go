@@ -41,3 +41,11 @@ type OrderByFollowersFilter struct {
 func (f OrderByFollowersFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("followers_count desc")
 }
+
+type DaoIDsFilter struct {
+	DaoIDs []string
+}
+
+func (f DaoIDsFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("id IN ?", f.DaoIDs)
+}
