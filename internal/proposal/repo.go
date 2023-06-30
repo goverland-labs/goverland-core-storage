@@ -28,8 +28,8 @@ func (r *Repo) Update(p Proposal) error {
 }
 
 func (r *Repo) GetByID(id string) (*Proposal, error) {
-	p := Proposal{ID: id}
-	request := r.db.Take(&p)
+	var p Proposal
+	request := r.db.Where(&Proposal{ID: id}).First(&p)
 	if err := request.Error; err != nil {
 		return nil, fmt.Errorf("get proposal by id #%s: %w", id, err)
 	}

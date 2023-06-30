@@ -23,7 +23,7 @@ func (r *Repo) Create(dao Dao) error {
 // Update single dao object in database
 // todo: think about updating fields to default value(boolean, string etc)
 func (r *Repo) Update(dao Dao) error {
-	return r.db.Save(&dao).Error
+	return r.db.Omit("name", "original_id").Save(&dao).Error
 }
 
 func (r *Repo) GetByID(id string) (*Dao, error) {
@@ -31,6 +31,26 @@ func (r *Repo) GetByID(id string) (*Dao, error) {
 	request := r.db.Take(&dao)
 	if err := request.Error; err != nil {
 		return nil, fmt.Errorf("get dao by id #%s: %w", id, err)
+	}
+
+	return &dao, nil
+}
+
+func (r *Repo) GetByName(name string) (*Dao, error) {
+	var dao Dao
+	request := r.db.Where(&Dao{Name: name}).First(&dao)
+	if err := request.Error; err != nil {
+		return nil, fmt.Errorf("get dao by name #%s: %w", name, err)
+	}
+
+	return &dao, nil
+}
+
+func (r *Repo) GetByOriginalID(id string) (*Dao, error) {
+	var dao Dao
+	request := r.db.Where(&Dao{OriginalID: id}).First(&dao)
+	if err := request.Error; err != nil {
+		return nil, fmt.Errorf("get dao by original id #%s: %w", id, err)
 	}
 
 	return &dao, nil

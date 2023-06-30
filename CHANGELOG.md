@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- DAO id generation
+
 ## [0.0.6] - 2023-06-29
 
 ### Added
@@ -24,7 +27,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - Configure debugging DB queries by env
 
-### Update
+### Changed
 - Using group name in consumers
 
 ## [0.0.3] - 2023-05-18

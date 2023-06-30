@@ -164,7 +164,7 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 	}
 
 	repo := proposal.NewRepo(a.db)
-	service, err := proposal.NewService(repo, pb, erService)
+	service, err := proposal.NewService(repo, pb, erService, a.daoService)
 	if err != nil {
 		return fmt.Errorf("proposal service: %w", err)
 	}

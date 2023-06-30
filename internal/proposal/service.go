@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
+	"github.com/goverland-labs/core-storage/internal/dao"
 	"github.com/goverland-labs/core-storage/internal/metrics"
 )
 
@@ -18,7 +19,7 @@ const (
 	startVotingWindow = time.Hour
 )
 
-//go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered
+//go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error
@@ -32,6 +33,10 @@ type DataProvider interface {
 	GetByFilters(filters []Filter) (ProposalList, error)
 }
 
+type DaoProvider interface {
+	GetByOriginalID(string) (*dao.Dao, error)
+}
+
 type EventRegistered interface {
 	EventExist(_ context.Context, id, t, event string) (bool, error)
 	RegisterEvent(_ context.Context, id, t, event string) error
@@ -42,13 +47,15 @@ type Service struct {
 	repo      DataProvider
 	publisher Publisher
 	er        EventRegistered
+	dp        DaoProvider
 }
 
-func NewService(r DataProvider, p Publisher, er EventRegistered) (*Service, error) {
+func NewService(r DataProvider, p Publisher, er EventRegistered, dp DaoProvider) (*Service, error) {
 	return &Service{
 		repo:      r,
 		publisher: p,
 		er:        er,
+		dp:        dp,
 	}, nil
 }
 
@@ -66,9 +73,15 @@ func (s *Service) HandleProposal(ctx context.Context, pro Proposal) error {
 }
 
 func (s *Service) processNew(ctx context.Context, p Proposal) error {
-	err := s.repo.Create(p)
+	di, err := s.dp.GetByOriginalID(p.DaoOriginalID)
 	if err != nil {
-		return fmt.Errorf("can't create proposal: %w", err)
+		return fmt.Errorf("get dao by name: %s: %w", p.DaoOriginalID, err)
+	}
+
+	p.DaoID = di.ID
+	err = s.repo.Create(p)
+	if err != nil {
+		return fmt.Errorf("create proposal: %w", err)
 	}
 
 	go s.registerEvent(ctx, p, groupName, coreevents.SubjectProposalCreated)
@@ -82,6 +95,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 		return nil
 	}
 
+	new.DaoID = existed.DaoID
 	new.CreatedAt = existed.CreatedAt
 	err := s.repo.Update(new)
 	if err != nil {
