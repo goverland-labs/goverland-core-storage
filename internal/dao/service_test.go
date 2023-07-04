@@ -57,6 +57,7 @@ func TestUnitHandleDao(t *testing.T) {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
 				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
 				m.EXPECT().Create(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
@@ -71,7 +72,7 @@ func TestUnitHandleDao(t *testing.T) {
 		"correct updating": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "updated"}, nil)
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "updated"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
@@ -86,7 +87,7 @@ func TestUnitHandleDao(t *testing.T) {
 		"do not update for equal objects": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1"}, nil)
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(0).Return(nil)
 				return m
 			},
@@ -99,7 +100,7 @@ func TestUnitHandleDao(t *testing.T) {
 		"raise err on problems with reading from DB": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(nil, errors.New("unexpected error"))
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(nil, errors.New("unexpected error"))
 				return m
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
@@ -112,6 +113,7 @@ func TestUnitHandleDao(t *testing.T) {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
 				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
 				m.EXPECT().Create(gomock.Any()).Times(1).Return(errors.New("unexpected error"))
 				return m
 			},
@@ -125,6 +127,7 @@ func TestUnitHandleDao(t *testing.T) {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
 				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
 				m.EXPECT().Create(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
@@ -139,7 +142,7 @@ func TestUnitHandleDao(t *testing.T) {
 		"raise err on problems with updating in DB": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "name"}, nil)
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "name"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(errors.New("unexpected error"))
 				return m
 			},
@@ -152,7 +155,7 @@ func TestUnitHandleDao(t *testing.T) {
 		"allow do not send event after updating": {
 			dp: func(ctrl *gomock.Controller) DataProvider {
 				m := NewMockDataProvider(ctrl)
-				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "name"}, nil)
+				m.EXPECT().GetByOriginalID(gomock.Any()).Times(1).Return(&Dao{ID: "id-1", Name: "name"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},

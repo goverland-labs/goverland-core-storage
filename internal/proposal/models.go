@@ -41,6 +41,7 @@ type Proposal struct {
 	Created   int
 	// todo: think about relation to the DAO model.
 	// Some proposal events could be processed early then dao created
+	DaoOriginalID string `gorm:"-"`
 	DaoID         string
 	Network       string
 	Symbol        string
@@ -102,7 +103,7 @@ func convertToProposal(p aggevents.ProposalPayload) Proposal {
 		Ipfs:          p.Ipfs,
 		Author:        p.Author,
 		Created:       p.Created,
-		DaoID:         p.DaoID,
+		DaoOriginalID: p.DaoID,
 		Network:       p.Network,
 		Symbol:        p.Symbol,
 		Type:          p.Type,

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/google/uuid"
 	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -21,6 +22,7 @@ type DataProvider interface {
 	Create(dao Dao) error
 	Update(dao Dao) error
 	GetByID(id string) (*Dao, error)
+	GetByOriginalID(id string) (*Dao, error)
 	GetByFilters(filters []Filter, count bool) (DaoList, error)
 	GetCategories() ([]string, error)
 }
@@ -38,7 +40,7 @@ func NewService(r DataProvider, p Publisher) (*Service, error) {
 }
 
 func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
-	existed, err := s.repo.GetByID(dao.ID)
+	existed, err := s.repo.GetByOriginalID(dao.ID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("handle: %w", err)
 	}
@@ -47,11 +49,18 @@ func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
 		return s.processNew(ctx, dao)
 	}
 
+	dao.ID = existed.ID
 	return s.processExisted(ctx, dao, *existed)
 }
 
 func (s *Service) processNew(ctx context.Context, dao Dao) error {
-	err := s.repo.Create(dao)
+	id, err := s.generateID()
+	if err != nil {
+		return fmt.Errorf("generate dao id: %w", err)
+	}
+
+	dao.ID = id
+	err = s.repo.Create(dao)
 	if err != nil {
 		return fmt.Errorf("can't create dao: %w", err)
 	}
@@ -63,6 +72,20 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 	}(dao)
 
 	return nil
+}
+
+func (s *Service) generateID() (string, error) {
+	id := uuid.New().String()
+	_, err := s.GetByID(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return id, nil
+	}
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", fmt.Errorf("get user: %s: %w", id, err)
+	}
+
+	return s.generateID()
 }
 
 func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
@@ -100,6 +123,11 @@ func (s *Service) GetByID(id string) (*Dao, error) {
 	}
 
 	return dao, nil
+}
+
+// todo: add caching
+func (s *Service) GetByOriginalID(id string) (*Dao, error) {
+	return s.repo.GetByOriginalID(id)
 }
 
 func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {

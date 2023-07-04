@@ -4,6 +4,7 @@ create table daos
         primary key,
     created_at      timestamp with time zone,
     updated_at      timestamp with time zone,
+    original_id     text,
     name            text,
     private         boolean,
     about           text,
@@ -29,6 +30,14 @@ create table daos
     template        text,
     parent_id       text
 );
+
+alter table daos
+    add constraint daos_idx_unique_name
+        unique (name);
+
+alter table daos
+    add constraint daos_idx_unique_original_id
+        unique (original_id);
 
 CREATE INDEX idx_gin_dao_categories ON daos
     USING gin (categories jsonb_path_ops);

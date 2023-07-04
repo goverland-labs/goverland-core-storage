@@ -77,6 +77,7 @@ type Dao struct {
 	ID             string `gorm:"primary_key"`
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+	OriginalID     string
 	Name           string
 	Private        bool
 	About          string
@@ -136,6 +137,7 @@ func convertToCoreEvent(dao Dao) events.DaoPayload {
 func convertToDao(e aggevents.DaoPayload) Dao {
 	return Dao{
 		ID:             e.ID,
+		OriginalID:     e.ID,
 		Name:           e.Name,
 		Private:        e.Private,
 		About:          e.About,
