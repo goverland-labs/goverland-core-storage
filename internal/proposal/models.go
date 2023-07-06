@@ -3,6 +3,7 @@ package proposal
 import (
 	"time"
 
+	"github.com/google/uuid"
 	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
 	events "github.com/goverland-labs/platform-events/events/core"
 )
@@ -42,7 +43,7 @@ type Proposal struct {
 	// todo: think about relation to the DAO model.
 	// Some proposal events could be processed early then dao created
 	DaoOriginalID string `gorm:"-"`
-	DaoID         string
+	DaoID         uuid.UUID
 	Network       string
 	Symbol        string
 	Type          string
@@ -72,7 +73,7 @@ func convertToCoreEvent(p Proposal) events.ProposalPayload {
 		Ipfs:          p.Ipfs,
 		Author:        p.Author,
 		Created:       p.Created,
-		DaoID:         p.DaoID,
+		DaoID:         p.DaoID.String(), // TODO: Think about this conversion
 		Network:       p.Network,
 		Symbol:        p.Symbol,
 		Type:          p.Type,

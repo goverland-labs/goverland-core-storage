@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
-
-	"github.com/goverland-labs/core-storage/internal/dao"
 )
 
 // todo: add units for converting from and to internal models
@@ -24,7 +23,7 @@ var defaultPublisher = func(ctrl *gomock.Controller) Publisher {
 
 var defaultDaoProvider = func(ctrl *gomock.Controller) DaoProvider {
 	m := NewMockDaoProvider(ctrl)
-	m.EXPECT().GetByOriginalID(gomock.Any()).AnyTimes().Return(&dao.Dao{ID: "dao-id"}, nil)
+	m.EXPECT().GetIDByOriginalID(gomock.Any()).AnyTimes().Return(uuid.New(), nil)
 	return m
 }
 

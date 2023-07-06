@@ -10,7 +10,7 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
-	dao "github.com/goverland-labs/core-storage/internal/dao"
+	uuid "github.com/google/uuid"
 )
 
 // MockDataProvider is a mock of DataProvider interface.
@@ -221,17 +221,17 @@ func (m *MockDaoProvider) EXPECT() *MockDaoProviderMockRecorder {
 	return m.recorder
 }
 
-// GetByOriginalID mocks base method.
-func (m *MockDaoProvider) GetByOriginalID(arg0 string) (*dao.Dao, error) {
+// GetIDByOriginalID mocks base method.
+func (m *MockDaoProvider) GetIDByOriginalID(arg0 string) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByOriginalID", arg0)
-	ret0, _ := ret[0].(*dao.Dao)
+	ret := m.ctrl.Call(m, "GetIDByOriginalID", arg0)
+	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByOriginalID indicates an expected call of GetByOriginalID.
-func (mr *MockDaoProviderMockRecorder) GetByOriginalID(arg0 interface{}) *gomock.Call {
+// GetIDByOriginalID indicates an expected call of GetIDByOriginalID.
+func (mr *MockDaoProviderMockRecorder) GetIDByOriginalID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByOriginalID", reflect.TypeOf((*MockDaoProvider)(nil).GetByOriginalID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIDByOriginalID", reflect.TypeOf((*MockDaoProvider)(nil).GetIDByOriginalID), arg0)
 }

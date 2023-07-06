@@ -3,6 +3,7 @@ package dao
 import (
 	"time"
 
+	"github.com/google/uuid"
 	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
 	events "github.com/goverland-labs/platform-events/events/core"
 )
@@ -74,7 +75,7 @@ func convertToVoting(v Voting) events.VotingPayload {
 }
 
 type Dao struct {
-	ID             string `gorm:"primary_key"`
+	ID             uuid.UUID `gorm:"primary_key"`
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	OriginalID     string
@@ -106,7 +107,7 @@ type Dao struct {
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
 	return events.DaoPayload{
-		ID:             dao.ID,
+		ID:             dao.ID.String(),
 		Name:           dao.Name,
 		Private:        dao.Private,
 		About:          dao.About,
@@ -136,7 +137,6 @@ func convertToCoreEvent(dao Dao) events.DaoPayload {
 
 func convertToDao(e aggevents.DaoPayload) Dao {
 	return Dao{
-		ID:             e.ID,
 		OriginalID:     e.ID,
 		Name:           e.Name,
 		Private:        e.Private,

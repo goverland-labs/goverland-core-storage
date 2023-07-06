@@ -30,9 +30,19 @@ type Application struct {
 	cfg     config.App
 	db      *gorm.DB
 
-	daoService      *dao.Service
+	proposalRepo    *proposal.Repo
 	proposalService *proposal.Service
-	voteService     *vote.Service
+
+	daoIDRepo    *dao.DaoIDRepo
+	daoIDService *dao.DaoIDService
+
+	daoRepo    *dao.Repo
+	daoService *dao.Service
+
+	voteRepo    *vote.Repo
+	voteService *vote.Service
+
+	eventsRepo *events.Repo
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -96,6 +106,12 @@ func (a *Application) initDB() error {
 		a.db = db.Debug()
 	}
 
+	a.daoRepo = dao.NewRepo(a.db)
+	a.daoIDRepo = dao.NewDaoIDRepo(a.db)
+	a.proposalRepo = proposal.NewRepo(a.db)
+	a.voteRepo = vote.NewRepo(a.db)
+	a.eventsRepo = events.NewRepo(a.db)
+
 	return err
 }
 
@@ -139,8 +155,7 @@ func (a *Application) initServices() error {
 }
 
 func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
-	repo := dao.NewRepo(a.db)
-	service, err := dao.NewService(repo, pb)
+	service, err := dao.NewService(a.daoRepo, a.daoIDService, pb)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
@@ -157,14 +172,12 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 }
 
 func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) error {
-	erRepo := events.NewRepo(a.db)
-	erService, err := events.NewService(erRepo)
+	erService, err := events.NewService(a.eventsRepo)
 	if err != nil {
 		return fmt.Errorf("new events service: %w", err)
 	}
 
-	repo := proposal.NewRepo(a.db)
-	service, err := proposal.NewService(repo, pb, erService, a.daoService)
+	service, err := proposal.NewService(a.proposalRepo, pb, erService, a.daoService)
 	if err != nil {
 		return fmt.Errorf("proposal service: %w", err)
 	}
@@ -184,8 +197,7 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 }
 
 func (a *Application) initVote(nc *nats.Conn) error {
-	repo := vote.NewRepo(a.db)
-	service, err := vote.NewService(repo)
+	service, err := vote.NewService(a.voteRepo)
 	if err != nil {
 		return fmt.Errorf("vote service: %w", err)
 	}

@@ -7,11 +7,11 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/google/uuid"
 	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	"github.com/goverland-labs/core-storage/internal/dao"
 	"github.com/goverland-labs/core-storage/internal/metrics"
 )
 
@@ -34,7 +34,7 @@ type DataProvider interface {
 }
 
 type DaoProvider interface {
-	GetByOriginalID(string) (*dao.Dao, error)
+	GetIDByOriginalID(string) (uuid.UUID, error)
 }
 
 type EventRegistered interface {
@@ -73,12 +73,12 @@ func (s *Service) HandleProposal(ctx context.Context, pro Proposal) error {
 }
 
 func (s *Service) processNew(ctx context.Context, p Proposal) error {
-	di, err := s.dp.GetByOriginalID(p.DaoOriginalID)
+	daoID, err := s.dp.GetIDByOriginalID(p.DaoOriginalID)
 	if err != nil {
 		return fmt.Errorf("get dao by name: %s: %w", p.DaoOriginalID, err)
 	}
 
-	p.DaoID = di.ID
+	p.DaoID = daoID
 	err = s.repo.Create(p)
 	if err != nil {
 		return fmt.Errorf("create proposal: %w", err)
@@ -176,7 +176,7 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 		}
 
 		// voting will starts soon
-		if time.Now().Sub(startsAt) < startVotingWindow {
+		if time.Since(startsAt) < startVotingWindow {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingStartsSoon)
 		}
 	}
