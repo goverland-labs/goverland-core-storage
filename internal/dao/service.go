@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-//go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher
+//go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher,DaoIDProvider
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error
@@ -21,26 +21,37 @@ type Publisher interface {
 type DataProvider interface {
 	Create(dao Dao) error
 	Update(dao Dao) error
-	GetByID(id string) (*Dao, error)
-	GetByOriginalID(id string) (*Dao, error)
+	GetByID(id uuid.UUID) (*Dao, error)
 	GetByFilters(filters []Filter, count bool) (DaoList, error)
 	GetCategories() ([]string, error)
 }
 
-type Service struct {
-	repo   DataProvider
-	events Publisher
+type DaoIDProvider interface {
+	GetOrCreate(originID string) (uuid.UUID, error)
 }
 
-func NewService(r DataProvider, p Publisher) (*Service, error) {
+type Service struct {
+	repo       DataProvider
+	events     Publisher
+	idProvider DaoIDProvider
+}
+
+func NewService(r DataProvider, ip DaoIDProvider, p Publisher) (*Service, error) {
 	return &Service{
-		repo:   r,
-		events: p,
+		repo:       r,
+		events:     p,
+		idProvider: ip,
 	}, nil
 }
 
 func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
-	existed, err := s.repo.GetByOriginalID(dao.ID)
+	id, err := s.GetIDByOriginalID(dao.OriginalID)
+	if err != nil {
+		return fmt.Errorf("getting/generating dao id: %w", err)
+	}
+	dao.ID = id
+
+	existed, err := s.repo.GetByID(id)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("handle: %w", err)
 	}
@@ -54,14 +65,7 @@ func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
 }
 
 func (s *Service) processNew(ctx context.Context, dao Dao) error {
-	id, err := s.generateID()
-	if err != nil {
-		return fmt.Errorf("generate dao id: %w", err)
-	}
-
-	dao.ID = id
-	err = s.repo.Create(dao)
-	if err != nil {
+	if err := s.repo.Create(dao); err != nil {
 		return fmt.Errorf("can't create dao: %w", err)
 	}
 
@@ -72,20 +76,6 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 	}(dao)
 
 	return nil
-}
-
-func (s *Service) generateID() (string, error) {
-	id := uuid.New().String()
-	_, err := s.GetByID(id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return id, nil
-	}
-
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return "", fmt.Errorf("get user: %s: %w", id, err)
-	}
-
-	return s.generateID()
 }
 
 func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
@@ -116,7 +106,7 @@ func compare(d1, d2 Dao) bool {
 	return reflect.DeepEqual(d1, d2)
 }
 
-func (s *Service) GetByID(id string) (*Dao, error) {
+func (s *Service) GetByID(id uuid.UUID) (*Dao, error) {
 	dao, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("get by id: %w", err)
@@ -126,8 +116,8 @@ func (s *Service) GetByID(id string) (*Dao, error) {
 }
 
 // todo: add caching
-func (s *Service) GetByOriginalID(id string) (*Dao, error) {
-	return s.repo.GetByOriginalID(id)
+func (s *Service) GetIDByOriginalID(id string) (uuid.UUID, error) {
+	return s.idProvider.GetOrCreate(id)
 }
 
 func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -37,7 +38,12 @@ func (s *Server) GetByID(_ context.Context, req *proto.DaoByIDRequest) (*proto.D
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
 
-	dao, err := s.sp.GetByID(req.GetDaoId())
+	id, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
+	}
+
+	dao, err := s.sp.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
@@ -136,7 +142,7 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *proto.TopByCategor
 
 func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
 	return &proto.DaoInfo{
-		Id:             dao.ID,
+		Id:             dao.ID.String(),
 		CreatedAt:      timestamppb.New(dao.CreatedAt),
 		UpdatedAt:      timestamppb.New(dao.UpdatedAt),
 		Name:           dao.Name,

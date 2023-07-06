@@ -97,7 +97,7 @@ func convertProposalToAPI(info *Proposal) *proto.ProposalInfo {
 		UpdatedAt:     timestamppb.New(info.UpdatedAt),
 		Ipfs:          info.Ipfs,
 		Author:        info.Author,
-		DaoId:         info.DaoID,
+		DaoId:         info.DaoID.String(),
 		Created:       uint64(info.Created),
 		Network:       info.Network,
 		Symbol:        info.Symbol,

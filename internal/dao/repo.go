@@ -3,6 +3,7 @@ package dao
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +27,7 @@ func (r *Repo) Update(dao Dao) error {
 	return r.db.Omit("name", "original_id").Save(&dao).Error
 }
 
-func (r *Repo) GetByID(id string) (*Dao, error) {
+func (r *Repo) GetByID(id uuid.UUID) (*Dao, error) {
 	dao := Dao{ID: id}
 	request := r.db.Take(&dao)
 	if err := request.Error; err != nil {
