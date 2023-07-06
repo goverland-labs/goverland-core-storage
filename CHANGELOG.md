@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed creation dao id service
+
 ## [0.0.9] - 2023-07-06
 
 ### Added

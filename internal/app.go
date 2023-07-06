@@ -155,6 +155,8 @@ func (a *Application) initServices() error {
 }
 
 func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
+	a.daoIDService = dao.NewDaoIDService(a.daoIDRepo)
+
 	service, err := dao.NewService(a.daoRepo, a.daoIDService, pb)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
