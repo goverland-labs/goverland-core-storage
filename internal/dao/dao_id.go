@@ -45,7 +45,7 @@ func NewDaoIDService(repo *DaoIDRepo) *DaoIDService {
 
 func (s *DaoIDService) GetOrCreate(originID string) (uuid.UUID, error) {
 	daoID, err := s.repo.Upsert(originID)
-	if err == nil {
+	if err != nil {
 		return uuid.UUID{}, err
 	}
 

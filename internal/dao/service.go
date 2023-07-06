@@ -60,7 +60,6 @@ func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
 		return s.processNew(ctx, dao)
 	}
 
-	dao.ID = existed.ID
 	return s.processExisted(ctx, dao, *existed)
 }
 
