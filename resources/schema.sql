@@ -110,5 +110,11 @@ create table votes
     reason      text
 );
 
+create table dao_ids
+(
+    original_id text not null primary key,
+    internal_id text not null
+);
+
 create index idx_votes_proposal_id
     on votes (proposal_id);
