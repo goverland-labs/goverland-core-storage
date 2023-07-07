@@ -34,3 +34,11 @@ type CategoriesFilter struct {
 func (f CategoriesFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("daos.categories @> ?", fmt.Sprintf("\"%s\"", f.Category))
 }
+
+type TitleFilter struct {
+	Title string
+}
+
+func (f TitleFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("title like ?", fmt.Sprintf("%%%s%%", f.Title))
+}
