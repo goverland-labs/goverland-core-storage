@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Filtering proposals by title
+
 ## [0.0.11] - 2023-07-06
 
 ### Fixed

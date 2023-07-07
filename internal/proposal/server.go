@@ -72,6 +72,10 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 		filters = append(filters, DaoIDsFilter{DaoIDs: daos})
 	}
 
+	if req.GetTitle() != "" {
+		filters = append(filters, TitleFilter{Title: req.GetTitle()})
+	}
+
 	list, err := s.sp.GetByFilters(filters)
 	if err != nil {
 		log.Error().Err(err).Msgf("get proposals by filter: %+v", req)
