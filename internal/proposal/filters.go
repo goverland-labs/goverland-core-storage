@@ -42,3 +42,10 @@ type TitleFilter struct {
 func (f TitleFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("title like ?", fmt.Sprintf("%%%s%%", f.Title))
 }
+
+type OrderByVotesFilter struct {
+}
+
+func (f OrderByVotesFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Order("votes desc")
+}
