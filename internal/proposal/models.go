@@ -15,6 +15,7 @@ type Scores []float32
 type Strategy struct {
 	Name    string
 	Network string
+	Params  map[string]interface{}
 }
 
 type Strategies []Strategy
@@ -135,6 +136,7 @@ func convertToInternalStrategies(s []aggevents.StrategyPayload) Strategies {
 		res[i] = Strategy{
 			Name:    item.Name,
 			Network: item.Network,
+			Params:  item.Params,
 		}
 	}
 

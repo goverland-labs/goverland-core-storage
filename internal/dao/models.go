@@ -34,6 +34,7 @@ type Categories []string
 type Strategy struct {
 	Name    string
 	Network string
+	Params  map[string]interface{}
 }
 
 type Strategies []Strategy
@@ -108,6 +109,7 @@ type Dao struct {
 func convertToCoreEvent(dao Dao) events.DaoPayload {
 	return events.DaoPayload{
 		ID:             dao.ID.String(),
+		Alias:          dao.OriginalID,
 		Name:           dao.Name,
 		Private:        dao.Private,
 		About:          dao.About,
@@ -171,6 +173,7 @@ func convertToInternalStrategies(s []aggevents.StrategyPayload) Strategies {
 		res[i] = Strategy{
 			Name:    item.Name,
 			Network: item.Network,
+			Params:  item.Params,
 		}
 	}
 
