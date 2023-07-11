@@ -55,7 +55,7 @@ func TestUnitCompare(t *testing.T) {
 func TestUnitHandleDao(t *testing.T) {
 	idp := func(ctrl *gomock.Controller) DaoIDProvider {
 		m := NewMockDaoIDProvider(ctrl)
-		m.EXPECT().GetOrCreate(gomock.Any()).AnyTimes().Return(uuid.New(), nil)
+		m.EXPECT().GetOrCreate(gomock.Any()).AnyTimes().Return(id1, nil)
 		return m
 	}
 

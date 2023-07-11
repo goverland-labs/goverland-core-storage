@@ -1,7 +1,6 @@
 create table daos
 (
-    id              text not null
-        primary key,
+    id              text not null primary key,
     created_at      timestamp with time zone,
     updated_at      timestamp with time zone,
     original_id     text,
@@ -31,21 +30,13 @@ create table daos
     parent_id       text
 );
 
-alter table daos
-    add constraint daos_idx_unique_name
-        unique (name);
+alter table daos add constraint daos_idx_unique_original_id unique (original_id);
 
-alter table daos
-    add constraint daos_idx_unique_original_id
-        unique (original_id);
-
-CREATE INDEX idx_gin_dao_categories ON daos
-    USING gin (categories jsonb_path_ops);
+CREATE INDEX idx_gin_dao_categories ON daos USING gin (categories jsonb_path_ops);
 
 create table proposals
 (
-    id             text not null
-        primary key,
+    id             text not null primary key,
     created_at     timestamp with time zone,
     updated_at     timestamp with time zone,
     ipfs           text,
@@ -75,13 +66,11 @@ create table proposals
     votes          bigint
 );
 
-create index idx_proposal_dao_id
-    on proposals (dao_id);
+create index idx_proposal_dao_id on proposals (dao_id);
 
 create table registered_events
 (
-    id         bigserial
-        primary key,
+    id         bigserial primary key,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
@@ -90,17 +79,13 @@ create table registered_events
     type_id    text
 );
 
-create index idx_registered_events_deleted_at
-    on registered_events (deleted_at);
+create index idx_registered_events_deleted_at on registered_events (deleted_at);
 
-alter table registered_events
-    add constraint idx_unique_registered_events
-        unique (type, type_id, event);
+alter table registered_events add constraint idx_unique_registered_events unique (type, type_id, event);
 
 create table votes
 (
-    id          text not null
-        primary key,
+    id          text not null primary key,
     created_at  timestamp with time zone,
     updated_at  timestamp with time zone,
     proposal_id text,
@@ -116,5 +101,4 @@ create table dao_ids
     internal_id text not null
 );
 
-create index idx_votes_proposal_id
-    on votes (proposal_id);
+create index idx_votes_proposal_id on votes (proposal_id);
