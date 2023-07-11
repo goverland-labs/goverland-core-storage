@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.12] - 2023-07-11
+
 ### Fixed
 - Fixed tests for update dao if needed
 - Updated platform-events dependency to v0.0.11
