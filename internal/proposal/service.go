@@ -148,6 +148,8 @@ func (s *Service) registerEvent(ctx context.Context, p Proposal, group, subject 
 func compare(p1, p2 Proposal) bool {
 	p1.CreatedAt = p2.CreatedAt
 	p1.UpdatedAt = p2.UpdatedAt
+	p1.DaoID = p2.DaoID
+	p1.DaoOriginalID = p2.DaoOriginalID
 
 	return reflect.DeepEqual(p1, p2)
 }

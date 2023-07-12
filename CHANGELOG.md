@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed comparing proposals in consumer for updating
+
 ## [0.0.16] - 2023-07-12
 
 ### Fixed
