@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"github.com/google/uuid"
@@ -143,6 +144,7 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *proto.TopByCategor
 func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
 	return &proto.DaoInfo{
 		Id:             dao.ID.String(),
+		Alias:          dao.OriginalID,
 		CreatedAt:      timestamppb.New(dao.CreatedAt),
 		UpdatedAt:      timestamppb.New(dao.UpdatedAt),
 		Name:           dao.Name,
@@ -175,9 +177,12 @@ func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
 func convertStrategiesToAPI(data Strategies) []*proto.Strategy {
 	res := make([]*proto.Strategy, len(data))
 	for i, info := range data {
+		params, _ := json.Marshal(info.Params)
+
 		res[i] = &proto.Strategy{
 			Name:    info.Name,
 			Network: info.Network,
+			Params:  params,
 		}
 	}
 

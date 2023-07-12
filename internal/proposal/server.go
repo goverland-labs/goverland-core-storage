@@ -2,6 +2,7 @@ package proposal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 
@@ -134,9 +135,12 @@ func convertProposalToAPI(info *Proposal) *proto.ProposalInfo {
 func convertStrategiesToAPI(data Strategies) []*proto.Strategy {
 	res := make([]*proto.Strategy, len(data))
 	for i, info := range data {
+		params, _ := json.Marshal(info.Params)
+
 		res[i] = &proto.Strategy{
 			Name:    info.Name,
 			Network: info.Network,
+			Params:  params,
 		}
 	}
 
