@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.16] - 2023-07-12
+
 ### Fixed
 - Fixed missed fields in DAO and Strategy params
 - Updated core-api protocol version to v0.0.8
