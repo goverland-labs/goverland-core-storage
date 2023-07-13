@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	startVotingWindow = time.Hour
+	startVotingWindow = -time.Hour
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider
@@ -167,18 +167,17 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 		endedAt := time.Unix(int64(pr.End), 0)
 
 		// voting has started
-		// do not spam with voting started if proposal was created in our system after start voting
-		if pr.CreatedAt.Before(startsAt) && time.Now().After(startsAt) && time.Now().Before(endedAt) {
+		if time.Now().After(startsAt) && time.Now().Before(endedAt) {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingStarted)
 		}
 
 		// voting has ended
-		if pr.CreatedAt.Before(endedAt) && time.Now().After(endedAt) {
+		if time.Now().After(endedAt) {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingEnded)
 		}
 
-		// voting will starts soon
-		if time.Since(startsAt) < startVotingWindow {
+		// voting will start soon
+		if time.Since(startsAt) > startVotingWindow {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingStartsSoon)
 		}
 	}

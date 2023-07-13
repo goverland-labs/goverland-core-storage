@@ -33,6 +33,7 @@ create table daos
 alter table daos add constraint daos_idx_unique_original_id unique (original_id);
 
 CREATE INDEX idx_gin_dao_categories ON daos USING gin (categories jsonb_path_ops);
+CREATE INDEX idx_dao_name ON daos (lower(name) varchar_pattern_ops);
 
 create table proposals
 (

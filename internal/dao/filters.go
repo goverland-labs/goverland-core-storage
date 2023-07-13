@@ -24,7 +24,7 @@ type NameFilter struct {
 }
 
 func (f NameFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("name like ?", fmt.Sprintf("%%%s%%", f.Name))
+	return db.Where("lower(name) like ?", fmt.Sprintf("%s%%", f.Name))
 }
 
 type CategoryFilter struct {

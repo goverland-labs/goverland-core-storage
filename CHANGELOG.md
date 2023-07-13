@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed events for vote starts soon, vote started, vote ended 
+- Fixed filter DAOs by name
+
 ## [0.0.18] - 2023-07-12
 
 ### Fixed
