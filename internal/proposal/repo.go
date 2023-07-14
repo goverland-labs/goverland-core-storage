@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -46,6 +47,16 @@ func (r *Repo) GetAvailableForVoting(window time.Duration) ([]*Proposal, error) 
 	}
 
 	return items, nil
+}
+
+func (r *Repo) GetEarliestByDaoID(daoID uuid.UUID) (*Proposal, error) {
+	var pr *Proposal
+	err := r.db.Raw("select * from proposals p where p.dao_id = ? order by created asc limit 1", daoID).First(&pr).Error
+	if err != nil {
+		return nil, fmt.Errorf("find active: %w", err)
+	}
+
+	return pr, nil
 }
 
 type ProposalList struct {

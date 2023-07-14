@@ -104,6 +104,7 @@ type Dao struct {
 	Guidelines     string
 	Template       string
 	ParentID       *uuid.UUID
+	ActivitySince  int
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
@@ -134,6 +135,7 @@ func convertToCoreEvent(dao Dao) events.DaoPayload {
 		Guidelines:     dao.Guidelines,
 		Template:       dao.Template,
 		ParentID:       dao.ParentID,
+		ActiveSince:    &dao.ActivitySince,
 	}
 }
 

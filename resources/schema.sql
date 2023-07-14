@@ -27,10 +27,12 @@ create table daos
     proposals_count integer,
     guidelines      text,
     template        text,
-    parent_id       text
+    parent_id       text,
+    activity_since  bigint
 );
 
-alter table daos add constraint daos_idx_unique_original_id unique (original_id);
+alter table daos
+    add constraint daos_idx_unique_original_id unique (original_id);
 
 CREATE INDEX idx_gin_dao_categories ON daos USING gin (categories jsonb_path_ops);
 CREATE INDEX idx_dao_name ON daos (lower(name) varchar_pattern_ops);
@@ -82,7 +84,8 @@ create table registered_events
 
 create index idx_registered_events_deleted_at on registered_events (deleted_at);
 
-alter table registered_events add constraint idx_unique_registered_events unique (type, type_id, event);
+alter table registered_events
+    add constraint idx_unique_registered_events unique (type, type_id, event);
 
 create table votes
 (
