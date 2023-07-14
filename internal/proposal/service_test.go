@@ -232,7 +232,7 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 			er: func(ctrl *gomock.Controller) EventRegistered {
 				m := NewMockEventRegistered(ctrl)
 				m.EXPECT().EventExist(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
-				m.EXPECT().RegisterEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2).
+				m.EXPECT().RegisterEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).
 					DoAndReturn(func(_ context.Context, _, _, event string) error {
 						if coreevents.SubjectProposalVotingStarted != event {
 							ctrl.T.Errorf("wrong subject event: %s instead of %s", event, coreevents.SubjectProposalVotingStarted)
@@ -258,8 +258,8 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 			},
 			er: func(ctrl *gomock.Controller) EventRegistered {
 				m := NewMockEventRegistered(ctrl)
-				m.EXPECT().EventExist(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(false, nil)
-				m.EXPECT().RegisterEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2).
+				m.EXPECT().EventExist(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(false, nil)
+				m.EXPECT().RegisterEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).
 					DoAndReturn(func(_ context.Context, _, _, event string) error {
 						if coreevents.SubjectProposalVotingEnded != event {
 							ctrl.T.Errorf("wrong subject event: %s instead of %s", event, coreevents.SubjectProposalVotingEnded)
@@ -312,7 +312,7 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 			},
 			er: func(ctrl *gomock.Controller) EventRegistered {
 				m := NewMockEventRegistered(ctrl)
-				m.EXPECT().EventExist(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(true, nil)
+				m.EXPECT().EventExist(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(true, nil)
 				m.EXPECT().RegisterEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0).Return(nil)
 				return m
 			},

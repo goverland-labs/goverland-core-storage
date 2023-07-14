@@ -86,7 +86,7 @@ func (s *Service) processNew(ctx context.Context, p Proposal) error {
 
 	go s.registerEvent(ctx, p, groupName, coreevents.SubjectProposalCreated)
 	go func() {
-		if err = s.publisher.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, coreevents.DaoPayload{ID: daoID.String()}); err != nil {
+		if err = s.publisher.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, coreevents.DaoPayload{ID: daoID}); err != nil {
 			log.Error().Err(err).Msgf("publish dao event #%s", daoID.String())
 		}
 	}()
@@ -110,7 +110,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 	go s.registerEvent(ctx, new, groupName, coreevents.SubjectProposalUpdated)
 	go s.checkSpecificUpdate(ctx, new, existed)
 	go func() {
-		if err = s.publisher.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, coreevents.DaoPayload{ID: existed.DaoID.String()}); err != nil {
+		if err = s.publisher.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, coreevents.DaoPayload{ID: existed.DaoID}); err != nil {
 			log.Error().Err(err).Msgf("publish dao event #%s", existed.DaoID.String())
 		}
 	}()
