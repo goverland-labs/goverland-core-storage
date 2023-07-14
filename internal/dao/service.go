@@ -10,6 +10,8 @@ import (
 	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+
+	"github.com/goverland-labs/core-storage/internal/proposal"
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher,DaoIDProvider
@@ -30,17 +32,23 @@ type DaoIDProvider interface {
 	GetOrCreate(originID string) (uuid.UUID, error)
 }
 
+type ProposalProvider interface {
+	GetEarliestByDaoID(uuid.UUID) (*proposal.Proposal, error)
+}
+
 type Service struct {
 	repo       DataProvider
 	events     Publisher
 	idProvider DaoIDProvider
+	proposals  ProposalProvider
 }
 
-func NewService(r DataProvider, ip DaoIDProvider, p Publisher) (*Service, error) {
+func NewService(r DataProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider) (*Service, error) {
 	return &Service{
 		repo:       r,
 		events:     p,
 		idProvider: ip,
+		proposals:  pp,
 	}, nil
 }
 
@@ -72,6 +80,10 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 		if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoCreated, convertToCoreEvent(dao)); err != nil {
 			log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
 		}
+
+		if err := s.events.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, convertToCoreEvent(dao)); err != nil {
+			log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
+		}
 	}(dao)
 
 	return nil
@@ -84,6 +96,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	}
 
 	new.CreatedAt = existed.CreatedAt
+	new.ActivitySince = existed.ActivitySince
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
@@ -91,6 +104,10 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 
 	go func(dao Dao) {
 		if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoUpdated, convertToCoreEvent(dao)); err != nil {
+			log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
+		}
+
+		if err := s.events.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, convertToCoreEvent(dao)); err != nil {
 			log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
 		}
 	}(new)
@@ -101,6 +118,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 func compare(d1, d2 Dao) bool {
 	d1.CreatedAt = d2.CreatedAt
 	d1.UpdatedAt = d2.UpdatedAt
+	d1.ActivitySince = d2.ActivitySince
 
 	return reflect.DeepEqual(d1, d2)
 }
@@ -160,4 +178,38 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 	}
 
 	return list, nil
+}
+
+func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, error) {
+	dao, err := s.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("getting dao by id: %w", err)
+	}
+
+	pr, err := s.proposals.GetEarliestByDaoID(dao.ID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("get earliest proposal: %w", err)
+	}
+
+	if pr == nil {
+		return nil, nil
+	}
+
+	if dao.ActivitySince != 0 && pr.Created > dao.ActivitySince {
+		return nil, nil
+	}
+
+	if dao.ActivitySince == 0 {
+		dao.ActivitySince = pr.Created
+	}
+
+	if dao.ActivitySince > pr.Created {
+		dao.ActivitySince = pr.Created
+	}
+
+	return dao, s.repo.Update(*dao)
 }

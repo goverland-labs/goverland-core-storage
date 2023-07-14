@@ -74,7 +74,7 @@ func TestUnitHandleDao(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return m
 			},
 			event:    Dao{ID: id1},
@@ -89,7 +89,7 @@ func TestUnitHandleDao(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return m
 			},
 			event:    Dao{ID: id1, Name: "name"},
@@ -142,7 +142,7 @@ func TestUnitHandleDao(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(errors.New("unexpected error"))
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(errors.New("unexpected error"))
 				return m
 			},
 			event:    Dao{ID: id1},
@@ -170,7 +170,7 @@ func TestUnitHandleDao(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(errors.New("unexpected error"))
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(errors.New("unexpected error"))
 				return m
 			},
 			event:    Dao{ID: id1},
@@ -183,7 +183,7 @@ func TestUnitHandleDao(t *testing.T) {
 				<-time.After(10 * time.Millisecond)
 				ctrl.Finish()
 			}()
-			s, err := NewService(tc.dp(ctrl), idp(ctrl), tc.p(ctrl))
+			s, err := NewService(tc.dp(ctrl), idp(ctrl), tc.p(ctrl), nil)
 			require.Nil(t, err)
 
 			err = s.HandleDao(context.Background(), tc.event)

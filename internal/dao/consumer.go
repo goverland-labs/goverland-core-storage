@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	pevents "github.com/goverland-labs/platform-events/events/aggregator"
+	"github.com/goverland-labs/platform-events/events/core"
 	client "github.com/goverland-labs/platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
@@ -54,6 +56,38 @@ func (c *Consumer) handler() pevents.DaoHandler {
 	}
 }
 
+func (c *Consumer) activitySinceHandler() pevents.DaoHandler {
+	return func(payload pevents.DaoPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_activity_since", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		updated, err := c.service.HandleActivitySince(context.TODO(), uuid.MustParse(payload.ID))
+		if err != nil {
+			log.Error().Err(err).Msg("process dao activity since")
+
+			return err
+		}
+
+		if updated == nil {
+			return nil
+		}
+
+		go func(dao Dao) {
+			if err = c.service.events.PublishJSON(context.TODO(), core.SubjectDaoUpdated, convertToCoreEvent(dao)); err != nil {
+				log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
+			}
+		}(*updated)
+
+		log.Debug().Msgf("dao activity since was processed: %s", payload.ID)
+
+		return err
+	}
+}
+
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
 	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoCreated, c.handler())
@@ -64,8 +98,12 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectDaoUpdated, err)
 	}
+	cac, err := client.NewConsumer(ctx, c.conn, group, core.SubjectCheckActivitySince, c.activitySinceHandler())
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectCheckActivitySince, err)
+	}
 
-	c.consumers = append(c.consumers, cc, cu)
+	c.consumers = append(c.consumers, cc, cu, cac)
 
 	log.Info().Msg("dao consumers is started")
 
