@@ -69,6 +69,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (
 	}
 	filters := []Filter{
 		PageFilter{Limit: limit, Offset: offset},
+		OrderByFollowersFilter{},
 	}
 
 	if req.GetQuery() != "" {

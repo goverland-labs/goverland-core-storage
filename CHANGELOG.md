@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Sorting dao list by followers 
+- Sorting proposals list by voters
+
 ## [0.0.19] - 2023-07-13
 
 ### Fixed
