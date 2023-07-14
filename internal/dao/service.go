@@ -182,6 +182,10 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 
 func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, error) {
 	dao, err := s.GetByID(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn().Str("dao_id", id.String()).Msg("dao is not ready yet")
+		return nil, nil
+	}
 	if err != nil {
 		return nil, fmt.Errorf("getting dao by id: %w", err)
 	}

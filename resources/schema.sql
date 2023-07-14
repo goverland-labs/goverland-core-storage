@@ -1,6 +1,6 @@
 create table daos
 (
-    id              text not null primary key,
+    id              uuid not null primary key,
     created_at      timestamp with time zone,
     updated_at      timestamp with time zone,
     original_id     text,
@@ -27,7 +27,7 @@ create table daos
     proposals_count integer,
     guidelines      text,
     template        text,
-    parent_id       text,
+    parent_id       uuid,
     activity_since  bigint
 );
 
@@ -45,7 +45,7 @@ create table proposals
     ipfs           text,
     author         text,
     created        bigint,
-    dao_id         text,
+    dao_id         uuid,
     network        text,
     symbol         text,
     type           text,
@@ -102,7 +102,7 @@ create table votes
 create table dao_ids
 (
     original_id text not null primary key,
-    internal_id text not null
+    internal_id uuid not null
 );
 
 create index idx_votes_proposal_id on votes (proposal_id);
