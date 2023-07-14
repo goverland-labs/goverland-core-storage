@@ -74,7 +74,7 @@ func convertToCoreEvent(p Proposal) events.ProposalPayload {
 		Ipfs:          p.Ipfs,
 		Author:        p.Author,
 		Created:       p.Created,
-		DaoID:         p.DaoID.String(), // TODO: Think about this conversion
+		DaoID:         p.DaoID,
 		Network:       p.Network,
 		Symbol:        p.Symbol,
 		Type:          p.Type,

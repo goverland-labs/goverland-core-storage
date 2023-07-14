@@ -103,12 +103,12 @@ type Dao struct {
 	ProposalsCount int
 	Guidelines     string
 	Template       string
-	ParentID       string
+	ParentID       *uuid.UUID
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
 	return events.DaoPayload{
-		ID:             dao.ID.String(),
+		ID:             dao.ID,
 		Alias:          dao.OriginalID,
 		Name:           dao.Name,
 		Private:        dao.Private,
@@ -163,7 +163,8 @@ func convertToDao(e aggevents.DaoPayload) Dao {
 		ProposalsCount: e.ProposalsCount,
 		Guidelines:     e.Guidelines,
 		Template:       e.Template,
-		ParentID:       e.ParentID,
+
+		// TODO: parentID
 	}
 }
 

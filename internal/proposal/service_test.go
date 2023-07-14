@@ -304,7 +304,7 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 				m.EXPECT().GetAvailableForVoting(gomock.Any()).MaxTimes(1).Return([]*Proposal{
 					{
 						CreatedAt: time.Now().Add(-time.Hour * 24),
-						Start:     int(time.Now().Add(-time.Hour * 2).Unix()),
+						Start:     int(time.Now().Add(-time.Minute * 30).Unix()),
 						End:       int(time.Now().Add(time.Hour * 24).Unix()),
 					},
 				}, nil)

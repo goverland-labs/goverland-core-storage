@@ -171,7 +171,8 @@ func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
 		ProposalsCount: uint64(dao.ProposalsCount),
 		Guidelines:     dao.Guidelines,
 		Template:       dao.Template,
-		ParentId:       dao.ParentID,
+
+		// TODO: parentID
 	}
 }
 

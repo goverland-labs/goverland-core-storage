@@ -177,7 +177,7 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 		}
 
 		// voting will start soon
-		if time.Since(startsAt) > startVotingWindow {
+		if time.Since(startsAt) > startVotingWindow && startsAt.After(time.Now()) {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingStartsSoon)
 		}
 	}
