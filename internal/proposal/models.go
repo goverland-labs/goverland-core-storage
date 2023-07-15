@@ -26,6 +26,7 @@ func convertToStrategies(list Strategies) []events.StrategyPayload {
 		result[i] = events.StrategyPayload{
 			Name:    strategy.Name,
 			Network: strategy.Network,
+			Params:  strategy.Params,
 		}
 	}
 
