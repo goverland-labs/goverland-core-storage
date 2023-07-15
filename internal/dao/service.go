@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/google/uuid"
+	pevents "github.com/goverland-labs/platform-events/events/aggregator"
 	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -76,15 +77,17 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 		return fmt.Errorf("can't create dao: %w", err)
 	}
 
-	go func(dao Dao) {
-		if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoCreated, convertToCoreEvent(dao)); err != nil {
-			log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
-		}
+	if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoCreated, convertToCoreEvent(dao)); err != nil {
+		log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
+	}
 
-		if err := s.events.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, convertToCoreEvent(dao)); err != nil {
-			log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
-		}
-	}(dao)
+	if err := s.events.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, pevents.DaoPayload{ID: dao.OriginalID}); err != nil {
+		log.Error().Err(err).Msgf("publish dao event #%s", dao.OriginalID)
+	}
+
+	if err := s.events.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, convertToCoreEvent(dao)); err != nil {
+		log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
+	}
 
 	return nil
 }

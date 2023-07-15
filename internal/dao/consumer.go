@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	pevents "github.com/goverland-labs/platform-events/events/aggregator"
 	"github.com/goverland-labs/platform-events/events/core"
 	client "github.com/goverland-labs/platform-events/pkg/natsclient"
@@ -17,7 +16,8 @@ import (
 )
 
 const (
-	groupName = "dao"
+	groupName                = "dao"
+	maxPendingAckPerConsumer = 1000
 )
 
 type Consumer struct {
@@ -65,7 +65,14 @@ func (c *Consumer) activitySinceHandler() pevents.DaoHandler {
 				Observe(time.Since(start).Seconds())
 		}(time.Now())
 
-		updated, err := c.service.HandleActivitySince(context.TODO(), uuid.MustParse(payload.ID))
+		daoID, err := c.service.GetIDByOriginalID(payload.ID)
+		if err != nil {
+			log.Error().Err(err).Str("original_id", payload.ID).Msg("unable to get internal dao id by original")
+
+			return err
+		}
+
+		updated, err := c.service.HandleActivitySince(context.TODO(), daoID)
 		if err != nil {
 			log.Error().Err(err).Msg("process dao activity since")
 
@@ -76,11 +83,9 @@ func (c *Consumer) activitySinceHandler() pevents.DaoHandler {
 			return nil
 		}
 
-		go func(dao Dao) {
-			if err = c.service.events.PublishJSON(context.TODO(), core.SubjectDaoUpdated, convertToCoreEvent(dao)); err != nil {
-				log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
-			}
-		}(*updated)
+		if err = c.service.events.PublishJSON(context.TODO(), core.SubjectDaoUpdated, convertToCoreEvent(*updated)); err != nil {
+			log.Error().Err(err).Msgf("publish dao event #%s", updated.ID)
+		}
 
 		log.Debug().Msgf("dao activity since was processed: %s", payload.ID)
 
@@ -90,15 +95,15 @@ func (c *Consumer) activitySinceHandler() pevents.DaoHandler {
 
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
-	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoCreated, c.handler())
+	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoCreated, c.handler(), maxPendingAckPerConsumer)
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectDaoCreated, err)
 	}
-	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoUpdated, c.handler())
+	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoUpdated, c.handler(), maxPendingAckPerConsumer)
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectDaoUpdated, err)
 	}
-	cac, err := client.NewConsumer(ctx, c.conn, group, core.SubjectCheckActivitySince, c.activitySinceHandler())
+	cac, err := client.NewConsumer(ctx, c.conn, group, core.SubjectCheckActivitySince, c.activitySinceHandler(), maxPendingAckPerConsumer)
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectCheckActivitySince, err)
 	}

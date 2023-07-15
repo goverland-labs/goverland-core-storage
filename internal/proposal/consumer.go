@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	groupName = "proposal"
+	groupName                = "proposal"
+	maxPendingAckPerConsumer = 1000
 )
 
 type Consumer struct {
@@ -56,11 +57,11 @@ func (c *Consumer) handler() pevents.ProposalHandler {
 
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
-	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalCreated, c.handler())
+	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalCreated, c.handler(), maxPendingAckPerConsumer)
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalCreated, err)
 	}
-	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalUpdated, c.handler())
+	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalUpdated, c.handler(), maxPendingAckPerConsumer)
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
 	}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	pevents "github.com/goverland-labs/platform-events/events/aggregator"
 	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -84,12 +85,11 @@ func (s *Service) processNew(ctx context.Context, p Proposal) error {
 		return fmt.Errorf("create proposal: %w", err)
 	}
 
-	go s.registerEvent(ctx, p, groupName, coreevents.SubjectProposalCreated)
-	go func() {
-		if err = s.publisher.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, coreevents.DaoPayload{ID: daoID}); err != nil {
-			log.Error().Err(err).Msgf("publish dao event #%s", daoID.String())
-		}
-	}()
+	s.registerEvent(ctx, p, groupName, coreevents.SubjectProposalCreated)
+
+	if err = s.publisher.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, pevents.DaoPayload{ID: p.DaoOriginalID}); err != nil {
+		log.Error().Err(err).Msgf("publish dao event #%s", daoID.String())
+	}
 
 	return nil
 }
@@ -107,13 +107,8 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 		return fmt.Errorf("update proposal #%s: %w", new.ID, err)
 	}
 
-	go s.registerEvent(ctx, new, groupName, coreevents.SubjectProposalUpdated)
-	go s.checkSpecificUpdate(ctx, new, existed)
-	go func() {
-		if err = s.publisher.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, coreevents.DaoPayload{ID: existed.DaoID}); err != nil {
-			log.Error().Err(err).Msgf("publish dao event #%s", existed.DaoID.String())
-		}
-	}()
+	s.registerEvent(ctx, new, groupName, coreevents.SubjectProposalUpdated)
+	s.checkSpecificUpdate(ctx, new, existed)
 
 	return nil
 }

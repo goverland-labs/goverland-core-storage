@@ -3,6 +3,7 @@ package dao
 import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type DaoID struct {
@@ -24,10 +25,26 @@ func (r *DaoIDRepo) Upsert(id string) (*DaoID, error) {
 		InternalID: uuid.New(), // TODO: Check UUID collision
 	}
 
+	query := r.conn.
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "original_id"}},
+			DoNothing: true,
+		}).
+		Create(&daoID)
+
+	if query.Error != nil {
+		return nil, query.Error
+	}
+
+	if query.RowsAffected > 0 {
+		return &daoID, nil
+	}
+
 	err := r.conn.
 		Where(DaoID{OriginalID: id}).
-		FirstOrCreate(&daoID).
+		First(&daoID).
 		Error
+
 	if err != nil {
 		return nil, err
 	}

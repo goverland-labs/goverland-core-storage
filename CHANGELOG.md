@@ -7,6 +7,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Updated platform-events dependency to v0.0.20
+- Fixed handling dao activity since event for new dao
+- Fixed duplicate errors on getting an internal id for dao
+- Fixed payload from proposal handling for core.dao.check.activity_since event
+
+### Changed
+- Disabled not found errors in gorm logger
+
 ## [0.0.26] - 2023-07-15
 
 ### Fixed

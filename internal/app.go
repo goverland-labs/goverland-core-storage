@@ -2,14 +2,17 @@ package internal
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/goverland-labs/core-api/protobuf/internalapi"
 
@@ -90,7 +93,14 @@ func (a *Application) bootstrap() error {
 }
 
 func (a *Application) initDB() error {
-	db, err := gorm.Open(postgres.Open(a.cfg.DB.DSN), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(a.cfg.DB.DSN), &gorm.Config{
+		Logger: logger.New(log.New(os.Stdout, "\r\n", log.LstdFlags), logger.Config{
+			SlowThreshold:             200 * time.Millisecond,
+			LogLevel:                  logger.Warn,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  false,
+		}),
+	})
 	if err != nil {
 		return err
 	}
