@@ -19,17 +19,21 @@ const (
 	maxPendingAckPerConsumer = 1000
 )
 
+type closable interface {
+	Close() error
+}
+
 type Consumer struct {
 	conn      *nats.Conn
 	service   *Service
-	consumers []*client.Consumer
+	consumers []closable
 }
 
 func NewConsumer(nc *nats.Conn, s *Service) (*Consumer, error) {
 	c := &Consumer{
 		conn:      nc,
 		service:   s,
-		consumers: make([]*client.Consumer, 0),
+		consumers: make([]closable, 0),
 	}
 
 	return c, nil
@@ -57,11 +61,11 @@ func (c *Consumer) handler() pevents.ProposalHandler {
 
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
-	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalCreated, c.handler(), maxPendingAckPerConsumer)
+	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalCreated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalCreated, err)
 	}
-	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalUpdated, c.handler(), maxPendingAckPerConsumer)
+	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalUpdated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
 	}

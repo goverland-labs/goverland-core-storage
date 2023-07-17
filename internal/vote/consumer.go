@@ -18,17 +18,21 @@ const (
 	groupName = "vote"
 )
 
+type closable interface {
+	Close() error
+}
+
 type Consumer struct {
 	conn      *nats.Conn
 	service   *Service
-	consumers []*client.Consumer
+	consumers []closable
 }
 
 func NewConsumer(nc *nats.Conn, s *Service) (*Consumer, error) {
 	c := &Consumer{
 		conn:      nc,
 		service:   s,
-		consumers: make([]*client.Consumer, 0),
+		consumers: make([]closable, 0),
 	}
 
 	return c, nil
@@ -46,11 +50,13 @@ func (c *Consumer) handler() pevents.VotesHandler {
 		err = c.service.HandleVotes(context.TODO(), convertToInternal(payload))
 		if err != nil {
 			log.Error().Err(err).Msg("process votes")
+
+			return err
 		}
 
 		log.Debug().Msgf("vote was processed: %d", len(payload))
 
-		return err
+		return nil
 	}
 }
 
