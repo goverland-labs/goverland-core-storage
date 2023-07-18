@@ -89,14 +89,20 @@ alter table registered_events
 
 create table votes
 (
-    id          text not null primary key,
-    created_at  timestamp with time zone,
-    updated_at  timestamp with time zone,
-    proposal_id text,
-    ipfs        text,
-    voter       text,
-    created     bigint,
-    reason      text
+    id             text not null primary key,
+    created_at     timestamp with time zone,
+    updated_at     timestamp with time zone,
+    dao_id         uuid,
+    proposal_id    text,
+    ipfs           text,
+    voter          text,
+    created        bigint,
+    reason         text,
+    choice         int,
+    app            text,
+    vp             float,
+    vp_by_strategy jsonb,
+    vp_state       text
 );
 
 create table dao_ids

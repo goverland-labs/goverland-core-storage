@@ -63,12 +63,23 @@ func (s *Server) GetVotes(_ context.Context, req *proto.VotesFilterRequest) (*pr
 }
 
 func convertVoteToAPI(info *Vote) *proto.VoteInfo {
+	vpByStrategies := make([]float32, len(info.VpByStrategy))
+	for i := range info.VpByStrategy {
+		vpByStrategies[i] = float32(info.VpByStrategy[i])
+	}
+
 	return &proto.VoteInfo{
-		Id:         info.ID,
-		ProposalId: info.ProposalID,
-		Ipfs:       info.Ipfs,
-		Voter:      info.Voter,
-		Created:    uint64(info.Created),
-		Reason:     info.Reason,
+		Id:           info.ID,
+		Ipfs:         info.Ipfs,
+		Voter:        info.Voter,
+		Created:      uint64(info.Created),
+		DaoId:        info.DaoID.String(),
+		ProposalId:   info.ProposalID,
+		Choice:       uint64(info.Choice),
+		Reason:       info.Reason,
+		App:          info.App,
+		Vp:           float32(info.Vp),
+		VpByStrategy: vpByStrategies,
+		VpState:      info.VpState,
 	}
 }

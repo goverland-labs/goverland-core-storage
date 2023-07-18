@@ -20,17 +20,21 @@ const (
 	maxPendingAckPerConsumer = 1000
 )
 
+type closable interface {
+	Close() error
+}
+
 type Consumer struct {
 	conn      *nats.Conn
 	service   *Service
-	consumers []*client.Consumer
+	consumers []closable
 }
 
 func NewConsumer(nc *nats.Conn, s *Service) (*Consumer, error) {
 	c := &Consumer{
 		conn:      nc,
 		service:   s,
-		consumers: make([]*client.Consumer, 0),
+		consumers: make([]closable, 0),
 	}
 
 	return c, nil
@@ -95,15 +99,15 @@ func (c *Consumer) activitySinceHandler() pevents.DaoHandler {
 
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
-	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoCreated, c.handler(), maxPendingAckPerConsumer)
+	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoCreated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectDaoCreated, err)
 	}
-	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoUpdated, c.handler(), maxPendingAckPerConsumer)
+	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoUpdated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectDaoUpdated, err)
 	}
-	cac, err := client.NewConsumer(ctx, c.conn, group, core.SubjectCheckActivitySince, c.activitySinceHandler(), maxPendingAckPerConsumer)
+	cac, err := client.NewConsumer(ctx, c.conn, group, core.SubjectCheckActivitySince, c.activitySinceHandler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectCheckActivitySince, err)
 	}
