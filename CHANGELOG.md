@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Store proposal timeline to the database
+
 ## [0.0.29] - 2023-08-14
 
 ### Added

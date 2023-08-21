@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
+	coreevents "github.com/goverland-labs/platform-events/events/core"
 	events "github.com/goverland-labs/platform-events/events/core"
 )
 
@@ -67,6 +68,7 @@ type Proposal struct {
 	ScoresTotal   float32
 	ScoresUpdated int
 	Votes         int
+	Timeline      Timeline `gorm:"serializer:json"`
 }
 
 func convertToCoreEvent(p Proposal) events.ProposalPayload {
@@ -129,6 +131,22 @@ func convertToProposal(p aggevents.ProposalPayload) Proposal {
 		ScoresUpdated: p.ScoresUpdated,
 		Votes:         p.Votes,
 	}
+}
+
+func convertToTimeline(tl []coreevents.TimelineItem) Timeline {
+	if len(tl) == 0 {
+		return Timeline{}
+	}
+
+	res := make(Timeline, len(tl))
+	for i := range tl {
+		res[i] = TimelineItem{
+			CreatedAt: tl[i].CreatedAt,
+			Action:    TimelineAction(tl[i].Action),
+		}
+	}
+
+	return res
 }
 
 func convertToInternalStrategies(s []aggevents.StrategyPayload) Strategies {
