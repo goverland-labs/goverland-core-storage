@@ -130,6 +130,7 @@ func convertProposalToAPI(info *Proposal) *proto.ProposalInfo {
 		ScoresTotal:   info.ScoresTotal,
 		ScoresUpdated: uint64(info.ScoresUpdated),
 		Votes:         uint64(info.Votes),
+		Timeline:      convertTimelineToAPI(info.Timeline),
 	}
 }
 
@@ -146,4 +147,41 @@ func convertStrategiesToAPI(data Strategies) []*proto.Strategy {
 	}
 
 	return res
+}
+
+func convertTimelineToAPI(tl Timeline) []*proto.ProposalTimelineItem {
+	if len(tl) == 0 {
+		return nil
+	}
+
+	res := make([]*proto.ProposalTimelineItem, len(tl))
+	for i := range tl {
+		res[i] = &proto.ProposalTimelineItem{
+			CreatedAt: timestamppb.New(tl[i].CreatedAt),
+			Action:    convertTimelineActionToAPI(tl[i].Action),
+		}
+	}
+
+	return res
+}
+
+func convertTimelineActionToAPI(action TimelineAction) proto.ProposalTimelineItem_TimelineAction {
+	switch action {
+	case ProposalCreated:
+		return proto.ProposalTimelineItem_ProposalCreated
+	case ProposalUpdated:
+		return proto.ProposalTimelineItem_ProposalUpdated
+	case ProposalVotingStartsSoon:
+		return proto.ProposalTimelineItem_ProposalVotingStartsSoon
+	case ProposalVotingStarted:
+		return proto.ProposalTimelineItem_ProposalVotingStarted
+	case ProposalVotingQuorumReached:
+		return proto.ProposalTimelineItem_ProposalVotingQuorumReached
+	case ProposalVotingEnded:
+		return proto.ProposalTimelineItem_ProposalVotingEnded
+	case ProposalVotingEndsSoon:
+		return proto.ProposalTimelineItem_ProposalVotingEndsSoon
+	default:
+		return proto.ProposalTimelineItem_Unspecified
+	}
 }
