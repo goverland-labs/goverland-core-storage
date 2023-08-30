@@ -74,6 +74,21 @@ func (s *Service) HandleProposal(ctx context.Context, pro Proposal) error {
 	return s.processExisted(ctx, pro, *existed)
 }
 
+func (s *Service) HandleProposalTimeline(_ context.Context, id string, tl Timeline) error {
+	pr, err := s.repo.GetByID(id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("handle: %w", err)
+	}
+
+	pr.Timeline = tl.ActualizeTimeline()
+
+	if err := s.repo.Update(*pr); err != nil {
+		return fmt.Errorf("update timeline: %w", err)
+	}
+
+	return nil
+}
+
 func (s *Service) processNew(ctx context.Context, p Proposal) error {
 	daoID, err := s.dp.GetIDByOriginalID(p.DaoOriginalID)
 	if err != nil {

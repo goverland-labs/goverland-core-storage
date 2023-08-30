@@ -7,6 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.30] - 2023-08-23
+
+### Changed
+- Extend proposal grpc response with timeline field 
+
+### Added
+- Store proposal timeline to the database
+
 ## [0.0.29] - 2023-08-14
 
 ### Added
