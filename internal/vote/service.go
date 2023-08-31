@@ -3,10 +3,15 @@ package vote
 import (
 	"context"
 	"fmt"
+	coreevents "github.com/goverland-labs/platform-events/events/core"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
+
+type Publisher interface {
+	PublishJSON(ctx context.Context, subject string, obj any) error
+}
 
 type DataProvider interface {
 	BatchCreate(data []Vote) error
@@ -18,18 +23,20 @@ type DaoProvider interface {
 }
 
 type Service struct {
-	repo DataProvider
-	dao  DaoProvider
+	repo   DataProvider
+	dao    DaoProvider
+	events Publisher
 }
 
-func NewService(r DataProvider, dp DaoProvider) (*Service, error) {
+func NewService(r DataProvider, dp DaoProvider, p Publisher) (*Service, error) {
 	return &Service{
-		repo: r,
-		dao:  dp,
+		repo:   r,
+		dao:    dp,
+		events: p,
 	}, nil
 }
 
-func (s *Service) HandleVotes(_ context.Context, votes []Vote) error {
+func (s *Service) HandleVotes(ctx context.Context, votes []Vote) error {
 	list := make(map[string]uuid.UUID)
 	for i := range votes {
 		if daoID, ok := list[votes[i].OriginalDaoID]; ok {
@@ -48,7 +55,15 @@ func (s *Service) HandleVotes(_ context.Context, votes []Vote) error {
 		votes[i].DaoID = daoID
 	}
 
-	return s.repo.BatchCreate(votes)
+	if err := s.repo.BatchCreate(votes); err != nil {
+		return fmt.Errorf("can't create votes: %w", err)
+	}
+
+	if err := s.events.PublishJSON(ctx, coreevents.SubjectVoteCreated, convertToCoreEvent(votes)); err != nil {
+		log.Error().Err(err).Msgf("publish votes event")
+	}
+
+	return nil
 }
 
 func (s *Service) GetByFilters(filters []Filter) (List, error) {

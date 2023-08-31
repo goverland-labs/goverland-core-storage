@@ -151,7 +151,7 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init proposal: %w", err)
 	}
 
-	err = a.initVote(nc)
+	err = a.initVote(nc, pb)
 	if err != nil {
 		return fmt.Errorf("init vote: %w", err)
 	}
@@ -208,8 +208,8 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 	return nil
 }
 
-func (a *Application) initVote(nc *nats.Conn) error {
-	service, err := vote.NewService(a.voteRepo, a.daoService)
+func (a *Application) initVote(nc *nats.Conn, pb *communicate.Publisher) error {
+	service, err := vote.NewService(a.voteRepo, a.daoService, pb)
 	if err != nil {
 		return fmt.Errorf("vote service: %w", err)
 	}

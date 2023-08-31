@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	pevents "github.com/goverland-labs/platform-events/events/aggregator"
+	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
+	events "github.com/goverland-labs/platform-events/events/core"
 )
 
 type Vote struct {
@@ -25,7 +26,7 @@ type Vote struct {
 	VpState       string
 }
 
-func convertToInternal(pl pevents.VotesPayload) []Vote {
+func convertToInternal(pl aggevents.VotesPayload) []Vote {
 	res := make([]Vote, len(pl))
 	for i, item := range pl {
 		res[i] = Vote{
@@ -41,6 +42,28 @@ func convertToInternal(pl pevents.VotesPayload) []Vote {
 			Vp:            item.Vp,
 			VpByStrategy:  item.VpByStrategy,
 			VpState:       item.VpState,
+		}
+	}
+
+	return res
+}
+
+func convertToCoreEvent(votes []Vote) events.VotesPayload {
+	res := make([]events.VotePayload, len(votes))
+	for i, item := range votes {
+		res[i] = events.VotePayload{
+			ID:           item.ID,
+			Ipfs:         item.Ipfs,
+			DaoID:        item.DaoID,
+			ProposalID:   item.ProposalID,
+			Voter:        item.Voter,
+			Created:      item.Created,
+			Reason:       item.Reason,
+			Choice:       item.Choice,
+			App:          item.App,
+			Vp:           item.Vp,
+			VpByStrategy: item.VpByStrategy,
+			VpState:      item.VpState,
 		}
 	}
 
