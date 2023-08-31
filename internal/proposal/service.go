@@ -130,7 +130,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 }
 
 func (s *Service) checkSpecificUpdate(ctx context.Context, new, existed Proposal) {
-	if float64(new.ScoresTotal) >= new.Quorum {
+	if new.Quorum > 0 && float64(new.ScoresTotal) >= new.Quorum {
 		go s.registerEventOnce(ctx, new, groupName, coreevents.SubjectProposalVotingQuorumReached)
 	}
 

@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.32] - 2023-08-23
+
+### Changed
+- Actualize calculating quorum reached event 
+
 ## [0.0.30] - 2023-08-23
 
 ### Changed
