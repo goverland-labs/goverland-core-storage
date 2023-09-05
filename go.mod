@@ -7,8 +7,8 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
-	github.com/goverland-labs/core-api v0.0.14
-	github.com/goverland-labs/platform-events v0.1.6
+	github.com/goverland-labs/core-api v0.0.15-0.20230905123031-ddfb9eec71d1
+	github.com/goverland-labs/platform-events v0.1.7-0.20230905121026-79fa51ad52cf
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/nats-io/nats.go v1.25.0

@@ -1,6 +1,7 @@
 package vote
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,7 +20,7 @@ type Vote struct {
 	Voter         string
 	Created       int
 	Reason        string
-	Choice        int
+	Choice        json.RawMessage
 	App           string
 	Vp            float64
 	VpByStrategy  []float64 `gorm:"serializer:json"`
