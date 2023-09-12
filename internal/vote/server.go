@@ -3,6 +3,7 @@ package vote
 import (
 	"context"
 
+	protoany "github.com/golang/protobuf/ptypes/any"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -69,13 +70,15 @@ func convertVoteToAPI(info *Vote) *proto.VoteInfo {
 	}
 
 	return &proto.VoteInfo{
-		Id:           info.ID,
-		Ipfs:         info.Ipfs,
-		Voter:        info.Voter,
-		Created:      uint64(info.Created),
-		DaoId:        info.DaoID.String(),
-		ProposalId:   info.ProposalID,
-		Choice:       uint64(info.Choice),
+		Id:         info.ID,
+		Ipfs:       info.Ipfs,
+		Voter:      info.Voter,
+		Created:    uint64(info.Created),
+		DaoId:      info.DaoID.String(),
+		ProposalId: info.ProposalID,
+		Choice: &protoany.Any{
+			Value: info.Choice,
+		},
 		Reason:       info.Reason,
 		App:          info.App,
 		Vp:           float32(info.Vp),
