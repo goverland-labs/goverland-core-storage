@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/google/uuid"
 	pevents "github.com/goverland-labs/platform-events/events/aggregator"
@@ -16,6 +17,10 @@ import (
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher,DaoIDProvider
+
+const (
+	newDaoCategoryName = "new_daos"
+)
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error
@@ -219,4 +224,59 @@ func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, er
 	}
 
 	return dao, s.repo.Update(*dao)
+}
+
+// todo: add transaction here to avoid concurrent update
+func (s *Service) processNewCategory(_ context.Context) error {
+	list, err := s.repo.GetByFilters([]Filter{
+		NotCategoryFilter{Category: newDaoCategoryName},
+		ActivitySinceRangeFilter{From: time.Now().Add(-30 * 24 * time.Hour)},
+		PageFilter{Limit: 300},
+	}, false)
+	if err != nil {
+		return fmt.Errorf("get by filters: %w", err)
+	}
+
+	for i := range list.Daos {
+		dao := list.Daos[i]
+		dao.Categories = append(dao.Categories, newDaoCategoryName)
+
+		if err = s.repo.Update(dao); err != nil {
+			return fmt.Errorf("update dao: %s: %w", dao.ID.String(), err)
+		}
+	}
+
+	return nil
+}
+
+// todo: add transaction here to avoid concurrent update
+func (s *Service) processOutdatedNewCategory(_ context.Context) error {
+	list, err := s.repo.GetByFilters([]Filter{
+		CategoryFilter{Category: newDaoCategoryName},
+		ActivitySinceRangeFilter{To: time.Now().Add(-31 * 24 * time.Hour)},
+	}, false)
+	if err != nil {
+		return fmt.Errorf("get by filters: %w", err)
+	}
+
+	for i := range list.Daos {
+		dao := list.Daos[i]
+
+		dao.Categories = remove(dao.Categories, newDaoCategoryName)
+
+		if err = s.repo.Update(dao); err != nil {
+			return fmt.Errorf("update dao: %s: %w", dao.ID.String(), err)
+		}
+	}
+
+	return nil
+}
+
+func remove(s []string, r string) []string {
+	for i, v := range s {
+		if v == r {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
 }
