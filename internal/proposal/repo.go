@@ -66,32 +66,30 @@ type ProposalList struct {
 
 // todo: add order by
 func (r *Repo) GetByFilters(filters []Filter) (ProposalList, error) {
-	db := r.db
-	var tableIdentified bool
-	for _, f := range filters {
-		if _, ok := f.(TopProposalsTableModification); ok {
-			db = f.Apply(db)
-			tableIdentified = true
-			break
-		}
-	}
-
-	if !tableIdentified {
-		db = db.Model(&Proposal{})
-	}
-
-	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id")
-
+	db := r.db.Model(&Proposal{}).InnerJoins("inner join daos on daos.id = proposals.dao_id")
 	for _, f := range filters {
 		if _, ok := f.(PageFilter); ok {
-			continue
-		}
-		if _, ok := f.(TopProposalsTableModification); ok {
 			continue
 		}
 		db = f.Apply(db)
 	}
 
+	return getProposalList(db, filters)
+}
+
+func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
+	db := getTopProposalOfDaoTable(r.db)
+	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id").Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start)*(\"end\"-start) desc")
+	return getProposalList(db, filters)
+}
+
+func getTopProposalOfDaoTable(db *gorm.DB) *gorm.DB {
+	result := db.Raw("select distinct on(dao_id) * from proposals where state= 'active' " +
+		"order by dao_id, votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start)*(\"end\"-start) desc")
+	return db.Table("(?) as proposals", result)
+}
+
+func getProposalList(db *gorm.DB, filters []Filter) (ProposalList, error) {
 	var cnt int64
 	err := db.Count(&cnt).Error
 	if err != nil {

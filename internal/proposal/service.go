@@ -33,6 +33,7 @@ type DataProvider interface {
 	GetByID(string) (*Proposal, error)
 	GetAvailableForVoting(time.Duration) ([]*Proposal, error)
 	GetByFilters(filters []Filter) (ProposalList, error)
+	GetTop(filters []Filter) (ProposalList, error)
 }
 
 type DaoProvider interface {
@@ -226,6 +227,15 @@ func (s *Service) GetByFilters(filters []Filter) (ProposalList, error) {
 	list, err := s.repo.GetByFilters(filters)
 	if err != nil {
 		return ProposalList{}, fmt.Errorf("get by filters: %w", err)
+	}
+
+	return list, nil
+}
+
+func (s *Service) GetTop(filters []Filter) (ProposalList, error) {
+	list, err := s.repo.GetTop(filters)
+	if err != nil {
+		return ProposalList{}, fmt.Errorf("get top: %w", err)
 	}
 
 	return list, nil

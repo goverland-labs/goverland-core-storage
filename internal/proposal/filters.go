@@ -49,19 +49,3 @@ type OrderByVotesFilter struct {
 func (f OrderByVotesFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("votes desc")
 }
-
-type TopProposalsTableModification struct {
-}
-
-func (f TopProposalsTableModification) Apply(db *gorm.DB) *gorm.DB {
-	result := db.Raw("select distinct on(dao_id) * from proposals where state= 'active' " +
-		"order by dao_id, votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start)*(\"end\"-start) desc")
-	return db.Table("(?) as proposals", result)
-}
-
-type OrderByVotesCoefFilter struct {
-}
-
-func (f OrderByVotesCoefFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start)*(\"end\"-start) desc")
-}
