@@ -64,26 +64,29 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 		PageFilter{Limit: limit, Offset: offset},
 	}
 
+	var list ProposalList
+	var err error
+
 	if req.GetTop() {
-		filters = append(filters, TopProposalsTableModification{}, OrderByVotesCoefFilter{})
+		list, err = s.sp.GetTop(filters)
 	} else {
 		filters = append(filters, OrderByVotesFilter{})
-	}
 
-	if req.GetCategory() != "" {
-		filters = append(filters, CategoriesFilter{Category: req.GetCategory()})
-	}
+		if req.GetCategory() != "" {
+			filters = append(filters, CategoriesFilter{Category: req.GetCategory()})
+		}
 
-	if req.GetDao() != "" {
-		daos := strings.Split(req.GetDao(), ",")
-		filters = append(filters, DaoIDsFilter{DaoIDs: daos})
-	}
+		if req.GetDao() != "" {
+			daos := strings.Split(req.GetDao(), ",")
+			filters = append(filters, DaoIDsFilter{DaoIDs: daos})
+		}
 
-	if req.GetTitle() != "" {
-		filters = append(filters, TitleFilter{Title: req.GetTitle()})
-	}
+		if req.GetTitle() != "" {
+			filters = append(filters, TitleFilter{Title: req.GetTitle()})
+		}
 
-	list, err := s.sp.GetByFilters(filters)
+		list, err = s.sp.GetByFilters(filters)
+	}
 	if err != nil {
 		log.Error().Err(err).Msgf("get proposals by filter: %+v", req)
 		return nil, status.Error(codes.Internal, "internal error")
