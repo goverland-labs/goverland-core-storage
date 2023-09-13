@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.34] - 2023-09-13
+
+### Changed
+- Logic to select top proposals
+
 ## [0.0.33] - 2023-09-12
 
 ### Changed

@@ -62,7 +62,12 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 	}
 	filters := []Filter{
 		PageFilter{Limit: limit, Offset: offset},
-		OrderByVotesFilter{},
+	}
+
+	if req.GetTop() {
+		filters = append(filters, TopProposalsTableModification{}, OrderByVotesCoefFilter{})
+	} else {
+		filters = append(filters, OrderByVotesFilter{})
 	}
 
 	if req.GetCategory() != "" {
@@ -76,10 +81,6 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 
 	if req.GetTitle() != "" {
 		filters = append(filters, TitleFilter{Title: req.GetTitle()})
-	}
-
-	if req.GetOrder() == "votes" {
-		filters = append(filters, OrderByVotesFilter{})
 	}
 
 	list, err := s.sp.GetByFilters(filters)

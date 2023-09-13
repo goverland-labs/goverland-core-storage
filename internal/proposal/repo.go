@@ -66,9 +66,27 @@ type ProposalList struct {
 
 // todo: add order by
 func (r *Repo) GetByFilters(filters []Filter) (ProposalList, error) {
-	db := r.db.Model(&Proposal{}).InnerJoins("inner join daos on daos.id = proposals.dao_id")
+	db := r.db
+	var tableIdentified bool
+	for _, f := range filters {
+		if _, ok := f.(TopProposalsTableModification); ok {
+			db = f.Apply(db)
+			tableIdentified = true
+			break
+		}
+	}
+
+	if !tableIdentified {
+		db = db.Model(&Proposal{})
+	}
+
+	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id")
+
 	for _, f := range filters {
 		if _, ok := f.(PageFilter); ok {
+			continue
+		}
+		if _, ok := f.(TopProposalsTableModification); ok {
 			continue
 		}
 		db = f.Apply(db)
