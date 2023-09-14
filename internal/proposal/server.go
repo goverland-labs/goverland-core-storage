@@ -62,27 +62,31 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 	}
 	filters := []Filter{
 		PageFilter{Limit: limit, Offset: offset},
-		OrderByVotesFilter{},
 	}
 
-	if req.GetCategory() != "" {
-		filters = append(filters, CategoriesFilter{Category: req.GetCategory()})
-	}
+	var list ProposalList
+	var err error
 
-	if req.GetDao() != "" {
-		daos := strings.Split(req.GetDao(), ",")
-		filters = append(filters, DaoIDsFilter{DaoIDs: daos})
-	}
-
-	if req.GetTitle() != "" {
-		filters = append(filters, TitleFilter{Title: req.GetTitle()})
-	}
-
-	if req.GetOrder() == "votes" {
+	if req.GetTop() {
+		list, err = s.sp.GetTop(filters)
+	} else {
 		filters = append(filters, OrderByVotesFilter{})
-	}
 
-	list, err := s.sp.GetByFilters(filters)
+		if req.GetCategory() != "" {
+			filters = append(filters, CategoriesFilter{Category: req.GetCategory()})
+		}
+
+		if req.GetDao() != "" {
+			daos := strings.Split(req.GetDao(), ",")
+			filters = append(filters, DaoIDsFilter{DaoIDs: daos})
+		}
+
+		if req.GetTitle() != "" {
+			filters = append(filters, TitleFilter{Title: req.GetTitle()})
+		}
+
+		list, err = s.sp.GetByFilters(filters)
+	}
 	if err != nil {
 		log.Error().Err(err).Msgf("get proposals by filter: %+v", req)
 		return nil, status.Error(codes.Internal, "internal error")
