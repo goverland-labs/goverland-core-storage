@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -35,6 +36,14 @@ func (f CategoryFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("categories @> ?", fmt.Sprintf("\"%s\"", f.Category))
 }
 
+type NotCategoryFilter struct {
+	Category string
+}
+
+func (f NotCategoryFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("not (categories @> ?)", fmt.Sprintf("\"%s\"", f.Category))
+}
+
 type OrderByFollowersFilter struct {
 }
 
@@ -48,4 +57,21 @@ type DaoIDsFilter struct {
 
 func (f DaoIDsFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("id IN ?", f.DaoIDs)
+}
+
+type ActivitySinceRangeFilter struct {
+	From time.Time
+	To   time.Time
+}
+
+func (f ActivitySinceRangeFilter) Apply(db *gorm.DB) *gorm.DB {
+	if !f.To.IsZero() {
+		db = db.Where("activity_since <= ?", f.To.Unix())
+	}
+
+	if !f.From.IsZero() {
+		db = db.Where("activity_since >= ?", f.From.Unix())
+	}
+
+	return db
 }
