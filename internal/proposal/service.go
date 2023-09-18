@@ -18,7 +18,7 @@ import (
 
 const (
 	startVotingWindow = -time.Hour
-	endVotingWindow   = -time.Hour
+	endVotingWindow   = -6 * time.Hour
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider

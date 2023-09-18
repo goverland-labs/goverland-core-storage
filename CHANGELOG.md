@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.36] - 2023-09-18
+
+### Changed
+- Increase voting finish window from 1 hour to 6 hours
+
 ## [0.0.35] - 2023-09-18
 
 ### Added
