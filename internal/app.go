@@ -172,6 +172,9 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 		return fmt.Errorf("dao service: %w", err)
 	}
 	a.daoService = service
+	if err = service.PrefillDaoIDs(); err != nil {
+		return fmt.Errorf("PrefillDaoIDs: %w", err)
+	}
 
 	cs, err := dao.NewConsumer(nc, service)
 	if err != nil {
