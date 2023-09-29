@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	defaultBatchSize = 100
+	defaultBatchSize = 1000
 )
 
 type Repo struct {
