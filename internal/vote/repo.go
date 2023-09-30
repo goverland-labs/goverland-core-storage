@@ -20,7 +20,7 @@ func NewRepo(db *gorm.DB) *Repo {
 // BatchCreate creates votes in batch
 func (r *Repo) BatchCreate(data []Vote) error {
 	return r.db.Model(&Vote{}).Clauses(clause.OnConflict{
-		UpdateAll: true,
+		DoNothing: true,
 	}).CreateInBatches(data, defaultBatchSize).Error
 }
 
