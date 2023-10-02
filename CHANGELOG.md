@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.37] - 2023-10-02
+
 ### Added
 - Caching dao ids provider
 
