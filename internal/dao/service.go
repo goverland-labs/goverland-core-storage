@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,6 +37,7 @@ type DataProvider interface {
 
 type DaoIDProvider interface {
 	GetOrCreate(originID string) (uuid.UUID, error)
+	GetAll() ([]DaoID, error)
 }
 
 type ProposalProvider interface {
@@ -43,6 +45,9 @@ type ProposalProvider interface {
 }
 
 type Service struct {
+	daoIds map[string]uuid.UUID
+	daoMu  sync.RWMutex
+
 	repo       DataProvider
 	events     Publisher
 	idProvider DaoIDProvider
@@ -55,7 +60,26 @@ func NewService(r DataProvider, ip DaoIDProvider, p Publisher, pp ProposalProvid
 		events:     p,
 		idProvider: ip,
 		proposals:  pp,
+		daoIds:     make(map[string]uuid.UUID),
+		daoMu:      sync.RWMutex{},
 	}, nil
+}
+
+func (s *Service) PrefillDaoIDs() error {
+	list, err := s.idProvider.GetAll()
+	if err != nil {
+		return err
+	}
+
+	s.daoMu.Lock()
+	s.daoIds = make(map[string]uuid.UUID)
+	for i := range list {
+		item := list[i]
+		s.daoIds[item.OriginalID] = item.InternalID
+	}
+	s.daoMu.Unlock()
+
+	return nil
 }
 
 func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
@@ -140,9 +164,24 @@ func (s *Service) GetByID(id uuid.UUID) (*Dao, error) {
 	return dao, nil
 }
 
-// todo: add caching
 func (s *Service) GetIDByOriginalID(id string) (uuid.UUID, error) {
-	return s.idProvider.GetOrCreate(id)
+	s.daoMu.RLock()
+	val, ok := s.daoIds[id]
+	s.daoMu.RUnlock()
+	if ok {
+		return val, nil
+	}
+
+	val, err := s.idProvider.GetOrCreate(id)
+	if err != nil {
+		return val, fmt.Errorf("get or create: %w", err)
+	}
+
+	s.daoMu.Lock()
+	s.daoIds[id] = val
+	s.daoMu.Unlock()
+
+	return val, nil
 }
 
 func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {
