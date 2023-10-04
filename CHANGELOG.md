@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- The count's calculation for top proposals
+
 ## [0.0.34] - 2023-09-13
 
 ### Changed
