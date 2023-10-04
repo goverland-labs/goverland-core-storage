@@ -10,6 +10,21 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - The count's calculation for top proposals
 
+## [0.0.37] - 2023-10-02
+
+### Added
+- Caching dao ids provider
+
+## [0.0.36] - 2023-09-18
+
+### Changed
+- Increase voting finish window from 1 hour to 6 hours
+
+## [0.0.35] - 2023-09-18
+
+### Added
+- Calculating logic for "new_daos" category
+
 ## [0.0.34] - 2023-09-13
 
 ### Changed

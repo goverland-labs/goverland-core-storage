@@ -52,6 +52,18 @@ func (r *DaoIDRepo) Upsert(id string) (*DaoID, error) {
 	return &daoID, err
 }
 
+func (r *DaoIDRepo) GetAll() ([]DaoID, error) {
+	var res []DaoID
+
+	result := r.conn.Find(&res)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return res, nil
+}
+
 type DaoIDService struct {
 	repo *DaoIDRepo
 }
@@ -67,4 +79,13 @@ func (s *DaoIDService) GetOrCreate(originID string) (uuid.UUID, error) {
 	}
 
 	return daoID.InternalID, nil
+}
+
+func (s *DaoIDService) GetAll() ([]DaoID, error) {
+	res, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

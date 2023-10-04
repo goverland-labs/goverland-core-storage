@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	pevents "github.com/goverland-labs/platform-events/events/aggregator"
@@ -16,6 +18,10 @@ import (
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher,DaoIDProvider
+
+const (
+	newDaoCategoryName = "new_daos"
+)
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error
@@ -31,6 +37,7 @@ type DataProvider interface {
 
 type DaoIDProvider interface {
 	GetOrCreate(originID string) (uuid.UUID, error)
+	GetAll() ([]DaoID, error)
 }
 
 type ProposalProvider interface {
@@ -38,6 +45,9 @@ type ProposalProvider interface {
 }
 
 type Service struct {
+	daoIds map[string]uuid.UUID
+	daoMu  sync.RWMutex
+
 	repo       DataProvider
 	events     Publisher
 	idProvider DaoIDProvider
@@ -50,7 +60,26 @@ func NewService(r DataProvider, ip DaoIDProvider, p Publisher, pp ProposalProvid
 		events:     p,
 		idProvider: ip,
 		proposals:  pp,
+		daoIds:     make(map[string]uuid.UUID),
+		daoMu:      sync.RWMutex{},
 	}, nil
+}
+
+func (s *Service) PrefillDaoIDs() error {
+	list, err := s.idProvider.GetAll()
+	if err != nil {
+		return err
+	}
+
+	s.daoMu.Lock()
+	s.daoIds = make(map[string]uuid.UUID)
+	for i := range list {
+		item := list[i]
+		s.daoIds[item.OriginalID] = item.InternalID
+	}
+	s.daoMu.Unlock()
+
+	return nil
 }
 
 func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
@@ -135,9 +164,24 @@ func (s *Service) GetByID(id uuid.UUID) (*Dao, error) {
 	return dao, nil
 }
 
-// todo: add caching
 func (s *Service) GetIDByOriginalID(id string) (uuid.UUID, error) {
-	return s.idProvider.GetOrCreate(id)
+	s.daoMu.RLock()
+	val, ok := s.daoIds[id]
+	s.daoMu.RUnlock()
+	if ok {
+		return val, nil
+	}
+
+	val, err := s.idProvider.GetOrCreate(id)
+	if err != nil {
+		return val, fmt.Errorf("get or create: %w", err)
+	}
+
+	s.daoMu.Lock()
+	s.daoIds[id] = val
+	s.daoMu.Unlock()
+
+	return val, nil
 }
 
 func (s *Service) GetByFilters(filters []Filter) (DaoList, error) {
@@ -219,4 +263,59 @@ func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, er
 	}
 
 	return dao, s.repo.Update(*dao)
+}
+
+// todo: add transaction here to avoid concurrent update
+func (s *Service) processNewCategory(_ context.Context) error {
+	list, err := s.repo.GetByFilters([]Filter{
+		NotCategoryFilter{Category: newDaoCategoryName},
+		ActivitySinceRangeFilter{From: time.Now().Add(-30 * 24 * time.Hour)},
+		PageFilter{Limit: 300},
+	}, false)
+	if err != nil {
+		return fmt.Errorf("get by filters: %w", err)
+	}
+
+	for i := range list.Daos {
+		dao := list.Daos[i]
+		dao.Categories = append(dao.Categories, newDaoCategoryName)
+
+		if err = s.repo.Update(dao); err != nil {
+			return fmt.Errorf("update dao: %s: %w", dao.ID.String(), err)
+		}
+	}
+
+	return nil
+}
+
+// todo: add transaction here to avoid concurrent update
+func (s *Service) processOutdatedNewCategory(_ context.Context) error {
+	list, err := s.repo.GetByFilters([]Filter{
+		CategoryFilter{Category: newDaoCategoryName},
+		ActivitySinceRangeFilter{To: time.Now().Add(-31 * 24 * time.Hour)},
+	}, false)
+	if err != nil {
+		return fmt.Errorf("get by filters: %w", err)
+	}
+
+	for i := range list.Daos {
+		dao := list.Daos[i]
+
+		dao.Categories = remove(dao.Categories, newDaoCategoryName)
+
+		if err = s.repo.Update(dao); err != nil {
+			return fmt.Errorf("update dao: %s: %w", dao.ID.String(), err)
+		}
+	}
+
+	return nil
+}
+
+func remove(s []string, r string) []string {
+	for i, v := range s {
+		if v == r {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
 }
