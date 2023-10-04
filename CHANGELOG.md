@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+= Dao members calculation
+
 ### Changed
 - Top proposals calculation
 

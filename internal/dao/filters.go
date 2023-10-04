@@ -51,6 +51,13 @@ func (f OrderByFollowersFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("followers_count desc")
 }
 
+type OrderByMembersFilter struct {
+}
+
+func (f OrderByMembersFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Order("members_count desc")
+}
+
 type DaoIDsFilter struct {
 	DaoIDs []string
 }

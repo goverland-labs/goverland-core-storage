@@ -183,7 +183,7 @@ func TestUnitHandleDao(t *testing.T) {
 				<-time.After(10 * time.Millisecond)
 				ctrl.Finish()
 			}()
-			s, err := NewService(tc.dp(ctrl), idp(ctrl), tc.p(ctrl), nil)
+			s, err := NewService(tc.dp(ctrl), nil, idp(ctrl), tc.p(ctrl), nil)
 			require.Nil(t, err)
 
 			err = s.HandleDao(context.Background(), tc.event)
