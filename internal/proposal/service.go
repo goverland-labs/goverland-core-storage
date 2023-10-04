@@ -8,10 +8,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	pevents "github.com/goverland-labs/platform-events/events/aggregator"
-	coreevents "github.com/goverland-labs/platform-events/events/core"
+	"github.com/muesli/cache2go"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+
+	pevents "github.com/goverland-labs/platform-events/events/aggregator"
+	coreevents "github.com/goverland-labs/platform-events/events/core"
 
 	"github.com/goverland-labs/core-storage/internal/metrics"
 )
@@ -51,14 +53,22 @@ type Service struct {
 	publisher Publisher
 	er        EventRegistered
 	dp        DaoProvider
+
+	cache *cache2go.CacheTable
 }
 
-func NewService(r DataProvider, p Publisher, er EventRegistered, dp DaoProvider) (*Service, error) {
+func NewService(
+	r DataProvider,
+	p Publisher,
+	er EventRegistered,
+	dp DaoProvider,
+) (*Service, error) {
 	return &Service{
 		repo:      r,
 		publisher: p,
 		er:        er,
 		dp:        dp,
+		cache:     cache2go.Cache("proposals"),
 	}, nil
 }
 
@@ -233,10 +243,17 @@ func (s *Service) GetByFilters(filters []Filter) (ProposalList, error) {
 }
 
 func (s *Service) GetTop(filters []Filter) (ProposalList, error) {
+	cached, err := s.cache.Value("proposals_top")
+	if err == nil {
+		return cached.Data().(ProposalList), nil
+	}
+
 	list, err := s.repo.GetTop(filters)
 	if err != nil {
 		return ProposalList{}, fmt.Errorf("get top: %w", err)
 	}
+
+	s.cache.Add("proposals_top", time.Hour, list)
 
 	return list, nil
 }

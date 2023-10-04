@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Caching proposal top results
+
 ### Changed
 - The count's calculation for top proposals
 
