@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.39] - 2023-10-04
+
+### Fixed
+- Caching proposal top key
+
 ## [0.0.38] - 2023-10-04
 
 ### Added

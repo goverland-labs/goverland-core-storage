@@ -243,7 +243,8 @@ func (s *Service) GetByFilters(filters []Filter) (ProposalList, error) {
 }
 
 func (s *Service) GetTop(filters []Filter) (ProposalList, error) {
-	cached, err := s.cache.Value("proposals_top")
+	key := fmt.Sprintf("proposals_top_%v", filters)
+	cached, err := s.cache.Value(key)
 	if err == nil {
 		return cached.Data().(ProposalList), nil
 	}
@@ -253,7 +254,7 @@ func (s *Service) GetTop(filters []Filter) (ProposalList, error) {
 		return ProposalList{}, fmt.Errorf("get top: %w", err)
 	}
 
-	s.cache.Add("proposals_top", time.Hour, list)
+	s.cache.Add(key, time.Hour, list)
 
 	return list, nil
 }
