@@ -74,13 +74,26 @@ func (r *Repo) GetByFilters(filters []Filter) (ProposalList, error) {
 		db = f.Apply(db)
 	}
 
-	return getProposalList(db, filters)
+	var cnt int64
+	err := db.Count(&cnt).Error
+	if err != nil {
+		return ProposalList{}, err
+	}
+
+	return getProposalList(db, filters, cnt)
 }
 
 func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
-	db := getTopProposalOfDaoTable(r.db)
+	var db = r.db.Model(&Proposal{}).InnerJoins("inner join daos on daos.id = proposals.dao_id")
+	var cnt int64
+	err := db.Count(&cnt).Error
+	if err != nil {
+		return ProposalList{}, err
+	}
+
+	db = getTopProposalOfDaoTable(r.db)
 	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id").Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start)*(\"end\"-start) desc")
-	return getProposalList(db, filters)
+	return getProposalList(db, filters, cnt)
 }
 
 func getTopProposalOfDaoTable(db *gorm.DB) *gorm.DB {
@@ -89,13 +102,7 @@ func getTopProposalOfDaoTable(db *gorm.DB) *gorm.DB {
 	return db.Table("(?) as proposals", result)
 }
 
-func getProposalList(db *gorm.DB, filters []Filter) (ProposalList, error) {
-	var cnt int64
-	err := db.Count(&cnt).Error
-	if err != nil {
-		return ProposalList{}, err
-	}
-
+func getProposalList(db *gorm.DB, filters []Filter, cnt int64) (ProposalList, error) {
 	for _, f := range filters {
 		if _, ok := f.(PageFilter); ok {
 			db = f.Apply(db)
@@ -103,7 +110,7 @@ func getProposalList(db *gorm.DB, filters []Filter) (ProposalList, error) {
 	}
 
 	var list []Proposal
-	err = db.Find(&list).Error
+	err := db.Find(&list).Error
 	if err != nil {
 		return ProposalList{}, err
 	}
