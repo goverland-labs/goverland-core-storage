@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
@@ -12,6 +12,7 @@ require (
 	github.com/goverland-labs/platform-events v0.1.7
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021
 	github.com/nats-io/nats.go v1.25.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rs/zerolog v1.29.0

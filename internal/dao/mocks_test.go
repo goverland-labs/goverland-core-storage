@@ -168,6 +168,21 @@ func (m *MockDaoIDProvider) EXPECT() *MockDaoIDProviderMockRecorder {
 	return m.recorder
 }
 
+// GetAll mocks base method.
+func (m *MockDaoIDProvider) GetAll() ([]DaoID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAll")
+	ret0, _ := ret[0].([]DaoID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAll indicates an expected call of GetAll.
+func (mr *MockDaoIDProviderMockRecorder) GetAll() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockDaoIDProvider)(nil).GetAll))
+}
+
 // GetOrCreate mocks base method.
 func (m *MockDaoIDProvider) GetOrCreate(arg0 string) (uuid.UUID, error) {
 	m.ctrl.T.Helper()

@@ -91,7 +91,7 @@ func TestUnitHandleProposal(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			event:    Proposal{ID: "id-1", Title: "name", Quorum: 50},
@@ -172,7 +172,7 @@ func TestUnitHandleProposal(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(errors.New("unexpected error"))
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(errors.New("unexpected error"))
 				return m
 			},
 			event:    Proposal{ID: "id-1", Quorum: 50},

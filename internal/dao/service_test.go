@@ -74,7 +74,7 @@ func TestUnitHandleDao(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(3).Return(nil)
 				return m
 			},
 			event:    Dao{ID: id1},
@@ -142,7 +142,7 @@ func TestUnitHandleDao(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(errors.New("unexpected error"))
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(3).Return(errors.New("unexpected error"))
 				return m
 			},
 			event:    Dao{ID: id1},
