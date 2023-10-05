@@ -92,13 +92,13 @@ func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
 	}
 
 	db = getTopProposalOfDaoTable(r.db)
-	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id").Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start)*(\"end\"-start) desc")
+	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id").Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
 	return getProposalList(db, filters, cnt)
 }
 
 func getTopProposalOfDaoTable(db *gorm.DB) *gorm.DB {
-	result := db.Raw("select distinct on(dao_id) * from proposals where state= 'active' " +
-		"order by dao_id, votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start)*(\"end\"-start) desc")
+	result := db.Raw("select distinct on(dao_id) * from proposals where state = 'active' and votes >= 10 " +
+		"order by dao_id, votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
 	return db.Table("(?) as proposals", result)
 }
 
