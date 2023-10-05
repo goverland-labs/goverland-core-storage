@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Top proposals calculation
+- Speed up getting votes
 
 ## [0.0.39] - 2023-10-04
 

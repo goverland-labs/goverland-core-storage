@@ -11,7 +11,7 @@ alter table dao_voter
         unique (dao_id, voter);
 
 alter table daos
-    add members_count integer;
+    add members_count integer default 0;
 
 insert into dao_voter (dao_id, created_at, updated_at, voter)
 select dao_id, now(), now(), voter
