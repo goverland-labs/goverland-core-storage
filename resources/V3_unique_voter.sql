@@ -14,9 +14,10 @@ alter table daos
     add members_count integer default 0;
 
 insert into dao_voter (dao_id, created_at, updated_at, voter)
-select dao_id, now(), now(), voter
-from votes
-group by dao_id, voter;
+    (select dao_id, now(), now(), voter
+     from votes
+     group by dao_id, voter)
+on conflict DO NOTHING;
 
 update daos
 set members_count = cnt.members_count
