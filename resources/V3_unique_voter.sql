@@ -11,7 +11,7 @@ alter table dao_voter
         unique (dao_id, voter);
 
 alter table daos
-    add members_count integer default 0;
+    add voters_count integer default 0;
 
 insert into dao_voter (dao_id, created_at, updated_at, voter)
     (select dao_id, now(), now(), voter
@@ -20,8 +20,8 @@ insert into dao_voter (dao_id, created_at, updated_at, voter)
 on conflict DO NOTHING;
 
 update daos
-set members_count = cnt.members_count
-from (select dao_id, count(*) as members_count
+set voters_count = cnt.voters_count
+from (select dao_id, count(*) as voters_count
       from dao_voter
       group by dao_id) cnt
 where daos.id = cnt.dao_id;

@@ -8,20 +8,20 @@ import (
 )
 
 const (
-	uniqueMembersCountCheckDelay = time.Hour
+	uniqueVotersCountCheckDelay = time.Hour
 )
 
-type MembersCountWorker struct {
+type VotersCountWorker struct {
 	service *Service
 }
 
-func NewMembersCountWorker(s *Service) *MembersCountWorker {
-	return &MembersCountWorker{
+func NewVotersCountWorker(s *Service) *VotersCountWorker {
+	return &VotersCountWorker{
 		service: s,
 	}
 }
 
-func (w *MembersCountWorker) ProcessNew(ctx context.Context) error {
+func (w *VotersCountWorker) ProcessNew(ctx context.Context) error {
 	for {
 		err := w.service.processNewVoters(ctx)
 		if err != nil {
@@ -31,7 +31,7 @@ func (w *MembersCountWorker) ProcessNew(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(uniqueMembersCountCheckDelay):
+		case <-time.After(uniqueVotersCountCheckDelay):
 		}
 	}
 }

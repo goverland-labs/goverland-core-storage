@@ -33,12 +33,12 @@ func (r *UniqueVoterRepo) BatchCreate(data []UniqueVoter) error {
 	}).CreateInBatches(data, defaultBatchSize).Error
 }
 
-func (r *UniqueVoterRepo) UpdateMembersCount() error {
+func (r *UniqueVoterRepo) UpdateVotersCount() error {
 	return r.db.Exec(`
 update daos
-set members_count = cnt.members_count
+set voters_count = cnt.voters_count
 from (
-	select dao_id, count(*) as members_count
+	select dao_id, count(*) as voters_count
 	from dao_voter
 	group by dao_id
 ) cnt

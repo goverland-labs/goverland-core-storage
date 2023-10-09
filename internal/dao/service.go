@@ -42,7 +42,7 @@ type DaoIDProvider interface {
 
 type UniqueVoterProvider interface {
 	BatchCreate([]UniqueVoter) error
-	UpdateMembersCount() error
+	UpdateVotersCount() error
 }
 
 type ProposalProvider interface {
@@ -217,7 +217,7 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 		filters := []Filter{
 			CategoryFilter{Category: category},
 			PageFilter{Limit: limit, Offset: 0},
-			OrderByMembersFilter{},
+			OrderByVotersFilter{},
 		}
 
 		data, err := s.repo.GetByFilters(filters, true)
@@ -337,9 +337,9 @@ func (s *Service) ProcessUniqueVoters(_ context.Context, voters []UniqueVoter) e
 }
 
 func (s *Service) processNewVoters(_ context.Context) error {
-	err := s.uniqueRepo.UpdateMembersCount()
+	err := s.uniqueRepo.UpdateVotersCount()
 	if err != nil {
-		return fmt.Errorf("updateMembersCount: %w", err)
+		return fmt.Errorf("UpdateVotersCount: %w", err)
 	}
 
 	return nil
