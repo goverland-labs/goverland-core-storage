@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Decrease max pending count consumers
+
 ### Changed
 - Actualize DB schema
 
