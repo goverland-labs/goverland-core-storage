@@ -147,18 +147,17 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectCheckActivitySince, err)
 	}
-	// todo: activate after analytics issues
-	//vc, err := client.NewConsumer(ctx, c.conn, group, coreevents.SubjectVoteCreated, c.uniqueVoters(), client.WithMaxAckPending(maxPendingAckPerConsumer))
-	//if err != nil {
-	//	return fmt.Errorf("consume for %s/%s: %w", group, coreevents.SubjectVoteCreated, err)
-	//}
+	vc, err := client.NewConsumer(ctx, c.conn, group, coreevents.SubjectVoteCreated, c.uniqueVoters(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, coreevents.SubjectVoteCreated, err)
+	}
 
 	c.consumers = append(
 		c.consumers,
 		cc,
 		cu,
 		cac,
-		//vc
+		vc,
 	)
 
 	log.Info().Msg("dao consumers is started")
