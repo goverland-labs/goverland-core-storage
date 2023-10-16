@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	groupName = "vote"
+	groupName                = "vote"
+	maxPendingAckPerConsumer = 10
 )
 
 type closable interface {
@@ -62,7 +63,7 @@ func (c *Consumer) handler() pevents.VotesHandler {
 
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
-	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectVoteCreated, c.handler())
+	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectVoteCreated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectVoteCreated, err)
 	}

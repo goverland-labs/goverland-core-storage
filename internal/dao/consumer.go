@@ -19,7 +19,7 @@ import (
 
 const (
 	groupName                = "dao"
-	maxPendingAckPerConsumer = 1000
+	maxPendingAckPerConsumer = 10
 )
 
 type closable interface {
