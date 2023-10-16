@@ -19,6 +19,10 @@ type UniqueVoter struct {
 	UpdatedAt time.Time
 }
 
+func (UniqueVoter) TableName() string {
+	return "dao_voter"
+}
+
 type UniqueVoterRepo struct {
 	db *gorm.DB
 }

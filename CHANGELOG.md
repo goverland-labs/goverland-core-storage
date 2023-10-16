@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.41] - 2023-10-16
+
+### Fixed
+- Dao voters table name
+
 ## [0.0.40] - 2023-10-16
 
 ### Added
