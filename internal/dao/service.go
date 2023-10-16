@@ -40,6 +40,11 @@ type DaoIDProvider interface {
 	GetAll() ([]DaoID, error)
 }
 
+type UniqueVoterProvider interface {
+	BatchCreate([]UniqueVoter) error
+	UpdateVotersCount() error
+}
+
 type ProposalProvider interface {
 	GetEarliestByDaoID(uuid.UUID) (*proposal.Proposal, error)
 }
@@ -49,14 +54,16 @@ type Service struct {
 	daoMu  sync.RWMutex
 
 	repo       DataProvider
+	uniqueRepo UniqueVoterProvider
 	events     Publisher
 	idProvider DaoIDProvider
 	proposals  ProposalProvider
 }
 
-func NewService(r DataProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider) (*Service, error) {
+func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider) (*Service, error) {
 	return &Service{
 		repo:       r,
+		uniqueRepo: ur,
 		events:     p,
 		idProvider: ip,
 		proposals:  pp,
@@ -210,7 +217,7 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 		filters := []Filter{
 			CategoryFilter{Category: category},
 			PageFilter{Limit: limit, Offset: 0},
-			OrderByFollowersFilter{},
+			OrderByVotersFilter{},
 		}
 
 		data, err := s.repo.GetByFilters(filters, true)
@@ -318,4 +325,22 @@ func remove(s []string, r string) []string {
 		}
 	}
 	return s
+}
+
+func (s *Service) ProcessUniqueVoters(_ context.Context, voters []UniqueVoter) error {
+	err := s.uniqueRepo.BatchCreate(voters)
+	if err != nil {
+		return fmt.Errorf("batchCreate: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) processNewVoters(_ context.Context) error {
+	err := s.uniqueRepo.UpdateVotersCount()
+	if err != nil {
+		return fmt.Errorf("UpdateVotersCount: %w", err)
+	}
+
+	return nil
 }

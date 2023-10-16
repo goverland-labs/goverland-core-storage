@@ -69,7 +69,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (
 	}
 	filters := []Filter{
 		PageFilter{Limit: limit, Offset: offset},
-		OrderByFollowersFilter{},
+		OrderByVotersFilter{},
 	}
 
 	if req.GetQuery() != "" {
@@ -167,11 +167,12 @@ func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
 		Voting:         convertVotingToAPI(dao.Voting),
 		Categories:     dao.Categories,
 		Treasuries:     convertTreasuriesToAPI(dao.Treasures),
-		FollowersCount: uint64(dao.FollowersCount),
+		FollowersCount: uint64(dao.VotersCount),
 		ProposalsCount: uint64(dao.ProposalsCount),
 		Guidelines:     dao.Guidelines,
 		Template:       dao.Template,
 		ActivitySince:  uint64(dao.ActivitySince),
+		VotersCount:    uint64(dao.VotersCount),
 
 		// TODO: parentID
 	}

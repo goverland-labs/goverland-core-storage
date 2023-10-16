@@ -39,8 +39,9 @@ type Application struct {
 	daoIDRepo    *dao.DaoIDRepo
 	daoIDService *dao.DaoIDService
 
-	daoRepo    *dao.Repo
-	daoService *dao.Service
+	daoRepo       *dao.Repo
+	daoUniqueRepo *dao.UniqueVoterRepo
+	daoService    *dao.Service
 
 	voteRepo    *vote.Repo
 	voteService *vote.Service
@@ -117,6 +118,7 @@ func (a *Application) initDB() error {
 	}
 
 	a.daoRepo = dao.NewRepo(a.db)
+	a.daoUniqueRepo = dao.NewUniqueVoterRepo(a.db)
 	a.daoIDRepo = dao.NewDaoIDRepo(a.db)
 	a.proposalRepo = proposal.NewRepo(a.db)
 	a.voteRepo = vote.NewRepo(a.db)
@@ -167,7 +169,7 @@ func (a *Application) initServices() error {
 func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 	a.daoIDService = dao.NewDaoIDService(a.daoIDRepo)
 
-	service, err := dao.NewService(a.daoRepo, a.daoIDService, pb, a.proposalRepo)
+	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
@@ -184,8 +186,10 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
 
 	cw := dao.NewNewCategoryWorker(service)
+	mc := dao.NewVotersCountWorker(service)
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-process-worker", cw.ProcessNew))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-outdated-worker", cw.RemoveOutdated))
+	a.manager.AddWorker(process.NewCallbackWorker("dao-new-voters-worker", mc.ProcessNew))
 
 	return nil
 }

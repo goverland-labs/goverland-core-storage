@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	pevents "github.com/goverland-labs/platform-events/events/aggregator"
-	"github.com/goverland-labs/platform-events/events/core"
-	client "github.com/goverland-labs/platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
+
+	pevents "github.com/goverland-labs/platform-events/events/aggregator"
+	"github.com/goverland-labs/platform-events/events/core"
+	coreevents "github.com/goverland-labs/platform-events/events/core"
+	client "github.com/goverland-labs/platform-events/pkg/natsclient"
 
 	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/metrics"
@@ -97,6 +99,40 @@ func (c *Consumer) activitySinceHandler() pevents.DaoHandler {
 	}
 }
 
+func (c *Consumer) uniqueVoters() coreevents.VotesHandler {
+	return func(payload coreevents.VotesPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_unique_voters", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		err = c.service.ProcessUniqueVoters(context.TODO(), convertVoteToInternal(payload))
+		if err != nil {
+			log.Error().Err(err).Msg("process dao unique voters")
+
+			return err
+		}
+
+		log.Debug().Msg("dao unique voters was processed")
+
+		return err
+	}
+}
+
+func convertVoteToInternal(pl coreevents.VotesPayload) []UniqueVoter {
+	res := make([]UniqueVoter, len(pl))
+	for i := range pl {
+		res[i] = UniqueVoter{
+			DaoID: pl[i].DaoID,
+			Voter: pl[i].Voter,
+		}
+	}
+
+	return res
+}
+
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
 	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoCreated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
@@ -111,8 +147,18 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectCheckActivitySince, err)
 	}
+	vc, err := client.NewConsumer(ctx, c.conn, group, coreevents.SubjectVoteCreated, c.uniqueVoters(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, coreevents.SubjectVoteCreated, err)
+	}
 
-	c.consumers = append(c.consumers, cc, cu, cac)
+	c.consumers = append(
+		c.consumers,
+		cc,
+		cu,
+		cac,
+		vc,
+	)
 
 	log.Info().Msg("dao consumers is started")
 

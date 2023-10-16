@@ -105,6 +105,7 @@ type Dao struct {
 	Template       string
 	ParentID       *uuid.UUID
 	ActivitySince  int
+	VotersCount    int
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
