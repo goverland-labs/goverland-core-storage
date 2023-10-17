@@ -126,7 +126,7 @@ func convertProposalToAPI(info *Proposal) *proto.ProposalInfo {
 		Quorum:        float32(info.Quorum),
 		Privacy:       info.Privacy,
 		Snapshot:      info.Snapshot,
-		State:         info.State,
+		State:         string(info.State),
 		Link:          info.Link,
 		App:           info.App,
 		Scores:        info.Scores,
