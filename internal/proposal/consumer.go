@@ -49,12 +49,12 @@ func (c *Consumer) handler() pevents.ProposalHandler {
 				Observe(time.Since(start).Seconds())
 		}(time.Now())
 
-		err = c.service.HandleDeleted(context.TODO(), convertToProposal(payload))
+		err = c.service.HandleProposal(context.TODO(), convertToProposal(payload))
 		if err != nil {
-			log.Error().Err(err).Msg("process deleted proposal")
+			log.Error().Err(err).Msg("process proposal")
 		}
 
-		log.Debug().Msgf("deleted proposal was processed: %s", payload.ID)
+		log.Debug().Msgf("proposal was processed: %s", payload.ID)
 
 		return err
 	}
@@ -69,12 +69,12 @@ func (c *Consumer) handleDeleted() pevents.ProposalHandler {
 				Observe(time.Since(start).Seconds())
 		}(time.Now())
 
-		err = c.service.HandleProposal(context.TODO(), convertToProposal(payload))
+		err = c.service.HandleDeleted(context.TODO(), convertToProposal(payload))
 		if err != nil {
-			log.Error().Err(err).Msg("process proposal")
+			log.Error().Err(err).Msg("process deleted proposal")
 		}
 
-		log.Debug().Msgf("proposal was processed: %s", payload.ID)
+		log.Debug().Msgf("deleted proposal was processed: %s", payload.ID)
 
 		return err
 	}
