@@ -102,3 +102,16 @@ func (r *Repo) GetCategories() ([]string, error) {
 
 	return res, err
 }
+
+func (r *Repo) UpdateProposalCnt(id uuid.UUID) error {
+	return r.db.Exec(`
+update daos
+set proposals_count = cnt.proposals_count
+from (
+	select count(*) as proposals_count
+	from proposals
+	where dao_id = ?
+) cnt
+where daos.id = ?
+`, id, id).Error
+}

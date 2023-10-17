@@ -121,6 +121,28 @@ func (c *Consumer) uniqueVoters() coreevents.VotesHandler {
 	}
 }
 
+func (c *Consumer) handleProposalCreated() pevents.ProposalHandler {
+	return func(payload pevents.ProposalPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_proposal_created", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		err = c.service.ProcessNewProposal(context.TODO(), payload.DaoID)
+		if err != nil {
+			log.Error().Err(err).Msg("process dao proposal created")
+
+			return err
+		}
+
+		log.Debug().Msg("dao proposal created was processed")
+
+		return err
+	}
+}
+
 func convertVoteToInternal(pl coreevents.VotesPayload) []UniqueVoter {
 	res := make([]UniqueVoter, len(pl))
 	for i := range pl {
@@ -151,6 +173,10 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, coreevents.SubjectVoteCreated, err)
 	}
+	pc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalCreated, c.handleProposalCreated(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalCreated, err)
+	}
 
 	c.consumers = append(
 		c.consumers,
@@ -158,6 +184,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 		cu,
 		cac,
 		vc,
+		pc,
 	)
 
 	log.Info().Msg("dao consumers is started")
