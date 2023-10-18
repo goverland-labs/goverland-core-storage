@@ -31,6 +31,7 @@ type DataProvider interface {
 	Create(dao Dao) error
 	Update(dao Dao) error
 	GetByID(id uuid.UUID) (*Dao, error)
+	UpdateProposalCnt(id uuid.UUID) error
 	GetByFilters(filters []Filter, count bool) (DaoList, error)
 	GetCategories() ([]string, error)
 }
@@ -340,6 +341,19 @@ func (s *Service) processNewVoters(_ context.Context) error {
 	err := s.uniqueRepo.UpdateVotersCount()
 	if err != nil {
 		return fmt.Errorf("UpdateVotersCount: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) ProcessNewProposal(_ context.Context, originalDaoID string) error {
+	daoID, err := s.idProvider.GetOrCreate(originalDaoID)
+	if err != nil {
+		return fmt.Errorf("idProvider.GetOrCreate: %w", err)
+	}
+
+	if err = s.repo.UpdateProposalCnt(daoID); err != nil {
+		return fmt.Errorf("UpdateProposalCnt: %w", err)
 	}
 
 	return nil

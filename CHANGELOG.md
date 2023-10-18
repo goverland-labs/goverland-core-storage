@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Proposal count calculation
+
 ## [0.0.42] - 2023-10-16
 
 ### Fixed
