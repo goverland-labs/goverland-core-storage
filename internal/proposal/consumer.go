@@ -60,6 +60,26 @@ func (c *Consumer) handler() pevents.ProposalHandler {
 	}
 }
 
+func (c *Consumer) handleDeleted() pevents.ProposalHandler {
+	return func(payload pevents.ProposalPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_deleted_proposal", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		err = c.service.HandleDeleted(context.TODO(), convertToProposal(payload))
+		if err != nil {
+			log.Error().Err(err).Msg("process deleted proposal")
+		}
+
+		log.Debug().Msgf("deleted proposal was processed: %s", payload.ID)
+
+		return err
+	}
+}
+
 func (c *Consumer) handlerTimeline() coreevents.TimelineHandler {
 	return func(payload coreevents.TimelinePayload) error {
 		var err error
@@ -95,12 +115,16 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
 	}
+	cd, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalDeleted, c.handleDeleted(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
+	}
 	ct, err := client.NewConsumer(ctx, c.conn, group, coreevents.SubjectTimelineUpdate, c.handlerTimeline(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
 	}
 
-	c.consumers = append(c.consumers, cc, cu, ct)
+	c.consumers = append(c.consumers, cc, cu, cd, ct)
 
 	log.Info().Msg("proposal consumers is started")
 

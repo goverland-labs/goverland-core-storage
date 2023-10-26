@@ -85,6 +85,26 @@ func (s *Service) HandleProposal(ctx context.Context, pro Proposal) error {
 	return s.processExisted(ctx, pro, *existed)
 }
 
+func (s *Service) HandleDeleted(_ context.Context, pro Proposal) error {
+	existed, err := s.repo.GetByID(pro.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("handle: %w", err)
+	}
+
+	if existed == nil {
+		return nil
+	}
+
+	existed.OriginalState = pro.OriginalState
+	existed.State = StateCancelled
+
+	if err = s.repo.Update(*existed); err != nil {
+		return fmt.Errorf("update: %w", err)
+	}
+
+	return nil
+}
+
 func (s *Service) HandleProposalTimeline(_ context.Context, id string, tl Timeline) error {
 	pr, err := s.repo.GetByID(id)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -107,6 +127,7 @@ func (s *Service) processNew(ctx context.Context, p Proposal) error {
 	}
 
 	p.DaoID = daoID
+	p.State = p.CalculateState()
 	err = s.repo.Create(p)
 	if err != nil {
 		return fmt.Errorf("create proposal: %w", err)
@@ -129,6 +150,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 
 	new.DaoID = existed.DaoID
 	new.CreatedAt = existed.CreatedAt
+	new.State = new.CalculateState()
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update proposal #%s: %w", new.ID, err)
@@ -141,7 +163,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 }
 
 func (s *Service) checkSpecificUpdate(ctx context.Context, new, existed Proposal) {
-	if new.Quorum > 0 && float64(new.ScoresTotal) >= new.Quorum {
+	if new.QuorumReached() {
 		go s.registerEventOnce(ctx, new, groupName, coreevents.SubjectProposalVotingQuorumReached)
 	}
 
@@ -182,6 +204,7 @@ func compare(p1, p2 Proposal) bool {
 	p1.UpdatedAt = p2.UpdatedAt
 	p1.DaoID = p2.DaoID
 	p1.DaoOriginalID = p2.DaoOriginalID
+	p1.State = p2.State
 
 	return reflect.DeepEqual(p1, p2)
 }
@@ -189,7 +212,7 @@ func compare(p1, p2 Proposal) bool {
 // todo: parallel it
 // todo: think how to move rules to the separate logic and apply all of them to the proposals
 func (s *Service) processAvailableForVoting(ctx context.Context) error {
-	active, err := s.repo.GetAvailableForVoting(time.Hour)
+	active, err := s.repo.GetAvailableForVoting(12 * time.Hour)
 	if err != nil {
 		return fmt.Errorf("get available for voting: %w", err)
 	}
@@ -218,6 +241,16 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 			startsAt.Before(time.Now()) &&
 			endsAt.After(time.Now()) {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingEndsSoon)
+		}
+
+		state := pr.CalculateState()
+		if state != pr.State {
+			pr.State = state
+			if err = s.repo.Update(*pr); err != nil {
+				return fmt.Errorf("update proposal #%s: %w", pr.ID, err)
+			}
+
+			s.registerEvent(ctx, *pr, groupName, coreevents.SubjectProposalUpdated)
 		}
 	}
 

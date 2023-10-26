@@ -9,6 +9,17 @@ import (
 	events "github.com/goverland-labs/platform-events/events/core"
 )
 
+const (
+	StatePending   = "pending"
+	StateActive    = "active"
+	StateCancelled = "canceled"
+	StateFailed    = "failed"
+	StateSucceeded = "succeeded"
+	StateDefeated  = "defeated"
+)
+
+type State string
+
 type Choices []string
 
 type Scores []float32
@@ -60,7 +71,8 @@ type Proposal struct {
 	Quorum        float64
 	Privacy       string
 	Snapshot      string
-	State         string
+	State         State
+	OriginalState string
 	Link          string
 	App           string
 	Scores        Scores `gorm:"serializer:json"`
@@ -91,7 +103,7 @@ func convertToCoreEvent(p Proposal) events.ProposalPayload {
 		Quorum:        p.Quorum,
 		Privacy:       p.Privacy,
 		Snapshot:      p.Snapshot,
-		State:         p.State,
+		State:         string(p.State), // todo: replace state in core as enum
 		Link:          p.Link,
 		App:           p.App,
 		Scores:        p.Scores,
@@ -122,7 +134,7 @@ func convertToProposal(p aggevents.ProposalPayload) Proposal {
 		Quorum:        p.Quorum,
 		Privacy:       p.Privacy,
 		Snapshot:      p.Snapshot,
-		State:         p.State,
+		OriginalState: p.State,
 		Link:          p.Link,
 		App:           p.App,
 		Scores:        p.Scores,
@@ -160,4 +172,81 @@ func convertToInternalStrategies(s []aggevents.StrategyPayload) Strategies {
 	}
 
 	return res
+}
+
+func (p *Proposal) CalculateState() State {
+	if p.Deleted() {
+		return StateCancelled
+	}
+
+	if p.Pending() {
+		return StatePending
+	}
+
+	if p.InProgress() {
+		return StateActive
+	}
+
+	if p.Votes == 0 ||
+		(p.QuorumSpecified() && !p.QuorumReached()) {
+		return StateFailed
+	}
+
+	if p.IsVotedAgainst() {
+		return StateDefeated
+	}
+
+	return StateSucceeded
+}
+
+func (p *Proposal) InProgress() bool {
+	startsAt := time.Unix(int64(p.Start), 0)
+	endsAt := time.Unix(int64(p.End), 0)
+
+	return time.Now().After(startsAt) && time.Now().Before(endsAt)
+}
+
+func (p *Proposal) Pending() bool {
+	startsAt := time.Unix(int64(p.Start), 0)
+
+	return startsAt.After(time.Now())
+}
+
+func (p *Proposal) Deleted() bool {
+	return p.State == StateCancelled
+}
+
+func (p *Proposal) QuorumSpecified() bool {
+	return p.Quorum > 0
+}
+
+func (p *Proposal) QuorumReached() bool {
+	if p.Quorum == 0 {
+		return false
+	}
+
+	return float64(p.ScoresTotal) >= p.Quorum
+}
+
+func (p *Proposal) IsBasic() bool {
+	return p.Type == "basic"
+}
+
+func (p *Proposal) IsVotedAgainst() bool {
+	if !p.IsBasic() {
+		return false
+	}
+
+	// invalid data, should collect votes for
+	// 0 - For
+	// 1 - Against
+	// 2 - Abstain
+	if len(p.Scores) != 3 {
+		return false
+	}
+
+	forVotes := p.Scores[0]
+	againstVotes := p.Scores[1]
+
+	return againstVotes > forVotes
 }
