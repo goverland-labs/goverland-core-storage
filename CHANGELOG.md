@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.44] - 2023-10-26
+
+### Added
+- Proposal state calculation
+
 ## [0.0.43] - 2023-10-18
 
 ### Added
