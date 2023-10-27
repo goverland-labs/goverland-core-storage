@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.45] - 2023-10-27
+
 ### Changed
 - Prepare proposal top background caching
 
