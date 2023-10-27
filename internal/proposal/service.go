@@ -275,19 +275,56 @@ func (s *Service) GetByFilters(filters []Filter) (ProposalList, error) {
 	return list, nil
 }
 
-func (s *Service) GetTop(filters []Filter) (ProposalList, error) {
-	key := fmt.Sprintf("proposals_top_%v", filters)
-	cached, err := s.cache.Value(key)
-	if err == nil {
-		return cached.Data().(ProposalList), nil
-	}
-
-	list, err := s.repo.GetTop(filters)
+func (s *Service) GetTop(limit, offset int) (ProposalList, error) {
+	cached, err := s.cache.Value("proposals_top")
 	if err != nil {
-		return ProposalList{}, fmt.Errorf("get top: %w", err)
+		log.Error().Err(err).Msg("get cached data")
+
+		return ProposalList{}, nil
 	}
 
-	s.cache.Add(key, time.Hour, list)
+	if cached == nil {
+		return ProposalList{}, nil
+	}
 
-	return list, nil
+	pd, ok := cached.Data().(ProposalList)
+	if !ok {
+		log.Error().Err(err).Msg("convert to proposal list")
+
+		return ProposalList{}, nil
+	}
+
+	l := len(pd.Proposals)
+	if l == 0 ||
+		offset > l {
+		return ProposalList{
+			TotalCount: pd.TotalCount,
+		}, nil
+	}
+
+	var list []Proposal
+	end := offset + limit
+	if end < l {
+		list = pd.Proposals[offset:end]
+	} else {
+		list = pd.Proposals[offset:]
+	}
+
+	return ProposalList{
+		Proposals:  list,
+		TotalCount: pd.TotalCount,
+	}, nil
+}
+
+func (s *Service) prepareTop() {
+	list, err := s.repo.GetTop([]Filter{
+		PageFilter{Limit: 100, Offset: 0},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("prepare proposal top cache")
+
+		return
+	}
+
+	s.cache.Add("proposals_top", time.Hour, list)
 }

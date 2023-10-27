@@ -68,7 +68,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 	var err error
 
 	if req.GetTop() {
-		list, err = s.sp.GetTop(filters)
+		list, err = s.sp.GetTop(limit, offset)
 	} else {
 		filters = append(filters, OrderByVotesFilter{})
 
