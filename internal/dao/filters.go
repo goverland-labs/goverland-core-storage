@@ -82,3 +82,10 @@ func (f ActivitySinceRangeFilter) Apply(db *gorm.DB) *gorm.DB {
 
 	return db
 }
+
+type OrderByPopularityIndexFilter struct {
+}
+
+func (f OrderByPopularityIndexFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Order("popularity_index desc")
+}

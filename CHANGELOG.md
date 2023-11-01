@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Calculating logic for "popular_daos" category
+
 ## [0.0.45] - 2023-10-27
 
 ### Changed

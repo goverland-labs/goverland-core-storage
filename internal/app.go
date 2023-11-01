@@ -187,9 +187,11 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 
 	cw := dao.NewNewCategoryWorker(service)
 	mc := dao.NewVotersCountWorker(service)
+	pcw := dao.NewPopularCategoryWorker(service)
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-process-worker", cw.ProcessNew))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-outdated-worker", cw.RemoveOutdated))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-voters-worker", mc.ProcessNew))
+	a.manager.AddWorker(process.NewCallbackWorker("dao-popular-category-process-worker", pcw.Process))
 
 	return nil
 }
