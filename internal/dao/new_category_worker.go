@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	newCategoryCheckDelay      = 1 * time.Minute
-	outdatedCategoryCheckDelay = 6 * time.Hour
+	newCategoryCheckDelay      = 1 * time.Hour
+	outdatedCategoryCheckDelay = 12 * time.Hour
 )
 
 type NewCategoryWorker struct {

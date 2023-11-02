@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Increase the calculation time for new categories from 1 minute to 1 hour
+- Store system categories on DAO updates
+
 ## [0.0.46] - 2023-11-02
 
 ### Added
