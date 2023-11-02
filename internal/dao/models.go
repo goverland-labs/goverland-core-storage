@@ -76,36 +76,37 @@ func convertToVoting(v Voting) events.VotingPayload {
 }
 
 type Dao struct {
-	ID             uuid.UUID `gorm:"primary_key"`
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	OriginalID     string
-	Name           string
-	Private        bool
-	About          string
-	Avatar         string
-	Terms          string
-	Location       string
-	Website        string
-	Twitter        string
-	Github         string
-	Coingecko      string
-	Email          string
-	Network        string
-	Symbol         string
-	Skin           string
-	Domain         string
-	Strategies     Strategies `gorm:"serializer:json"`
-	Voting         Voting     `gorm:"serializer:json"`
-	Categories     Categories `gorm:"serializer:json"`
-	Treasures      Treasuries `gorm:"serializer:json"`
-	FollowersCount int
-	ProposalsCount int
-	Guidelines     string
-	Template       string
-	ParentID       *uuid.UUID
-	ActivitySince  int
-	VotersCount    int
+	ID              uuid.UUID `gorm:"primary_key"`
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	OriginalID      string
+	Name            string
+	Private         bool
+	About           string
+	Avatar          string
+	Terms           string
+	Location        string
+	Website         string
+	Twitter         string
+	Github          string
+	Coingecko       string
+	Email           string
+	Network         string
+	Symbol          string
+	Skin            string
+	Domain          string
+	Strategies      Strategies `gorm:"serializer:json"`
+	Voting          Voting     `gorm:"serializer:json"`
+	Categories      Categories `gorm:"serializer:json"`
+	Treasures       Treasuries `gorm:"serializer:json"`
+	FollowersCount  int
+	ProposalsCount  int
+	Guidelines      string
+	Template        string
+	ParentID        *uuid.UUID
+	ActivitySince   int
+	VotersCount     int
+	PopularityIndex float64
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {

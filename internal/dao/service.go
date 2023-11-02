@@ -20,7 +20,8 @@ import (
 //go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher,DaoIDProvider
 
 const (
-	newDaoCategoryName = "new_daos"
+	newDaoCategoryName     = "new_daos"
+	popularDaoCategoryName = "popular_daos"
 )
 
 type Publisher interface {
@@ -137,6 +138,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 
 	new.CreatedAt = existed.CreatedAt
 	new.ActivitySince = existed.ActivitySince
+	new.PopularityIndex = existed.PopularityIndex
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
@@ -159,6 +161,7 @@ func compare(d1, d2 Dao) bool {
 	d1.CreatedAt = d2.CreatedAt
 	d1.UpdatedAt = d2.UpdatedAt
 	d1.ActivitySince = d2.ActivitySince
+	d1.PopularityIndex = d2.PopularityIndex
 
 	return reflect.DeepEqual(d1, d2)
 }
@@ -354,6 +357,45 @@ func (s *Service) ProcessNewProposal(_ context.Context, originalDaoID string) er
 
 	if err = s.repo.UpdateProposalCnt(daoID); err != nil {
 		return fmt.Errorf("UpdateProposalCnt: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) processPopularCategory(_ context.Context) error {
+	listCurrent, err := s.repo.GetByFilters([]Filter{
+		CategoryFilter{Category: popularDaoCategoryName},
+	}, false)
+
+	if err != nil {
+		return fmt.Errorf("get by filters: %w", err)
+	}
+
+	for i := range listCurrent.Daos {
+		dao := listCurrent.Daos[i]
+
+		dao.Categories = remove(dao.Categories, popularDaoCategoryName)
+
+		if err = s.repo.Update(dao); err != nil {
+			return fmt.Errorf("update dao: %s: %w", dao.ID.String(), err)
+		}
+	}
+
+	listNew, err := s.repo.GetByFilters([]Filter{
+		OrderByPopularityIndexFilter{},
+		PageFilter{Limit: 100},
+	}, false)
+	if err != nil {
+		return fmt.Errorf("get by filters: %w", err)
+	}
+
+	for i := range listNew.Daos {
+		dao := listNew.Daos[i]
+		dao.Categories = append(dao.Categories, popularDaoCategoryName)
+
+		if err = s.repo.Update(dao); err != nil {
+			return fmt.Errorf("update dao: %s: %w", dao.ID.String(), err)
+		}
 	}
 
 	return nil
