@@ -138,6 +138,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 
 	new.CreatedAt = existed.CreatedAt
 	new.ActivitySince = existed.ActivitySince
+	new.PopularityIndex = existed.PopularityIndex
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
@@ -160,6 +161,7 @@ func compare(d1, d2 Dao) bool {
 	d1.CreatedAt = d2.CreatedAt
 	d1.UpdatedAt = d2.UpdatedAt
 	d1.ActivitySince = d2.ActivitySince
+	d1.PopularityIndex = d2.PopularityIndex
 
 	return reflect.DeepEqual(d1, d2)
 }
