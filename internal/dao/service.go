@@ -123,6 +123,12 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 		return fmt.Errorf("can't create dao: %w", err)
 	}
 
+	defer func(id uuid.UUID) {
+		if err := s.repo.UpdateProposalCnt(id); err != nil {
+			log.Warn().Err(err).Msgf("repo.UpdateProposalCnt: %s", id.String())
+		}
+	}(dao.ID)
+
 	if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoCreated, convertToCoreEvent(dao)); err != nil {
 		log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
 	}
@@ -148,6 +154,12 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
 	}
+
+	defer func(id uuid.UUID) {
+		if err = s.repo.UpdateProposalCnt(id); err != nil {
+			log.Warn().Err(err).Msgf("repo.UpdateProposalCnt: %s", id.String())
+		}
+	}(new.ID)
 
 	go func(dao Dao) {
 		if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoUpdated, convertToCoreEvent(dao)); err != nil {
