@@ -2,6 +2,7 @@ package proposal
 
 import (
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -43,9 +44,38 @@ func (f TitleFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("title like ?", fmt.Sprintf("%%%s%%", f.Title))
 }
 
-type OrderByVotesFilter struct {
+type Direction string
+
+const (
+	DirectionAsc  Direction = "asc"
+	DirectionDesc Direction = "desc"
+)
+
+type Order struct {
+	Field     string
+	Direction Direction
 }
 
-func (f OrderByVotesFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order("votes desc")
+type OrderFilter struct {
+	Orders []Order
+}
+
+var (
+	OrderByVotes = Order{
+		Field:     "votes",
+		Direction: DirectionDesc,
+	}
+	OrderByStates = Order{
+		Field:     "array_position(array ['active','pending','succeeded','failed','defeated','canceled'], state)",
+		Direction: DirectionAsc,
+	}
+)
+
+func (f OrderFilter) Apply(db *gorm.DB) *gorm.DB {
+	var ordering []string
+	for i := range f.Orders {
+		ordering = append(ordering, fmt.Sprintf("%s %s", f.Orders[i].Field, f.Orders[i].Direction))
+	}
+
+	return db.Order(strings.Join(ordering, ","))
 }

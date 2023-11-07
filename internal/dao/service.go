@@ -5,14 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
-	pevents "github.com/goverland-labs/platform-events/events/aggregator"
-	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+
+	coreevents "github.com/goverland-labs/platform-events/events/core"
 
 	"github.com/goverland-labs/core-storage/internal/proposal"
 )
@@ -22,6 +23,13 @@ import (
 const (
 	newDaoCategoryName     = "new_daos"
 	popularDaoCategoryName = "popular_daos"
+)
+
+var (
+	systemCategories = []string{
+		newDaoCategoryName,
+		popularDaoCategoryName,
+	}
 )
 
 type Publisher interface {
@@ -115,12 +123,14 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 		return fmt.Errorf("can't create dao: %w", err)
 	}
 
+	defer func(id uuid.UUID) {
+		if err := s.repo.UpdateProposalCnt(id); err != nil {
+			log.Warn().Err(err).Msgf("repo.UpdateProposalCnt: %s", id.String())
+		}
+	}(dao.ID)
+
 	if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoCreated, convertToCoreEvent(dao)); err != nil {
 		log.Error().Err(err).Msgf("publish dao event #%s", dao.ID)
-	}
-
-	if err := s.events.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, pevents.DaoPayload{ID: dao.OriginalID}); err != nil {
-		log.Error().Err(err).Msgf("publish dao event #%s", dao.OriginalID)
 	}
 
 	if err := s.events.PublishJSON(ctx, coreevents.SubjectCheckActivitySince, convertToCoreEvent(dao)); err != nil {
@@ -139,10 +149,17 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	new.CreatedAt = existed.CreatedAt
 	new.ActivitySince = existed.ActivitySince
 	new.PopularityIndex = existed.PopularityIndex
+	new.Categories = enrichWithSystemCategories(new.Categories, existed.Categories)
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
 	}
+
+	defer func(id uuid.UUID) {
+		if err = s.repo.UpdateProposalCnt(id); err != nil {
+			log.Warn().Err(err).Msgf("repo.UpdateProposalCnt: %s", id.String())
+		}
+	}(new.ID)
 
 	go func(dao Dao) {
 		if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoUpdated, convertToCoreEvent(dao)); err != nil {
@@ -155,6 +172,17 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	}(new)
 
 	return nil
+}
+
+func enrichWithSystemCategories(list, existed []string) []string {
+	for _, category := range systemCategories {
+		if !slices.Contains(list, category) &&
+			slices.Contains(existed, category) {
+			list = append(list, category)
+		}
+	}
+
+	return list
 }
 
 func compare(d1, d2 Dao) bool {

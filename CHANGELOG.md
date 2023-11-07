@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Increase the calculation time for new categories from 1 minute to 1 hour
+- Store system categories on DAO updates
+- Sorting by state first for searing proposals by query
+- Update proposal cnt on every dao update
+
 ## [0.0.46] - 2023-11-02
 
 ### Added
