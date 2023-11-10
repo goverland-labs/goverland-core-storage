@@ -63,6 +63,74 @@ func (s *Server) GetVotes(_ context.Context, req *proto.VotesFilterRequest) (*pr
 	return res, nil
 }
 
+func (s *Server) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+	validateResp, err := s.sp.Validate(ctx, ValidateRequest{
+		Proposal: req.GetProposal(),
+		Voter:    req.GetVoter(),
+	})
+	if err != nil {
+		log.Error().Err(err).Msgf("validate vote: %+v", req)
+
+		return nil, status.Error(codes.Internal, "failed to validate vote")
+	}
+
+	var validationError *proto.ValidationError
+	if validateResp.ValidationError != nil {
+		validationError = &proto.ValidationError{
+			Message: validateResp.ValidationError.Message,
+			Code:    validateResp.ValidationError.Code,
+		}
+	}
+
+	return &proto.ValidateResponse{
+		Ok:              validateResp.OK,
+		VotingPower:     validateResp.VotingPower,
+		ValidationError: validationError,
+	}, nil
+}
+
+func (s *Server) Prepare(ctx context.Context, req *proto.PrepareRequest) (*proto.PrepareResponse, error) {
+	prepareResp, err := s.sp.Prepare(ctx, PrepareRequest{
+		Voter:    req.GetVoter(),
+		Proposal: req.GetProposal(),
+		Choice:   req.GetChoice().GetValue(),
+		Reason:   req.Reason,
+	})
+	if err != nil {
+		log.Error().Err(err).Msgf("prepare vote: %+v", req)
+
+		return nil, status.Error(codes.Internal, "failed to prepare vote")
+	}
+
+	return &proto.PrepareResponse{
+		TypedData: prepareResp.TypedData,
+	}, nil
+}
+
+func (s *Server) Vote(ctx context.Context, req *proto.VoteRequest) (*proto.VoteResponse, error) {
+	voteResp, err := s.sp.Vote(ctx, VoteRequest{
+		Voter:    req.GetVoter(),
+		Proposal: req.GetProposal(),
+		Choice:   req.GetChoice().GetValue(),
+		Reason:   req.Reason,
+		Sig:      req.GetSig(),
+	})
+	if err != nil {
+		log.Error().Err(err).Msgf("vote: %+v", req)
+
+		return nil, status.Error(codes.Internal, "failed to vote")
+	}
+
+	return &proto.VoteResponse{
+		Id:   voteResp.ID,
+		Ipfs: voteResp.IPFS,
+		Relayer: &proto.Relayer{
+			Address: voteResp.Relayer.Address,
+			Receipt: voteResp.Relayer.Receipt,
+		},
+	}, nil
+}
+
 func convertVoteToAPI(info *Vote) *proto.VoteInfo {
 	vpByStrategies := make([]float32, len(info.VpByStrategy))
 	for i := range info.VpByStrategy {
