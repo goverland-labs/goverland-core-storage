@@ -103,17 +103,15 @@ func (s *Server) Prepare(ctx context.Context, req *proto.PrepareRequest) (*proto
 	}
 
 	return &proto.PrepareResponse{
+		Id:        prepareResp.ID,
 		TypedData: prepareResp.TypedData,
 	}, nil
 }
 
 func (s *Server) Vote(ctx context.Context, req *proto.VoteRequest) (*proto.VoteResponse, error) {
 	voteResp, err := s.sp.Vote(ctx, VoteRequest{
-		Voter:    req.GetVoter(),
-		Proposal: req.GetProposal(),
-		Choice:   req.GetChoice().GetValue(),
-		Reason:   req.Reason,
-		Sig:      req.GetSig(),
+		ID:  req.GetId(),
+		Sig: req.GetSig(),
 	})
 	if err != nil {
 		log.Error().Err(err).Msgf("vote: %+v", req)

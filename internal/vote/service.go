@@ -124,19 +124,15 @@ func (s *Service) Prepare(ctx context.Context, req PrepareRequest) (PrepareRespo
 	}
 
 	return PrepareResponse{
+		ID:        resp.GetId(),
 		TypedData: resp.GetTypedData(),
 	}, nil
 }
 
 func (s *Service) Vote(ctx context.Context, req VoteRequest) (VoteResponse, error) {
 	resp, err := s.dsClient.Vote(ctx, &votingpb.VoteRequest{
-		Voter:    req.Voter,
-		Proposal: req.Proposal,
-		Choice: &protoany.Any{
-			Value: req.Choice,
-		},
-		Reason: req.Reason,
-		Sig:    req.Sig,
+		Id:  req.ID,
+		Sig: req.Sig,
 	})
 	if err != nil {
 		return VoteResponse{}, fmt.Errorf("vote: %w", err)

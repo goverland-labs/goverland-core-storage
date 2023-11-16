@@ -27,15 +27,13 @@ type PrepareRequest struct {
 }
 
 type PrepareResponse struct {
+	ID        uint64
 	TypedData string
 }
 
 type VoteRequest struct {
-	Voter    string
-	Proposal string
-	Choice   json.RawMessage
-	Reason   *string
-	Sig      string
+	ID  uint64
+	Sig string
 }
 
 type VoteResponse struct {
