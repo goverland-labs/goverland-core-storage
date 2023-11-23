@@ -2,6 +2,7 @@ package proposal
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -94,6 +95,26 @@ func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
 	db = getTopProposalOfDaoTable(r.db)
 	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id").Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
 	return getProposalList(db, filters, cnt)
+}
+
+func (r *Repo) UpdateVotes(list []ResolvedAddress) error {
+	placeholders := make([]string, 0, len(list))
+	args := make([]any, 0, 2*len(list))
+	for i := range list {
+		placeholders = append(placeholders, "(?,?)")
+		args = append(args, list[i].Address, list[i].Name)
+	}
+
+	query := fmt.Sprintf(`
+			update proposals
+			set ens_name = rs.name
+			from (
+				values %s
+			) as rs (address, name)
+			where rs.address = proposals.author
+`, strings.Join(placeholders, ","))
+
+	return r.db.Exec(query, args...).Error
 }
 
 func getTopProposalOfDaoTable(db *gorm.DB) *gorm.DB {

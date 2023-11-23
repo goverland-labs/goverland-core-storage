@@ -48,14 +48,12 @@ func convertToStrategies(list Strategies) []events.StrategyPayload {
 // Proposal model
 // todo: check queries to the DB and add indexes
 type Proposal struct {
-	ID        string `gorm:"primary_key"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Ipfs      string
-	Author    string
-	Created   int
-	// todo: think about relation to the DAO model.
-	// Some proposal events could be processed early then dao created
+	ID            string `gorm:"primary_key"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Ipfs          string
+	Author        string
+	Created       int
 	DaoOriginalID string `gorm:"-"`
 	DaoID         uuid.UUID
 	Network       string
@@ -81,6 +79,7 @@ type Proposal struct {
 	ScoresUpdated int
 	Votes         int
 	Timeline      Timeline `gorm:"serializer:json"`
+	EnsName       string
 }
 
 func convertToCoreEvent(p Proposal) events.ProposalPayload {
@@ -156,6 +155,23 @@ func convertToTimeline(tl []coreevents.TimelineItem) Timeline {
 			CreatedAt: tl[i].CreatedAt,
 			Action:    TimelineAction(tl[i].Action),
 		}
+	}
+
+	return res
+}
+
+type ResolvedAddress struct {
+	Address string
+	Name    string
+}
+
+func convertToResolvedAddresses(list []coreevents.EnsNamePayload) []ResolvedAddress {
+	res := make([]ResolvedAddress, 0, len(list))
+	for i := range list {
+		res = append(res, ResolvedAddress{
+			Address: list[i].Address,
+			Name:    list[i].Name,
+		})
 	}
 
 	return res
