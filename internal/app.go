@@ -193,8 +193,6 @@ func (a *Application) initEnsResolver(pb *communicate.Publisher) error {
 
 	a.manager.AddWorker(process.NewCallbackWorker("ens-resolver", a.ensService.Start))
 
-	a.ensService.AddRequests([]string{"0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5", "0x690B9A9E9aa1C9dB991C7721a92d351Db4FaC990"})
-
 	return nil
 }
 

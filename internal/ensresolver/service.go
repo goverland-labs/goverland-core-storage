@@ -2,7 +2,6 @@ package ensresolver
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -73,11 +72,16 @@ func (s *Service) resolve() {
 	s.inProgress.Add(1)
 	defer s.inProgress.Add(-1)
 
+	for _, chunk := range chunkSlice(requests, 50) {
+		s.processAddresses(chunk)
+	}
+}
+
+func (s *Service) processAddresses(list []string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	fmt.Println(requests)
 	res, err := s.client.ResolveDomains(ctx, &proto.ResolveDomainsRequest{
-		Addresses: requests,
+		Addresses: list,
 	})
 	if err != nil {
 		// todo: add to queue?
@@ -120,16 +124,30 @@ func convertToCoreEvent(list []EnsName) coreevents.EnsNamesPayload {
 // AddRequests add requests to resolve ens names. The results will be putted to the queue
 func (s *Service) AddRequests(list []string) {
 	s.mu.Lock()
-	for i := range list {
-		s.queue = append(s.queue, list[i])
-	}
+	s.queue = append(s.queue, list...)
 	s.mu.Unlock()
-
-	fmt.Println(s.queue)
 
 	if len(list) < maxBatchCount {
 		return
 	}
 
 	go s.resolve()
+}
+
+func chunkSlice(slice []string, chunkSize int) [][]string {
+	var chunks [][]string
+	for {
+		if len(slice) == 0 {
+			break
+		}
+
+		if len(slice) < chunkSize {
+			chunkSize = len(slice)
+		}
+
+		chunks = append(chunks, slice[0:chunkSize])
+		slice = slice[chunkSize:]
+	}
+
+	return chunks
 }
