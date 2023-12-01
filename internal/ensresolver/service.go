@@ -78,6 +78,10 @@ func (s *Service) resolve() {
 }
 
 func (s *Service) processAddresses(list []string) {
+	if len(list) == 0 {
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	res, err := s.client.ResolveDomains(ctx, &proto.ResolveDomainsRequest{
@@ -107,6 +111,8 @@ func (s *Service) processAddresses(list []string) {
 	if err := s.publisher.PublishJSON(ctx, coreevents.SubjectEnsResolverResolved, convertToCoreEvent(result)); err != nil {
 		log.Error().Err(err).Msgf("publish ens names event")
 	}
+
+	log.Info().Msgf("processed %d items", len(list))
 }
 
 func convertToCoreEvent(list []EnsName) coreevents.EnsNamesPayload {

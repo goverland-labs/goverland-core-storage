@@ -344,5 +344,9 @@ func (s *Service) prepareTop() {
 }
 
 func (s *Service) HandleResolvedAddresses(_ context.Context, list []ResolvedAddress) error {
+	if len(list) == 0 {
+		return nil
+	}
+
 	return s.repo.UpdateVotes(list)
 }
