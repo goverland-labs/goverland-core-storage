@@ -2,16 +2,14 @@ module github.com/goverland-labs/core-storage
 
 go 1.21.1
 
-toolchain go1.21.4
-
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/mux v1.8.1
-	github.com/goverland-labs/core-api v0.0.19
-	github.com/goverland-labs/datasource-snapshot v0.3.0
+	github.com/goverland-labs/core-api v0.0.20
+	github.com/goverland-labs/datasource-snapshot v0.3.1
 	github.com/goverland-labs/helpers-ens-resolver v0.0.0-20231114172833-5e7a718c88b5
 	github.com/goverland-labs/platform-events v0.1.10-0.20231120142815-3c85b499668a
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0

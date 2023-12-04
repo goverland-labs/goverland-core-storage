@@ -4,7 +4,6 @@ import (
 	"context"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
-	"github.com/goverland-labs/datasource-snapshot/proto/votingpb"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -64,7 +63,7 @@ func (s *Server) GetVotes(_ context.Context, req *proto.VotesFilterRequest) (*pr
 	return res, nil
 }
 
-func (s *Server) Validate(ctx context.Context, req *votingpb.ValidateRequest) (*votingpb.ValidateResponse, error) {
+func (s *Server) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
 	validateResp, err := s.sp.Validate(ctx, ValidateRequest{
 		Proposal: req.GetProposal(),
 		Voter:    req.GetVoter(),
@@ -75,22 +74,22 @@ func (s *Server) Validate(ctx context.Context, req *votingpb.ValidateRequest) (*
 		return nil, status.Error(codes.Internal, "failed to validate vote")
 	}
 
-	var validationError *votingpb.ValidationError
+	var validationError *proto.ValidationError
 	if validateResp.ValidationError != nil {
-		validationError = &votingpb.ValidationError{
+		validationError = &proto.ValidationError{
 			Message: validateResp.ValidationError.Message,
 			Code:    validateResp.ValidationError.Code,
 		}
 	}
 
-	return &votingpb.ValidateResponse{
+	return &proto.ValidateResponse{
 		Ok:              validateResp.OK,
 		VotingPower:     validateResp.VotingPower,
 		ValidationError: validationError,
 	}, nil
 }
 
-func (s *Server) Prepare(ctx context.Context, req *votingpb.PrepareRequest) (*votingpb.PrepareResponse, error) {
+func (s *Server) Prepare(ctx context.Context, req *proto.PrepareRequest) (*proto.PrepareResponse, error) {
 	prepareResp, err := s.sp.Prepare(ctx, PrepareRequest{
 		Voter:    req.GetVoter(),
 		Proposal: req.GetProposal(),
@@ -103,13 +102,13 @@ func (s *Server) Prepare(ctx context.Context, req *votingpb.PrepareRequest) (*vo
 		return nil, status.Error(codes.Internal, "failed to prepare vote")
 	}
 
-	return &votingpb.PrepareResponse{
+	return &proto.PrepareResponse{
 		Id:        prepareResp.ID,
 		TypedData: prepareResp.TypedData,
 	}, nil
 }
 
-func (s *Server) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votingpb.VoteResponse, error) {
+func (s *Server) Vote(ctx context.Context, req *proto.VoteRequest) (*proto.VoteResponse, error) {
 	voteResp, err := s.sp.Vote(ctx, VoteRequest{
 		ID:  req.GetId(),
 		Sig: req.GetSig(),
@@ -120,10 +119,10 @@ func (s *Server) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votingpb
 		return nil, status.Error(codes.Internal, "failed to vote")
 	}
 
-	return &votingpb.VoteResponse{
+	return &proto.VoteResponse{
 		Id:   voteResp.ID,
 		Ipfs: voteResp.IPFS,
-		Relayer: &votingpb.Relayer{
+		Relayer: &proto.Relayer{
 			Address: voteResp.Relayer.Address,
 			Receipt: voteResp.Relayer.Receipt,
 		},

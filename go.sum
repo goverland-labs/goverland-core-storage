@@ -50,10 +50,10 @@ github.com/gopherjs/gopherjs v1.17.2 h1:fQnZVsXk8uxXIStYb0N4bGk7jeyTalG/wsZjQ25d
 github.com/gopherjs/gopherjs v1.17.2/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
-github.com/goverland-labs/core-api v0.0.19 h1:2MIUJBQlR3v8WgljEJbTyqHj8f8tAxZrg3AC4h/RyfQ=
-github.com/goverland-labs/core-api v0.0.19/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
-github.com/goverland-labs/datasource-snapshot v0.3.0 h1:S25X453aMBguqgD5pnD+Q/6CRJdgSU/B8t5iR3ZyICo=
-github.com/goverland-labs/datasource-snapshot v0.3.0/go.mod h1:FtZi6irZatEeZ+EHOH7BPh7IbX1ddHt8SNkxQBUDxfQ=
+github.com/goverland-labs/core-api v0.0.20 h1:KpsNHNsLpJn8FbY6FFGjDhGijI+BWv+LjFwWiMv7100=
+github.com/goverland-labs/core-api v0.0.20/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
+github.com/goverland-labs/datasource-snapshot v0.3.1 h1:quyd0IJ9Cxxoso8pKC+N9XaKItj+0P4y/4NENNWASS0=
+github.com/goverland-labs/datasource-snapshot v0.3.1/go.mod h1:wtErsU9yYR5TtmJycON3We6Q/qBCXFdsiMcOtOChySw=
 github.com/goverland-labs/helpers-ens-resolver v0.0.0-20231114172833-5e7a718c88b5 h1:dQxlLRXib2ZYKQ4wLc0uG+6Sq6AZ2de2OF1We72JYKY=
 github.com/goverland-labs/helpers-ens-resolver v0.0.0-20231114172833-5e7a718c88b5/go.mod h1:Fj5HK/7ROMvC7SSV06ReIg2x49C0yAQ+LBaGVcxYv7s=
 github.com/goverland-labs/platform-events v0.1.10-0.20231120142815-3c85b499668a h1:IpFQT66oJZGlTQii/QN56wf7JWIDaY6MdG0Yflvp160=
