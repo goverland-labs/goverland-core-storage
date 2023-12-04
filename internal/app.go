@@ -8,8 +8,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goverland-labs/datasource-snapshot/proto/votingpb"
 	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -225,7 +228,17 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 }
 
 func (a *Application) initVote(nc *nats.Conn, pb *communicate.Publisher) error {
-	service, err := vote.NewService(a.voteRepo, a.daoService, pb)
+	dsConn, err := grpc.Dial(
+		a.cfg.InternalAPI.DatasourceSnapshotAddress,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return fmt.Errorf("create connection with datasource snapshot server: %v", err)
+	}
+
+	dsClient := votingpb.NewVotingClient(dsConn)
+
+	service, err := vote.NewService(a.voteRepo, a.daoService, pb, dsClient)
 	if err != nil {
 		return fmt.Errorf("vote service: %w", err)
 	}

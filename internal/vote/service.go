@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	coreevents "github.com/goverland-labs/platform-events/events/core"
-
+	protoany "github.com/golang/protobuf/ptypes/any"
 	"github.com/google/uuid"
+	"github.com/goverland-labs/datasource-snapshot/proto/votingpb"
+	coreevents "github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,16 +26,18 @@ type DaoProvider interface {
 }
 
 type Service struct {
-	repo   DataProvider
-	dao    DaoProvider
-	events Publisher
+	repo     DataProvider
+	dao      DaoProvider
+	events   Publisher
+	dsClient votingpb.VotingClient
 }
 
-func NewService(r DataProvider, dp DaoProvider, p Publisher) (*Service, error) {
+func NewService(r DataProvider, dp DaoProvider, p Publisher, dsClient votingpb.VotingClient) (*Service, error) {
 	return &Service{
-		repo:   r,
-		dao:    dp,
-		events: p,
+		repo:     r,
+		dao:      dp,
+		events:   p,
+		dsClient: dsClient,
 	}, nil
 }
 
@@ -81,4 +84,66 @@ func (s *Service) GetByFilters(filters []Filter) (List, error) {
 	}
 
 	return list, nil
+}
+
+func (s *Service) Validate(ctx context.Context, req ValidateRequest) (ValidateResponse, error) {
+	resp, err := s.dsClient.Validate(ctx, &votingpb.ValidateRequest{
+		Voter:    req.Voter,
+		Proposal: req.Proposal,
+	})
+	if err != nil {
+		return ValidateResponse{}, fmt.Errorf("validate: %w", err)
+	}
+
+	var validationError *ValidationError
+	if resp.ValidationError != nil {
+		validationError = &ValidationError{
+			Message: resp.GetValidationError().GetMessage(),
+			Code:    resp.GetValidationError().GetCode(),
+		}
+	}
+
+	return ValidateResponse{
+		OK:              resp.GetOk(),
+		VotingPower:     resp.GetVotingPower(),
+		ValidationError: validationError,
+	}, nil
+}
+
+func (s *Service) Prepare(ctx context.Context, req PrepareRequest) (PrepareResponse, error) {
+	resp, err := s.dsClient.Prepare(ctx, &votingpb.PrepareRequest{
+		Voter:    req.Voter,
+		Proposal: req.Proposal,
+		Choice: &protoany.Any{
+			Value: req.Choice,
+		},
+		Reason: req.Reason,
+	})
+	if err != nil {
+		return PrepareResponse{}, fmt.Errorf("prepare: %w", err)
+	}
+
+	return PrepareResponse{
+		ID:        resp.GetId(),
+		TypedData: resp.GetTypedData(),
+	}, nil
+}
+
+func (s *Service) Vote(ctx context.Context, req VoteRequest) (VoteResponse, error) {
+	resp, err := s.dsClient.Vote(ctx, &votingpb.VoteRequest{
+		Id:  req.ID,
+		Sig: req.Sig,
+	})
+	if err != nil {
+		return VoteResponse{}, fmt.Errorf("vote: %w", err)
+	}
+
+	return VoteResponse{
+		ID:   resp.GetId(),
+		IPFS: resp.GetIpfs(),
+		Relayer: Relayer{
+			Address: resp.GetRelayer().GetAddress(),
+			Receipt: resp.GetRelayer().GetReceipt(),
+		},
+	}, nil
 }
