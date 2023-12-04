@@ -51,10 +51,10 @@ github.com/gopherjs/gopherjs v1.17.2 h1:fQnZVsXk8uxXIStYb0N4bGk7jeyTalG/wsZjQ25d
 github.com/gopherjs/gopherjs v1.17.2/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
 github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
-github.com/goverland-labs/core-api v0.0.19-0.20231116074058-47e2d678a395 h1:/a7ceC53FMwRIf4vjuy35jOGzEqkSpwWXNXSgDCz+pw=
-github.com/goverland-labs/core-api v0.0.19-0.20231116074058-47e2d678a395/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
-github.com/goverland-labs/datasource-snapshot v0.2.9-0.20231115225738-83feec1b8507 h1:x/8bJdcUme5UkjPnzm3MXEUkaI7bxt25F4Uj3MmTfNE=
-github.com/goverland-labs/datasource-snapshot v0.2.9-0.20231115225738-83feec1b8507/go.mod h1:JAdr+bJlEVTzdhXpYpE1QAlwbrEFgo+jPZ1lEIhAErA=
+github.com/goverland-labs/core-api v0.0.20 h1:KpsNHNsLpJn8FbY6FFGjDhGijI+BWv+LjFwWiMv7100=
+github.com/goverland-labs/core-api v0.0.20/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
+github.com/goverland-labs/datasource-snapshot v0.3.0 h1:S25X453aMBguqgD5pnD+Q/6CRJdgSU/B8t5iR3ZyICo=
+github.com/goverland-labs/datasource-snapshot v0.3.0/go.mod h1:FtZi6irZatEeZ+EHOH7BPh7IbX1ddHt8SNkxQBUDxfQ=
 github.com/goverland-labs/platform-events v0.1.9 h1:RUr5G9AaX1TaIuj8Pp5M1+fnk5EDzs4ZSBYAWgsRZ80=
 github.com/goverland-labs/platform-events v0.1.9/go.mod h1:E1mEVhgCz+dmasMFk+G/DBjaC0ID4Wg32JCkxrRalUo=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 h1:UH//fgunKIs4JdUbpDl1VZCDaL56wXCB/5+wF6uHfaI=
@@ -198,8 +198,8 @@ golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.13.0 h1:Af8nKPmuFypiUBjVoU9V20FiaFXOcuZI21p0ycVYYGE=
-golang.org/x/sys v0.13.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.14.0 h1:Vz7Qs629MkJkGyHxUlRHizWJRG2j8fbQKjELVSNhy7Q=
+golang.org/x/sys v0.14.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=

@@ -27,12 +27,12 @@ type PrepareRequest struct {
 }
 
 type PrepareResponse struct {
-	ID        uint64
+	ID        string
 	TypedData string
 }
 
 type VoteRequest struct {
-	ID  uint64
+	ID  string
 	Sig string
 }
 
