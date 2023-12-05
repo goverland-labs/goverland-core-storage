@@ -98,6 +98,10 @@ func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
 }
 
 func (r *Repo) UpdateVotes(list []ResolvedAddress) error {
+	if len(list) == 0 {
+		return nil
+	}
+
 	placeholders := make([]string, 0, len(list))
 	args := make([]any, 0, 2*len(list))
 	for i := range list {

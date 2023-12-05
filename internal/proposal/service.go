@@ -343,10 +343,30 @@ func (s *Service) prepareTop() {
 	s.cache.Add("proposals_top", time.Hour, list)
 }
 
-func (s *Service) HandleResolvedAddresses(_ context.Context, list []ResolvedAddress) error {
+func (s *Service) HandleResolvedAddresses(ctx context.Context, list []ResolvedAddress) error {
 	if len(list) == 0 {
 		return nil
 	}
 
-	return s.repo.UpdateVotes(list)
+	if err := s.repo.UpdateVotes(list); err != nil {
+		return fmt.Errorf("s.repo.UpdateVotes: %w", err)
+	}
+
+	authors := make([]string, 0, len(list))
+	for i := range list {
+		authors = append(authors, list[i].Address)
+	}
+
+	proposals, err := s.repo.GetByFilters([]Filter{
+		AuthorsFilter{List: authors},
+	})
+	if err != nil {
+		return fmt.Errorf("s.repo.GetByFilters: %w", err)
+	}
+
+	for i := range proposals.Proposals {
+		s.registerEvent(ctx, proposals.Proposals[i], groupName, coreevents.SubjectProposalUpdated)
+	}
+
+	return nil
 }

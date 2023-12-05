@@ -10,8 +10,8 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/goverland-labs/core-api v0.0.20
 	github.com/goverland-labs/datasource-snapshot v0.3.1
-	github.com/goverland-labs/helpers-ens-resolver v0.0.0-20231114172833-5e7a718c88b5
-	github.com/goverland-labs/platform-events v0.1.10-0.20231120142815-3c85b499668a
+	github.com/goverland-labs/helpers-ens-resolver v0.0.2
+	github.com/goverland-labs/platform-events v0.1.11
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021
