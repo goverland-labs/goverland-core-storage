@@ -79,3 +79,11 @@ func (f OrderFilter) Apply(db *gorm.DB) *gorm.DB {
 
 	return db.Order(strings.Join(ordering, ","))
 }
+
+type AuthorsFilter struct {
+	List []string
+}
+
+func (f AuthorsFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("author IN ?", f.List)
+}

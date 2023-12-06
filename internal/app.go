@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/goverland-labs/datasource-snapshot/proto/votingpb"
+	"github.com/goverland-labs/helpers-ens-resolver/proto"
 	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
 	"google.golang.org/grpc"
@@ -22,6 +23,7 @@ import (
 	"github.com/goverland-labs/core-storage/internal/communicate"
 	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/dao"
+	"github.com/goverland-labs/core-storage/internal/ensresolver"
 	"github.com/goverland-labs/core-storage/internal/events"
 	"github.com/goverland-labs/core-storage/internal/proposal"
 	"github.com/goverland-labs/core-storage/internal/vote"
@@ -48,6 +50,9 @@ type Application struct {
 
 	voteRepo    *vote.Repo
 	voteService *vote.Service
+
+	ensRepo    *ensresolver.Repo
+	ensService *ensresolver.Service
 
 	eventsRepo *events.Repo
 }
@@ -126,6 +131,7 @@ func (a *Application) initDB() error {
 	a.proposalRepo = proposal.NewRepo(a.db)
 	a.voteRepo = vote.NewRepo(a.db)
 	a.eventsRepo = events.NewRepo(a.db)
+	a.ensRepo = ensresolver.NewRepo(a.db)
 
 	return err
 }
@@ -144,6 +150,11 @@ func (a *Application) initServices() error {
 	pb, err := communicate.NewPublisher(nc)
 	if err != nil {
 		return err
+	}
+
+	err = a.initEnsResolver(pb)
+	if err != nil {
+		return fmt.Errorf("init dao: %w", err)
 	}
 
 	err = a.initDao(nc, pb)
@@ -165,6 +176,22 @@ func (a *Application) initServices() error {
 	if err != nil {
 		return fmt.Errorf("init api: %w", err)
 	}
+
+	return nil
+}
+
+func (a *Application) initEnsResolver(pb *communicate.Publisher) error {
+	conn, err := grpc.Dial(a.cfg.InternalAPI.EnsResolverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("create connection with ens resolver: %v", err)
+	}
+
+	a.ensService, err = ensresolver.NewService(a.ensRepo, proto.NewEnsClient(conn), pb)
+	if err != nil {
+		return fmt.Errorf("ensresolver.NewService: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("ens-resolver", a.ensService.Start))
 
 	return nil
 }
@@ -205,7 +232,7 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 		return fmt.Errorf("new events service: %w", err)
 	}
 
-	service, err := proposal.NewService(a.proposalRepo, pb, erService, a.daoService)
+	service, err := proposal.NewService(a.proposalRepo, pb, erService, a.daoService, a.ensService)
 	if err != nil {
 		return fmt.Errorf("proposal service: %w", err)
 	}

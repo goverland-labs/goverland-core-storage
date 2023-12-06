@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Implement resolving ens names for proposals
+
 ## [0.0.48] - 2023-12-04
 
 ### Added
