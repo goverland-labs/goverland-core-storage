@@ -265,7 +265,7 @@ func (a *Application) initVote(nc *nats.Conn, pb *communicate.Publisher) error {
 
 	dsClient := votingpb.NewVotingClient(dsConn)
 
-	service, err := vote.NewService(a.voteRepo, a.daoService, pb, dsClient)
+	service, err := vote.NewService(a.voteRepo, a.daoService, pb, a.ensService, dsClient)
 	if err != nil {
 		return fmt.Errorf("vote service: %w", err)
 	}

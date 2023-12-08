@@ -27,6 +27,12 @@ var defaultDaoProvider = func(ctrl *gomock.Controller) DaoProvider {
 	return m
 }
 
+var defaultEnsResolver = func(ctrl *gomock.Controller) EnsResolver {
+	m := NewMockEnsResolver(ctrl)
+	m.EXPECT().AddRequests(gomock.Any()).AnyTimes()
+	return m
+}
+
 func TestUnitCompare(t *testing.T) {
 	for name, tc := range map[string]struct {
 		p1       Proposal
@@ -186,7 +192,13 @@ func TestUnitHandleProposal(t *testing.T) {
 				ctrl.Finish()
 			}()
 
-			s, err := NewService(tc.dp(ctrl), tc.p(ctrl), NewMockEventRegistered(ctrl), defaultDaoProvider(ctrl))
+			s, err := NewService(
+				tc.dp(ctrl),
+				tc.p(ctrl),
+				NewMockEventRegistered(ctrl),
+				defaultDaoProvider(ctrl),
+				defaultEnsResolver(ctrl),
+			)
 			require.Nil(t, err)
 
 			err = s.HandleProposal(context.Background(), tc.event)
@@ -325,7 +337,13 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 				<-time.After(10 * time.Millisecond)
 				ctrl.Finish()
 			}()
-			s, err := NewService(tc.dp(ctrl), defaultPublisher(ctrl), tc.er(ctrl), nil)
+			s, err := NewService(
+				tc.dp(ctrl),
+				defaultPublisher(ctrl),
+				tc.er(ctrl),
+				defaultDaoProvider(ctrl),
+				defaultEnsResolver(ctrl),
+			)
 			require.Nil(t, err)
 
 			err = s.processAvailableForVoting(context.TODO())
@@ -390,7 +408,13 @@ func TestUnitCheckSpecificUpdate(t *testing.T) {
 				<-time.After(10 * time.Millisecond)
 				ctrl.Finish()
 			}()
-			s, err := NewService(nil, tc.p(ctrl), tc.er(ctrl), nil)
+			s, err := NewService(
+				nil,
+				tc.p(ctrl),
+				tc.er(ctrl),
+				defaultDaoProvider(ctrl),
+				defaultEnsResolver(ctrl),
+			)
 			require.Nil(t, err)
 
 			s.checkSpecificUpdate(context.TODO(), tc.new, tc.existed)
@@ -449,7 +473,13 @@ func TestUnitRegisterEventOnce(t *testing.T) {
 				<-time.After(10 * time.Millisecond)
 				ctrl.Finish()
 			}()
-			s, err := NewService(nil, tc.p(ctrl), tc.er(ctrl), nil)
+			s, err := NewService(
+				nil,
+				tc.p(ctrl),
+				tc.er(ctrl),
+				defaultDaoProvider(ctrl),
+				defaultEnsResolver(ctrl),
+			)
 			require.Nil(t, err)
 
 			s.registerEventOnce(context.TODO(), Proposal{}, "group", "subject")
