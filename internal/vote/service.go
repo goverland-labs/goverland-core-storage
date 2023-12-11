@@ -181,31 +181,3 @@ func (s *Service) HandleResolvedAddresses(list []ResolvedAddress) error {
 
 	return nil
 }
-
-// fixme: remove it after resolving historical voters
-func (s *Service) ProcessAllDistinct() error {
-	var cursor string
-	for {
-		start := time.Now()
-		list, err := s.repo.GetUnique(cursor, 5000)
-		log.Info().Msgf("get unique took %v", time.Since(start).Seconds())
-		if err != nil {
-			log.Err(err).Msg("get unique error")
-
-			return fmt.Errorf("get unique: %s: %w", cursor, err)
-		}
-
-		s.ensResolver.AddRequests(list)
-		log.Info().Msgf("added requests: %d", len(list))
-
-		if len(list) > 0 {
-			cursor = list[len(list)-1]
-		}
-
-		if len(list) < 1000 {
-			break
-		}
-	}
-
-	return nil
-}
