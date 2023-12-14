@@ -18,6 +18,7 @@ type Vote struct {
 	DaoID         uuid.UUID
 	ProposalID    string
 	Voter         string
+	EnsName       string
 	Created       int
 	Reason        string
 	Choice        json.RawMessage
@@ -69,4 +70,9 @@ func convertToCoreEvent(votes []Vote) events.VotesPayload {
 	}
 
 	return res
+}
+
+type ResolvedAddress struct {
+	Address string
+	Name    string
 }

@@ -139,6 +139,7 @@ func convertVoteToAPI(info *Vote) *proto.VoteInfo {
 		Id:         info.ID,
 		Ipfs:       info.Ipfs,
 		Voter:      info.Voter,
+		EnsName:    info.EnsName,
 		Created:    uint64(info.Created),
 		DaoId:      info.DaoID.String(),
 		ProposalId: info.ProposalID,

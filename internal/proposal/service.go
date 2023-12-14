@@ -23,7 +23,7 @@ const (
 	endVotingWindow   = -6 * time.Hour
 )
 
-//go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider
+//go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider,EnsResolver
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error

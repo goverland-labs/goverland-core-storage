@@ -3,6 +3,7 @@ package vote
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
@@ -19,32 +20,51 @@ type Publisher interface {
 type DataProvider interface {
 	BatchCreate(data []Vote) error
 	GetByFilters(filters []Filter) (List, error)
+	UpdateVotes(list []ResolvedAddress) error
+	GetUnique(string, int64) ([]string, error)
 }
 
 type DaoProvider interface {
 	GetIDByOriginalID(string) (uuid.UUID, error)
 }
 
-type Service struct {
-	repo     DataProvider
-	dao      DaoProvider
-	events   Publisher
-	dsClient votingpb.VotingClient
+type EnsResolver interface {
+	AddRequests(list []string)
 }
 
-func NewService(r DataProvider, dp DaoProvider, p Publisher, dsClient votingpb.VotingClient) (*Service, error) {
+type Service struct {
+	repo        DataProvider
+	dao         DaoProvider
+	events      Publisher
+	ensResolver EnsResolver
+	dsClient    votingpb.VotingClient
+}
+
+func NewService(
+	r DataProvider,
+	dp DaoProvider,
+	p Publisher,
+	er EnsResolver,
+	dsClient votingpb.VotingClient,
+) (*Service, error) {
 	return &Service{
-		repo:     r,
-		dao:      dp,
-		events:   p,
-		dsClient: dsClient,
+		repo:        r,
+		dao:         dp,
+		events:      p,
+		ensResolver: er,
+		dsClient:    dsClient,
 	}, nil
 }
 
 func (s *Service) HandleVotes(ctx context.Context, votes []Vote) error {
 	list := make(map[string]uuid.UUID)
 	now := time.Now()
+	authors := make([]string, 0, len(votes))
 	for i := range votes {
+		if !slices.Contains(authors, votes[i].Voter) {
+			authors = append(authors, votes[i].Voter)
+		}
+
 		if daoID, ok := list[votes[i].OriginalDaoID]; ok {
 			votes[i].DaoID = daoID
 			continue
@@ -73,6 +93,8 @@ func (s *Service) HandleVotes(ctx context.Context, votes []Vote) error {
 		log.Error().Err(err).Msgf("publish votes event")
 	}
 	log.Info().Msgf("Gy80sHESRX: publishing took: %f", time.Since(now).Seconds())
+
+	s.ensResolver.AddRequests(authors)
 
 	return nil
 }
@@ -146,4 +168,16 @@ func (s *Service) Vote(ctx context.Context, req VoteRequest) (VoteResponse, erro
 			Receipt: resp.GetRelayer().GetReceipt(),
 		},
 	}, nil
+}
+
+func (s *Service) HandleResolvedAddresses(list []ResolvedAddress) error {
+	if len(list) == 0 {
+		return nil
+	}
+
+	if err := s.repo.UpdateVotes(list); err != nil {
+		return fmt.Errorf("s.repo.UpdateVotes: %w", err)
+	}
+
+	return nil
 }
