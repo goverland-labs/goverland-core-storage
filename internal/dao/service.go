@@ -249,7 +249,7 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 		filters := []Filter{
 			CategoryFilter{Category: category},
 			PageFilter{Limit: limit, Offset: 0},
-			OrderByVotersFilter{},
+			OrderByPopularityIndexFilter{},
 		}
 
 		data, err := s.repo.GetByFilters(filters, true)
