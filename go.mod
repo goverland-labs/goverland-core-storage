@@ -1,22 +1,23 @@
 module github.com/goverland-labs/core-storage
 
-go 1.21
+go 1.21.1
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
-	github.com/gorilla/mux v1.8.0
-	github.com/goverland-labs/core-api v0.0.20
-	github.com/goverland-labs/datasource-snapshot v0.3.0
-	github.com/goverland-labs/platform-events v0.1.10
+	github.com/gorilla/mux v1.8.1
+	github.com/goverland-labs/core-api v0.0.21
+	github.com/goverland-labs/datasource-snapshot v0.3.1
+	github.com/goverland-labs/helpers-ens-resolver v0.0.2
+	github.com/goverland-labs/platform-events v0.1.11
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021
 	github.com/nats-io/nats.go v1.30.2
-	github.com/prometheus/client_golang v1.16.0
-	github.com/rs/zerolog v1.29.1
+	github.com/prometheus/client_golang v1.17.0
+	github.com/rs/zerolog v1.31.0
 	github.com/s-larionov/process-manager v0.0.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.4
@@ -44,9 +45,9 @@ require (
 	github.com/nats-io/nkeys v0.4.5 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_model v0.3.0 // indirect
-	github.com/prometheus/common v0.42.0 // indirect
-	github.com/prometheus/procfs v0.10.1 // indirect
+	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16 // indirect
+	github.com/prometheus/common v0.44.0 // indirect
+	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/net v0.17.0 // indirect

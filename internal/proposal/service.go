@@ -23,10 +23,14 @@ const (
 	endVotingWindow   = -6 * time.Hour
 )
 
-//go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider
+//go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider,EnsResolver
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error
+}
+
+type EnsResolver interface {
+	AddRequests(list []string)
 }
 
 type DataProvider interface {
@@ -36,6 +40,7 @@ type DataProvider interface {
 	GetAvailableForVoting(time.Duration) ([]*Proposal, error)
 	GetByFilters(filters []Filter) (ProposalList, error)
 	GetTop(filters []Filter) (ProposalList, error)
+	UpdateVotes(list []ResolvedAddress) error
 }
 
 type DaoProvider interface {
@@ -49,10 +54,11 @@ type EventRegistered interface {
 
 // todo: convert types to interfaces for unit testing
 type Service struct {
-	repo      DataProvider
-	publisher Publisher
-	er        EventRegistered
-	dp        DaoProvider
+	repo        DataProvider
+	publisher   Publisher
+	er          EventRegistered
+	dp          DaoProvider
+	ensResolver EnsResolver
 
 	cache *cache2go.CacheTable
 }
@@ -62,13 +68,15 @@ func NewService(
 	p Publisher,
 	er EventRegistered,
 	dp DaoProvider,
+	ensResolver EnsResolver,
 ) (*Service, error) {
 	return &Service{
-		repo:      r,
-		publisher: p,
-		er:        er,
-		dp:        dp,
-		cache:     cache2go.Cache("proposals"),
+		repo:        r,
+		publisher:   p,
+		er:          er,
+		dp:          dp,
+		ensResolver: ensResolver,
+		cache:       cache2go.Cache("proposals"),
 	}, nil
 }
 
@@ -139,9 +147,13 @@ func (s *Service) processNew(ctx context.Context, p Proposal) error {
 		log.Error().Err(err).Msgf("publish dao event #%s", daoID.String())
 	}
 
+	s.ensResolver.AddRequests([]string{p.Author})
+
 	return nil
 }
 
+// todo: think about virtual properties and updating specific model fields instead of all model
+// to avoid replacing new fields from existing entity
 func (s *Service) processExisted(ctx context.Context, new, existed Proposal) error {
 	equal := compare(new, existed)
 	if equal {
@@ -151,6 +163,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 	new.DaoID = existed.DaoID
 	new.CreatedAt = existed.CreatedAt
 	new.State = new.CalculateState()
+	new.EnsName = existed.EnsName
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update proposal #%s: %w", new.ID, err)
@@ -205,6 +218,7 @@ func compare(p1, p2 Proposal) bool {
 	p1.DaoID = p2.DaoID
 	p1.DaoOriginalID = p2.DaoOriginalID
 	p1.State = p2.State
+	p1.EnsName = p2.EnsName
 
 	return reflect.DeepEqual(p1, p2)
 }
@@ -327,4 +341,32 @@ func (s *Service) prepareTop() {
 	}
 
 	s.cache.Add("proposals_top", time.Hour, list)
+}
+
+func (s *Service) HandleResolvedAddresses(ctx context.Context, list []ResolvedAddress) error {
+	if len(list) == 0 {
+		return nil
+	}
+
+	if err := s.repo.UpdateVotes(list); err != nil {
+		return fmt.Errorf("s.repo.UpdateVotes: %w", err)
+	}
+
+	authors := make([]string, 0, len(list))
+	for i := range list {
+		authors = append(authors, list[i].Address)
+	}
+
+	proposals, err := s.repo.GetByFilters([]Filter{
+		AuthorsFilter{List: authors},
+	})
+	if err != nil {
+		return fmt.Errorf("s.repo.GetByFilters: %w", err)
+	}
+
+	for i := range proposals.Proposals {
+		s.registerEvent(ctx, proposals.Proposals[i], groupName, coreevents.SubjectProposalUpdated)
+	}
+
+	return nil
 }

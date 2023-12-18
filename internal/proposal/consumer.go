@@ -105,6 +105,26 @@ func (c *Consumer) handlerTimeline() coreevents.TimelineHandler {
 	}
 }
 
+func (c *Consumer) handlerAddressResolved() coreevents.EnsNamesHandler {
+	return func(payload coreevents.EnsNamesPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_address_resolved", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		err = c.service.HandleResolvedAddresses(context.TODO(), convertToResolvedAddresses(payload))
+		if err != nil {
+			log.Error().Err(err).Msg("process address resolved")
+		}
+
+		log.Debug().Msgf("proposal resolved addresses were processed")
+
+		return err
+	}
+}
+
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
 	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalCreated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
@@ -123,8 +143,12 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
 	}
+	cer, err := client.NewConsumer(ctx, c.conn, group, coreevents.SubjectEnsResolverResolved, c.handlerAddressResolved(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, coreevents.SubjectEnsResolverResolved, err)
+	}
 
-	c.consumers = append(c.consumers, cc, cu, cd, ct)
+	c.consumers = append(c.consumers, cc, cu, cd, ct, cer)
 
 	log.Info().Msg("proposal consumers is started")
 

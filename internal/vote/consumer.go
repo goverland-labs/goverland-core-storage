@@ -6,6 +6,7 @@ import (
 	"time"
 
 	pevents "github.com/goverland-labs/platform-events/events/aggregator"
+	coreevents "github.com/goverland-labs/platform-events/events/core"
 	client "github.com/goverland-labs/platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
@@ -61,14 +62,50 @@ func (c *Consumer) handler() pevents.VotesHandler {
 	}
 }
 
+func (c *Consumer) handlerAddressResolved() coreevents.EnsNamesHandler {
+	return func(payload coreevents.EnsNamesPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_address_resolved", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		err = c.service.HandleResolvedAddresses(convertToResolvedAddresses(payload))
+		if err != nil {
+			log.Error().Err(err).Msg("process address resolved")
+		}
+
+		log.Debug().Msgf("proposal resolved addresses were processed")
+
+		return err
+	}
+}
+
+func convertToResolvedAddresses(list []coreevents.EnsNamePayload) []ResolvedAddress {
+	res := make([]ResolvedAddress, 0, len(list))
+	for i := range list {
+		res = append(res, ResolvedAddress{
+			Address: list[i].Address,
+			Name:    list[i].Name,
+		})
+	}
+
+	return res
+}
+
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
 	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectVoteCreated, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectVoteCreated, err)
 	}
+	cer, err := client.NewConsumer(ctx, c.conn, group, coreevents.SubjectEnsResolverResolved, c.handlerAddressResolved(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, coreevents.SubjectEnsResolverResolved, err)
+	}
 
-	c.consumers = append(c.consumers, cc)
+	c.consumers = append(c.consumers, cc, cer)
 
 	log.Info().Msg("vote consumers is started")
 

@@ -10,6 +10,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - Popularity index update
 
+## [0.0.50] - 2023-12-14
+
+### Added
+- Implement resolving ens names for voters
+
+## [0.0.49] - 2023-12-06
+
+### Added
+- Implement resolving ens names for proposals
+
 ## [0.0.48] - 2023-12-04
 
 ### Added
