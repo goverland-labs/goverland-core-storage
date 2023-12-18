@@ -164,6 +164,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 	new.CreatedAt = existed.CreatedAt
 	new.State = new.CalculateState()
 	new.EnsName = existed.EnsName
+	new.Timeline = existed.Timeline
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update proposal #%s: %w", new.ID, err)
@@ -333,6 +334,7 @@ func (s *Service) GetTop(limit, offset int) (ProposalList, error) {
 func (s *Service) prepareTop() {
 	list, err := s.repo.GetTop([]Filter{
 		PageFilter{Limit: 100, Offset: 0},
+		SkipSpamFilter{},
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("prepare proposal top cache")

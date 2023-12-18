@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Spam flag for proposals
+
+### Changed
+- Updating timeline for proposals
+
 ## [0.0.51] - 2023-12-19
 
 ### Changed

@@ -87,3 +87,9 @@ type AuthorsFilter struct {
 func (f AuthorsFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("author IN ?", f.List)
 }
+
+type SkipSpamFilter struct{}
+
+func (f SkipSpamFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("spam is false or spam is null")
+}

@@ -11,7 +11,7 @@ require (
 	github.com/goverland-labs/core-api v0.0.21
 	github.com/goverland-labs/datasource-snapshot v0.3.1
 	github.com/goverland-labs/helpers-ens-resolver v0.0.2
-	github.com/goverland-labs/platform-events v0.1.11
+	github.com/goverland-labs/platform-events v0.1.12-0.20231218152005-9154aaeac858
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021
