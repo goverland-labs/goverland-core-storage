@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Order Daos by popularity index.
+
+### Added
+- Popularity index update
+
 ## [0.0.50] - 2023-12-14
 
 ### Added

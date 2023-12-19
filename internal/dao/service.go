@@ -249,7 +249,7 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 		filters := []Filter{
 			CategoryFilter{Category: category},
 			PageFilter{Limit: limit, Offset: 0},
-			OrderByVotersFilter{},
+			OrderByPopularityIndexFilter{},
 		}
 
 		data, err := s.repo.GetByFilters(filters, true)
@@ -423,6 +423,26 @@ func (s *Service) processPopularCategory(_ context.Context) error {
 
 		if err = s.repo.Update(dao); err != nil {
 			return fmt.Errorf("update dao: %s: %w", dao.ID.String(), err)
+		}
+	}
+
+	return nil
+}
+
+func (s *Service) ProcessPopularityIndexUpdate(_ context.Context, id uuid.UUID, index float64) error {
+	existed, err := s.repo.GetByID(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("handle: %w", err)
+	}
+
+	if existed != nil {
+		existed.PopularityIndex = index
+		err := s.repo.Update(*existed)
+		if err != nil {
+			return fmt.Errorf("update dao #%s: %w", id, err)
 		}
 	}
 

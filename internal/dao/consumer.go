@@ -143,6 +143,28 @@ func (c *Consumer) handleProposalCreated() pevents.ProposalHandler {
 	}
 }
 
+func (c *Consumer) popularityIndexHandler() core.DaoHandler {
+	return func(payload core.DaoPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_popularity_index_update", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		err = c.service.ProcessPopularityIndexUpdate(context.TODO(), payload.ID, *payload.PopularityIndex)
+		if err != nil {
+			log.Error().Err(err).Msg("process popularity index updated")
+
+			return err
+		}
+
+		log.Debug().Msg("dao popularity index updated was processed")
+
+		return err
+	}
+}
+
 func convertVoteToInternal(pl coreevents.VotesPayload) []UniqueVoter {
 	res := make([]UniqueVoter, len(pl))
 	for i := range pl {
@@ -177,6 +199,10 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalCreated, err)
 	}
+	piu, err := client.NewConsumer(ctx, c.conn, group, core.SubjectPopularityIndexUpdated, c.popularityIndexHandler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectPopularityIndexUpdated, err)
+	}
 
 	c.consumers = append(
 		c.consumers,
@@ -185,6 +211,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 		cac,
 		vc,
 		pc,
+		piu,
 	)
 
 	log.Info().Msg("dao consumers is started")
