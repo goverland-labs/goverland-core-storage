@@ -431,7 +431,10 @@ func (s *Service) processPopularCategory(_ context.Context) error {
 
 func (s *Service) ProcessPopularityIndexUpdate(_ context.Context, id uuid.UUID, index float64) error {
 	existed, err := s.repo.GetByID(id)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	if err != nil {
 		return fmt.Errorf("handle: %w", err)
 	}
 
