@@ -80,6 +80,7 @@ type Proposal struct {
 	Votes         int
 	Timeline      Timeline `gorm:"serializer:json"`
 	EnsName       string
+	Spam          bool
 }
 
 func convertToCoreEvent(p Proposal) events.ProposalPayload {
@@ -142,6 +143,7 @@ func convertToProposal(p aggevents.ProposalPayload) Proposal {
 		ScoresTotal:   p.ScoresTotal,
 		ScoresUpdated: p.ScoresUpdated,
 		Votes:         p.Votes,
+		Spam:          p.Flagged,
 	}
 }
 
