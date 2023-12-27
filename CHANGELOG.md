@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Storing only unique voters for proposals
+
 ## [0.0.59] - 2024-02-09
 
 ### Fixed
