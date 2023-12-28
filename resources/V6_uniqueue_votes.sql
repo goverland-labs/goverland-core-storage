@@ -23,7 +23,7 @@ insert into tmp_voter_duplicates (
     from votes
     where created >= 1693526400
     group by proposal_id, voter
-    having (count(*)) > 2
+    having (count(*)) >= 2
 );
 
 -- prefill last insert id to avoid deleting last revision
