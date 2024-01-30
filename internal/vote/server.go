@@ -41,8 +41,12 @@ func (s *Server) GetVotes(_ context.Context, req *proto.VotesFilterRequest) (*pr
 		OrderByCreatedFilter{},
 	}
 
-	if req.GetProposalId() != "" {
-		filters = append(filters, ProposalFilter{ProposalID: req.GetProposalId()})
+	if req.GetProposalIds() != nil {
+		filters = append(filters, ProposalIDsFilter{ProposalIDs: req.GetProposalIds()})
+	}
+
+	if req.GetVoter() != "" {
+		filters = append(filters, VoterFilter{Voter: req.GetVoter()})
 	}
 
 	list, err := s.sp.GetByFilters(filters)

@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.53] - 2024-01-29
+
+### Changed
+- Filters for votes request to allow the list of proposals and the voter's address
+
 ## [0.0.52] - 2023-12-20
 
 ### Added

@@ -17,12 +17,20 @@ func (f PageFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Offset(f.Offset).Limit(f.Limit)
 }
 
-type ProposalFilter struct {
-	ProposalID string
+type ProposalIDsFilter struct {
+	ProposalIDs []string
 }
 
-func (f ProposalFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("proposal_id = ?", f.ProposalID)
+func (f ProposalIDsFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("proposal_id IN ?", f.ProposalIDs)
+}
+
+type VoterFilter struct {
+	Voter string
+}
+
+func (f VoterFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("voter = ?", f.Voter)
 }
 
 type OrderByCreatedFilter struct {
