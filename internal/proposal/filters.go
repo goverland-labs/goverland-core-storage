@@ -28,6 +28,14 @@ func (f DaoIDsFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("daos.id IN ?", f.DaoIDs)
 }
 
+type ProposalIDsFilter struct {
+	ProposalIDs []string
+}
+
+func (f ProposalIDsFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("id IN ?", f.ProposalIDs)
+}
+
 type CategoriesFilter struct {
 	Category string
 }
