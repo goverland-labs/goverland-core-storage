@@ -33,7 +33,7 @@ type ProposalIDsFilter struct {
 }
 
 func (f ProposalIDsFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("id IN ?", f.ProposalIDs)
+	return db.Where("proposals.id IN ?", f.ProposalIDs)
 }
 
 type CategoriesFilter struct {
