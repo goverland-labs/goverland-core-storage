@@ -95,6 +95,12 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 			})
 		}
 
+		if len(req.GetProposalIds()) != 0 {
+			filters = append(filters, ProposalIDsFilter{
+				ProposalIDs: req.GetProposalIds(),
+			})
+		}
+
 		list, err = s.sp.GetByFilters(filters)
 	}
 	if err != nil {
