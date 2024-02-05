@@ -112,6 +112,7 @@ func convertToCoreEvent(p Proposal) events.ProposalPayload {
 		ScoresUpdated: p.ScoresUpdated,
 		Votes:         p.Votes,
 		EnsName:       p.EnsName,
+		Spam:          p.Spam,
 	}
 }
 
