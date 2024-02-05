@@ -50,8 +50,8 @@ github.com/gopherjs/gopherjs v1.17.2 h1:fQnZVsXk8uxXIStYb0N4bGk7jeyTalG/wsZjQ25d
 github.com/gopherjs/gopherjs v1.17.2/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
-github.com/goverland-labs/core-api v0.0.23 h1:tofL5CcvhX7fpBokHSh5Kj2zxEBv0oFBBs/LXrwoOAE=
-github.com/goverland-labs/core-api v0.0.23/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
+github.com/goverland-labs/core-api v0.0.24 h1:aXo7GImVNiF+yoykP66btejTQSyYBkM/pCjf9ZcQbiA=
+github.com/goverland-labs/core-api v0.0.24/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
 github.com/goverland-labs/datasource-snapshot v0.3.1 h1:quyd0IJ9Cxxoso8pKC+N9XaKItj+0P4y/4NENNWASS0=
 github.com/goverland-labs/datasource-snapshot v0.3.1/go.mod h1:wtErsU9yYR5TtmJycON3We6Q/qBCXFdsiMcOtOChySw=
 github.com/goverland-labs/helpers-ens-resolver v0.0.2 h1:sf/1rHSJm/KB7If3IVhwvZwUM1jQ3pzd/GV8B8Fmg6Y=

@@ -1,6 +1,7 @@
 package vote
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -38,4 +39,12 @@ type OrderByCreatedFilter struct {
 
 func (f OrderByCreatedFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("created desc")
+}
+
+type OrderByVoterAndCreatedFilter struct {
+	Voter string
+}
+
+func (f OrderByVoterAndCreatedFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Order(fmt.Sprintf("case when voter = \"%s\" then 0 else 1 end, created desc", f.Voter))
 }

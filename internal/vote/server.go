@@ -38,7 +38,12 @@ func (s *Server) GetVotes(_ context.Context, req *proto.VotesFilterRequest) (*pr
 	}
 	filters := []Filter{
 		PageFilter{Limit: limit, Offset: offset},
-		OrderByCreatedFilter{},
+	}
+
+	if req.GetOrderByVoter() != "" {
+		filters = append(filters, OrderByVoterAndCreatedFilter{Voter: req.GetOrderByVoter()})
+	} else {
+		filters = append(filters, OrderByCreatedFilter{})
 	}
 
 	if req.GetProposalIds() != nil {

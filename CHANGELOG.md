@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.54] - 2024-02-05
+
+### Changed
+- Filters for votes request to allow order by voter's address
+
 ## [0.0.53] - 2024-01-29
 
 ### Changed
