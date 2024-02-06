@@ -46,5 +46,5 @@ type OrderByVoterAndCreatedFilter struct {
 }
 
 func (f OrderByVoterAndCreatedFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order(fmt.Sprintf("case when voter = \"%s\" then 0 else 1 end, created desc", f.Voter))
+	return db.Order(fmt.Sprintf("case when voter = '%s' then 0 else 1 end, created desc", f.Voter))
 }
