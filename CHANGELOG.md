@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.55] - 2024-02-06
+
+### Added
+- Active votes, verified fields to dao 
+
 ## [0.0.54] - 2024-02-05
 
 ### Changed

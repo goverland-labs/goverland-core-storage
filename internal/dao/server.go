@@ -173,7 +173,8 @@ func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
 		Template:       dao.Template,
 		ActivitySince:  uint64(dao.ActivitySince),
 		VotersCount:    uint64(dao.VotersCount),
-
+		ActiveVotes:    uint64(dao.ActiveVotes),
+		Verified:       dao.Verified,
 		// TODO: parentID
 	}
 }
