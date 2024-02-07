@@ -115,3 +115,29 @@ from (
 where daos.id = ?
 `, id, id).Error
 }
+
+func (r *Repo) UpdateActiveVotes(id uuid.UUID) error {
+	return r.db.Exec(`
+update daos
+set active_votes = cnt.active_votes
+from (
+	select count(*) as active_votes
+	from proposals
+	where dao_id = ? and state = 'active'
+) cnt
+where daos.id = ?
+`, id, id).Error
+}
+
+func (r *Repo) UpdateActiveVotesAll() error {
+	return r.db.Exec(`
+update daos
+set active_votes = cnt.active_votes
+from (
+	select dao_id, count(id) filter (where state = 'active') as active_votes
+	from proposals
+	group by dao_id
+) cnt
+where daos.id = cnt.dao_id
+`).Error
+}

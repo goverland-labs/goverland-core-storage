@@ -107,6 +107,8 @@ type Dao struct {
 	ActivitySince   int
 	VotersCount     int
 	PopularityIndex float64
+	ActiveVotes     int
+	Verified        bool
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
@@ -167,6 +169,7 @@ func convertToDao(e aggevents.DaoPayload) Dao {
 		ProposalsCount: e.ProposalsCount,
 		Guidelines:     e.Guidelines,
 		Template:       e.Template,
+		Verified:       e.Verified,
 
 		// TODO: parentID
 	}

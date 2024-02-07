@@ -41,6 +41,8 @@ type DataProvider interface {
 	Update(dao Dao) error
 	GetByID(id uuid.UUID) (*Dao, error)
 	UpdateProposalCnt(id uuid.UUID) error
+	UpdateActiveVotes(id uuid.UUID) error
+	UpdateActiveVotesAll() error
 	GetByFilters(filters []Filter, count bool) (DaoList, error)
 	GetCategories() ([]string, error)
 }
@@ -127,6 +129,9 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 		if err := s.repo.UpdateProposalCnt(id); err != nil {
 			log.Warn().Err(err).Msgf("repo.UpdateProposalCnt: %s", id.String())
 		}
+		if err := s.repo.UpdateActiveVotes(id); err != nil {
+			log.Warn().Err(err).Msgf("repo.UpdateActiveVotes: %s", id.String())
+		}
 	}(dao.ID)
 
 	if err := s.events.PublishJSON(ctx, coreevents.SubjectDaoCreated, convertToCoreEvent(dao)); err != nil {
@@ -158,6 +163,9 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	defer func(id uuid.UUID) {
 		if err = s.repo.UpdateProposalCnt(id); err != nil {
 			log.Warn().Err(err).Msgf("repo.UpdateProposalCnt: %s", id.String())
+		}
+		if err = s.repo.UpdateActiveVotes(id); err != nil {
+			log.Warn().Err(err).Msgf("repo.UpdateActiveVotes: %s", id.String())
 		}
 	}(new.ID)
 
@@ -387,6 +395,23 @@ func (s *Service) ProcessNewProposal(_ context.Context, originalDaoID string) er
 		return fmt.Errorf("UpdateProposalCnt: %w", err)
 	}
 
+	if err = s.repo.UpdateActiveVotes(daoID); err != nil {
+		return fmt.Errorf("UpdateActiveVotes: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) ProcessExistedProposal(_ context.Context, originalDaoID string) error {
+	daoID, err := s.idProvider.GetOrCreate(originalDaoID)
+	if err != nil {
+		return fmt.Errorf("idProvider.GetOrCreate: %w", err)
+	}
+
+	if err = s.repo.UpdateActiveVotes(daoID); err != nil {
+		return fmt.Errorf("UpdateActiveVotes: %w", err)
+	}
+
 	return nil
 }
 
@@ -444,6 +469,15 @@ func (s *Service) ProcessPopularityIndexUpdate(_ context.Context, id uuid.UUID, 
 		if err != nil {
 			return fmt.Errorf("update dao #%s: %w", id, err)
 		}
+	}
+
+	return nil
+}
+
+func (s *Service) processActiveVotes(_ context.Context) error {
+	err := s.repo.UpdateActiveVotesAll()
+	if err != nil {
+		return fmt.Errorf("UpdateActiveVotesAll: %w", err)
 	}
 
 	return nil

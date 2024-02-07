@@ -8,10 +8,10 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/mux v1.8.1
-	github.com/goverland-labs/core-api v0.0.24
+	github.com/goverland-labs/core-api v0.0.25
 	github.com/goverland-labs/datasource-snapshot v0.3.1
 	github.com/goverland-labs/helpers-ens-resolver v0.0.2
-	github.com/goverland-labs/platform-events v0.1.12
+	github.com/goverland-labs/platform-events v0.1.15
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021

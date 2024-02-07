@@ -143,6 +143,28 @@ func (c *Consumer) handleProposalCreated() pevents.ProposalHandler {
 	}
 }
 
+func (c *Consumer) handleProposalUpdated() pevents.ProposalHandler {
+	return func(payload pevents.ProposalPayload) error {
+		var err error
+		defer func(start time.Time) {
+			metricHandleHistogram.
+				WithLabelValues("handle_proposal_updated", metrics.ErrLabelValue(err)).
+				Observe(time.Since(start).Seconds())
+		}(time.Now())
+
+		err = c.service.ProcessExistedProposal(context.TODO(), payload.DaoID)
+		if err != nil {
+			log.Error().Err(err).Msg("process dao proposal updated")
+
+			return err
+		}
+
+		log.Debug().Msg("dao proposal updated was processed")
+
+		return err
+	}
+}
+
 func (c *Consumer) popularityIndexHandler() core.DaoHandler {
 	return func(payload core.DaoPayload) error {
 		var err error
@@ -199,6 +221,10 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalCreated, err)
 	}
+	pu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalUpdated, c.handleProposalUpdated(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalUpdated, err)
+	}
 	piu, err := client.NewConsumer(ctx, c.conn, group, core.SubjectPopularityIndexUpdated, c.popularityIndexHandler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectPopularityIndexUpdated, err)
@@ -211,6 +237,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 		cac,
 		vc,
 		pc,
+		pu,
 		piu,
 	)
 
