@@ -169,6 +169,7 @@ func convertToDao(e aggevents.DaoPayload) Dao {
 		ProposalsCount: e.ProposalsCount,
 		Guidelines:     e.Guidelines,
 		Template:       e.Template,
+		Verified:       e.Verified,
 
 		// TODO: parentID
 	}
