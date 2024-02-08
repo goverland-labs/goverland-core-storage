@@ -335,8 +335,9 @@ func (s *Service) GetTop(limit, offset int) (ProposalList, error) {
 
 func (s *Service) prepareTop() {
 	list, err := s.repo.GetTop([]Filter{
-		PageFilter{Limit: 100, Offset: 0},
+		SkipCanceled{},
 		SkipSpamFilter{},
+		PageFilter{Limit: 100, Offset: 0},
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("prepare proposal top cache")

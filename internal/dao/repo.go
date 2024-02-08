@@ -110,7 +110,7 @@ set proposals_count = cnt.proposals_count
 from (
 	select count(*) as proposals_count
 	from proposals
-	where dao_id = ?
+	where dao_id = ? and spam is not true and state != 'canceled'
 ) cnt
 where daos.id = ?
 `, id, id).Error
@@ -123,7 +123,7 @@ set active_votes = cnt.active_votes
 from (
 	select count(*) as active_votes
 	from proposals
-	where dao_id = ? and state = 'active'
+	where dao_id = ? and state = 'active' and spam is not true
 ) cnt
 where daos.id = ?
 `, id, id).Error
@@ -134,7 +134,7 @@ func (r *Repo) UpdateActiveVotesAll() error {
 update daos
 set active_votes = cnt.active_votes
 from (
-	select dao_id, count(id) filter (where state = 'active') as active_votes
+	select dao_id, count(id) filter (where state = 'active' and spam is not true) as active_votes
 	from proposals
 	group by dao_id
 ) cnt

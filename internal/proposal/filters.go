@@ -101,3 +101,15 @@ type SkipSpamFilter struct{}
 func (f SkipSpamFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("spam is false or spam is null")
 }
+
+type SkipCanceled struct {
+}
+
+func (f SkipCanceled) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy Proposal
+		_     = dummy.Snapshot // state
+	)
+
+	return db.Where(`snapshot->>'state' != 'canceled'`)
+}

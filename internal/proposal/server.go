@@ -61,8 +61,9 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 		offset = int(req.GetOffset())
 	}
 	filters := []Filter{
-		PageFilter{Limit: limit, Offset: offset},
+		SkipCanceled{},
 		SkipSpamFilter{},
+		PageFilter{Limit: limit, Offset: offset},
 	}
 
 	var list ProposalList
