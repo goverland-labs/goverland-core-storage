@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.58] - 2024-02-08
+
+### Changed
+- Filtering canceled proposals
+
 ## [0.0.57] - 2024-02-08
 
 ### Changed

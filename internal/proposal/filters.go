@@ -108,8 +108,8 @@ type SkipCanceled struct {
 func (f SkipCanceled) Apply(db *gorm.DB) *gorm.DB {
 	var (
 		dummy Proposal
-		_     = dummy.Snapshot // state
+		_     = dummy.State
 	)
 
-	return db.Where(`snapshot->>'state' != 'canceled'`)
+	return db.Where(`state != 'canceled'`)
 }
