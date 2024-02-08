@@ -93,7 +93,7 @@ func (s *Service) HandleProposal(ctx context.Context, pro Proposal) error {
 	return s.processExisted(ctx, pro, *existed)
 }
 
-func (s *Service) HandleDeleted(_ context.Context, pro Proposal) error {
+func (s *Service) HandleDeleted(ctx context.Context, pro Proposal) error {
 	existed, err := s.repo.GetByID(pro.ID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("handle: %w", err)
@@ -109,6 +109,8 @@ func (s *Service) HandleDeleted(_ context.Context, pro Proposal) error {
 	if err = s.repo.Update(*existed); err != nil {
 		return fmt.Errorf("update: %w", err)
 	}
+
+	s.registerEvent(ctx, *existed, groupName, coreevents.SubjectProposalUpdated)
 
 	return nil
 }
