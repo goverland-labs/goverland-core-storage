@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.56] - 2024-02-08
+
 ### Changed
 - Send spam field to core-feed
 - Send event on proposal deletion event
