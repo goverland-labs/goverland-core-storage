@@ -137,7 +137,7 @@ func (r *Repo) UpdateVotes(list []ResolvedAddress) error {
 }
 
 func getTopProposalOfDaoTable(db *gorm.DB) *gorm.DB {
-	result := db.Raw("select distinct on(dao_id) * from proposals where state = 'active' and spam is not true and votes >= 10 " +
+	result := db.Raw("select distinct on(dao_id) * from proposals where state = 'active' and spam is not true and votes >= 30 " +
 		"order by dao_id, votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
 	return db.Table("(?) as proposals", result)
 }
