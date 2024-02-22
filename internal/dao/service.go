@@ -23,6 +23,8 @@ import (
 const (
 	newDaoCategoryName     = "new_daos"
 	popularDaoCategoryName = "popular_daos"
+
+	topCachingTTL = 5 * time.Minute
 )
 
 var (
@@ -65,6 +67,9 @@ type Service struct {
 	daoIds map[string]uuid.UUID
 	daoMu  sync.RWMutex
 
+	topMu    sync.RWMutex
+	topCache map[int]map[string]topList
+
 	repo       DataProvider
 	uniqueRepo UniqueVoterProvider
 	events     Publisher
@@ -81,6 +86,8 @@ func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publ
 		proposals:  pp,
 		daoIds:     make(map[string]uuid.UUID),
 		daoMu:      sync.RWMutex{},
+		topMu:      sync.RWMutex{},
+		topCache:   map[int]map[string]topList{},
 	}, nil
 }
 
@@ -245,8 +252,14 @@ type topList struct {
 	Total int64
 }
 
-// todo: use caching here!
 func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]topList, error) {
+	s.topMu.RLock()
+	cached, ok := s.topCache[limit]
+	s.topMu.RUnlock()
+	if ok && len(cached) != 0 {
+		return cached, nil
+	}
+
 	categories, err := s.repo.GetCategories()
 	if err != nil {
 		return nil, fmt.Errorf("get categories: %w", err)
@@ -270,6 +283,18 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 			Total: data.TotalCount,
 		}
 	}
+
+	s.topMu.Lock()
+	s.topCache[limit] = list
+	s.topMu.Unlock()
+
+	go func() {
+		<-time.After(topCachingTTL)
+
+		s.topMu.Lock()
+		delete(s.topCache, limit)
+		s.topMu.Unlock()
+	}()
 
 	return list, nil
 }
