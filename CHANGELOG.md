@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Reduced proposal top cache interval from 30 to 5 minutes
+- Increased number of voters for proposal top query 
+
 ## [0.0.60] - 2024-02-13
 
 ### Changed

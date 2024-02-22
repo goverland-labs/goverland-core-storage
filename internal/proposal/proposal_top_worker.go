@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	topCheckDelay = 30 * time.Minute
+	topCheckDelay = 5 * time.Minute
 )
 
 type TopWorker struct {
