@@ -10,6 +10,7 @@ import (
 
 	"github.com/goverland-labs/datasource-snapshot/proto/votingpb"
 	"github.com/goverland-labs/helpers-ens-resolver/proto"
+	"github.com/goverland-labs/platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
 	"google.golang.org/grpc"
@@ -20,7 +21,6 @@ import (
 
 	"github.com/goverland-labs/core-api/protobuf/internalapi"
 
-	"github.com/goverland-labs/core-storage/internal/communicate"
 	"github.com/goverland-labs/core-storage/internal/config"
 	"github.com/goverland-labs/core-storage/internal/dao"
 	"github.com/goverland-labs/core-storage/internal/ensresolver"
@@ -147,7 +147,7 @@ func (a *Application) initServices() error {
 		return err
 	}
 
-	pb, err := communicate.NewPublisher(nc)
+	pb, err := natsclient.NewPublisher(nc)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (a *Application) initServices() error {
 	return nil
 }
 
-func (a *Application) initEnsResolver(pb *communicate.Publisher) error {
+func (a *Application) initEnsResolver(pb *natsclient.Publisher) error {
 	conn, err := grpc.Dial(a.cfg.InternalAPI.EnsResolverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("create connection with ens resolver: %v", err)
@@ -196,7 +196,7 @@ func (a *Application) initEnsResolver(pb *communicate.Publisher) error {
 	return nil
 }
 
-func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
+func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.daoIDService = dao.NewDaoIDService(a.daoIDRepo)
 
 	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo)
@@ -228,7 +228,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *communicate.Publisher) error {
 	return nil
 }
 
-func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) error {
+func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) error {
 	erService, err := events.NewService(a.eventsRepo)
 	if err != nil {
 		return fmt.Errorf("new events service: %w", err)
@@ -256,7 +256,7 @@ func (a *Application) initProposal(nc *nats.Conn, pb *communicate.Publisher) err
 	return nil
 }
 
-func (a *Application) initVote(nc *nats.Conn, pb *communicate.Publisher) error {
+func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 	dsConn, err := grpc.Dial(
 		a.cfg.InternalAPI.DatasourceSnapshotAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
