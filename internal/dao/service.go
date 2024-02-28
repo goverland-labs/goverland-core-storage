@@ -257,7 +257,7 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 	cached, ok := s.topCache[limit]
 	s.topMu.RUnlock()
 	if ok && len(cached) != 0 {
-		return cached, nil
+		return makeCopy(cached), nil
 	}
 
 	categories, err := s.repo.GetCategories()
@@ -297,6 +297,22 @@ func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]t
 	}()
 
 	return list, nil
+}
+
+func makeCopy(src map[string]topList) map[string]topList {
+	copied := map[string]topList{}
+	for k, v := range src {
+		copied[k] = topList{
+			List:  make([]Dao, len(v.List)),
+			Total: v.Total,
+		}
+
+		for i := range v.List {
+			copied[k].List[i] = v.List[i]
+		}
+	}
+
+	return copied
 }
 
 func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, error) {

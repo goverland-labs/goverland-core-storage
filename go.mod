@@ -1,6 +1,6 @@
 module github.com/goverland-labs/core-storage
 
-go 1.21.1
+go 1.22
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
@@ -11,7 +11,7 @@ require (
 	github.com/goverland-labs/core-api v0.0.25
 	github.com/goverland-labs/datasource-snapshot v0.3.1
 	github.com/goverland-labs/helpers-ens-resolver v0.0.2
-	github.com/goverland-labs/platform-events v0.1.16-0.20240227122936-92ad2f5133e5
+	github.com/goverland-labs/platform-events v0.1.16
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021
