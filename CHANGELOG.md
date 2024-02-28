@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.62] - 2024-02-28
+
 ### Added
 - Caching the dao top by category for the 5 minutes
 - Metrics for producing/publishing messages
