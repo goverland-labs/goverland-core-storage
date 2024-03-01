@@ -13,6 +13,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 - Added LICENSE information
+- Added info for contributing
 
 ## [0.0.62] - 2024-02-28
 
