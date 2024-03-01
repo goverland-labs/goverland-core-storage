@@ -18,8 +18,6 @@ import (
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 )
 
-//go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher,DaoIDProvider
-
 const (
 	newDaoCategoryName     = "new_daos"
 	popularDaoCategoryName = "popular_daos"
@@ -307,7 +305,7 @@ func makeCopy(src map[string]topList) map[string]topList {
 			Total: v.Total,
 		}
 
-		for i := range v.List {
+		for i := range v.List { // nolint:gosimple
 			copied[k].List[i] = v.List[i]
 		}
 	}
