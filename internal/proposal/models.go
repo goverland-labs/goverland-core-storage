@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
-	coreevents "github.com/goverland-labs/platform-events/events/core"
-	events "github.com/goverland-labs/platform-events/events/core"
+	aggevents "github.com/goverland-labs/goverland-platform-events/events/aggregator"
+	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
+	events "github.com/goverland-labs/goverland-platform-events/events/core"
 )
 
 const (

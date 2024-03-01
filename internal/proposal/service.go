@@ -12,18 +12,16 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	pevents "github.com/goverland-labs/platform-events/events/aggregator"
-	coreevents "github.com/goverland-labs/platform-events/events/core"
+	pevents "github.com/goverland-labs/goverland-platform-events/events/aggregator"
+	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
 
-	"github.com/goverland-labs/core-storage/internal/metrics"
+	"github.com/goverland-labs/goverland-core-storage/internal/metrics"
 )
 
 const (
 	startVotingWindow = -time.Hour
 	endVotingWindow   = -6 * time.Hour
 )
-
-//go:generate mockgen -destination=mocks_test.go -package=proposal . DataProvider,Publisher,EventRegistered,DaoProvider,EnsResolver
 
 type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error

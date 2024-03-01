@@ -1,11 +1,12 @@
 package vote
 
 import (
-	"github.com/google/uuid"
 	"testing"
 
-	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
-	events "github.com/goverland-labs/platform-events/events/core"
+	"github.com/google/uuid"
+
+	aggevents "github.com/goverland-labs/goverland-platform-events/events/aggregator"
+	events "github.com/goverland-labs/goverland-platform-events/events/core"
 	"github.com/stretchr/testify/assert"
 )
 
