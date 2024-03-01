@@ -16,6 +16,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added info for contributing
 - Added github issues templates
 - Added linter and unit-tests workflows for github actions
+- Added badges with link to the license and passed workflows
 
 ## [0.0.62] - 2024-02-28
 
