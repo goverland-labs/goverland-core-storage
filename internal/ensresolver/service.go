@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/goverland-labs/helpers-ens-resolver/proto"
-	coreevents "github.com/goverland-labs/platform-events/events/core"
+	"github.com/goverland-labs/goverland-helpers-ens-resolver/protocol/enspb"
+	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
 	"github.com/rs/zerolog/log"
 )
 
@@ -21,7 +21,7 @@ type Publisher interface {
 }
 
 type Service struct {
-	client     proto.EnsClient
+	client     enspb.EnsClient
 	repo       *Repo
 	mu         sync.Mutex
 	inProgress atomic.Int64
@@ -32,7 +32,7 @@ type Service struct {
 	queue []string
 }
 
-func NewService(repo *Repo, cl proto.EnsClient, pl Publisher) (*Service, error) {
+func NewService(repo *Repo, cl enspb.EnsClient, pl Publisher) (*Service, error) {
 	return &Service{
 		repo:      repo,
 		client:    cl,
@@ -84,7 +84,7 @@ func (s *Service) processAddresses(list []string) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	res, err := s.client.ResolveDomains(ctx, &proto.ResolveDomainsRequest{
+	res, err := s.client.ResolveDomains(ctx, &enspb.ResolveDomainsRequest{
 		Addresses: list,
 	})
 	if err != nil {

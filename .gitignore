@@ -3,5 +3,5 @@
 /.env
 /bin/*
 /tmp/*
-/core-storage
+/goverland-core-storage
 /vendor

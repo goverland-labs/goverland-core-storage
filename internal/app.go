@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goverland-labs/datasource-snapshot/proto/votingpb"
-	"github.com/goverland-labs/helpers-ens-resolver/proto"
-	"github.com/goverland-labs/platform-events/pkg/natsclient"
+	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/votingpb"
+	"github.com/goverland-labs/goverland-helpers-ens-resolver/protocol/enspb"
+	"github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
 	"google.golang.org/grpc"
@@ -21,15 +21,15 @@ import (
 
 	"github.com/goverland-labs/core-api/protobuf/internalapi"
 
-	"github.com/goverland-labs/core-storage/internal/config"
-	"github.com/goverland-labs/core-storage/internal/dao"
-	"github.com/goverland-labs/core-storage/internal/ensresolver"
-	"github.com/goverland-labs/core-storage/internal/events"
-	"github.com/goverland-labs/core-storage/internal/proposal"
-	"github.com/goverland-labs/core-storage/internal/vote"
-	"github.com/goverland-labs/core-storage/pkg/grpcsrv"
-	"github.com/goverland-labs/core-storage/pkg/health"
-	"github.com/goverland-labs/core-storage/pkg/prometheus"
+	"github.com/goverland-labs/goverland-core-storage/internal/config"
+	"github.com/goverland-labs/goverland-core-storage/internal/dao"
+	"github.com/goverland-labs/goverland-core-storage/internal/ensresolver"
+	"github.com/goverland-labs/goverland-core-storage/internal/events"
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
+	"github.com/goverland-labs/goverland-core-storage/internal/vote"
+	"github.com/goverland-labs/goverland-core-storage/pkg/grpcsrv"
+	"github.com/goverland-labs/goverland-core-storage/pkg/health"
+	"github.com/goverland-labs/goverland-core-storage/pkg/prometheus"
 )
 
 type Application struct {
@@ -186,7 +186,7 @@ func (a *Application) initEnsResolver(pb *natsclient.Publisher) error {
 		return fmt.Errorf("create connection with ens resolver: %v", err)
 	}
 
-	a.ensService, err = ensresolver.NewService(a.ensRepo, proto.NewEnsClient(conn), pb)
+	a.ensService, err = ensresolver.NewService(a.ensRepo, enspb.NewEnsClient(conn), pb)
 	if err != nil {
 		return fmt.Errorf("ensresolver.NewService: %w", err)
 	}

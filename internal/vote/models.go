@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	aggevents "github.com/goverland-labs/platform-events/events/aggregator"
-	events "github.com/goverland-labs/platform-events/events/core"
+	aggevents "github.com/goverland-labs/goverland-platform-events/events/aggregator"
+	events "github.com/goverland-labs/goverland-platform-events/events/core"
 )
 
 type Vote struct {

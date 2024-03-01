@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	coreevents "github.com/goverland-labs/platform-events/events/core"
+	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )

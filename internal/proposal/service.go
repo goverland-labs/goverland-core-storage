@@ -12,10 +12,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	pevents "github.com/goverland-labs/platform-events/events/aggregator"
-	coreevents "github.com/goverland-labs/platform-events/events/core"
+	pevents "github.com/goverland-labs/goverland-platform-events/events/aggregator"
+	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
 
-	"github.com/goverland-labs/core-storage/internal/metrics"
+	"github.com/goverland-labs/goverland-core-storage/internal/metrics"
 )
 
 const (

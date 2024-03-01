@@ -13,9 +13,9 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	coreevents "github.com/goverland-labs/platform-events/events/core"
+	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
 
-	"github.com/goverland-labs/core-storage/internal/proposal"
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=dao . DataProvider,Publisher,DaoIDProvider

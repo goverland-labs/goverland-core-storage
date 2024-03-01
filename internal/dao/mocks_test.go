@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/google/uuid"
-	proposal "github.com/goverland-labs/core-storage/internal/proposal"
+	proposal "github.com/goverland-labs/goverland-core-storage/internal/proposal"
 )
 
 // MockPublisher is a mock of Publisher interface.
