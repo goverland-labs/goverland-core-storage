@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/goverland-labs/goverland-core-storage/protocol/storagebp"
+	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 )
 
 type Server struct {
-	storagebp.UnimplementedVoteServer
+	storagepb.UnimplementedVoteServer
 
 	sp *Service
 }
@@ -28,7 +28,7 @@ func NewServer(sp *Service) *Server {
 	}
 }
 
-func (s *Server) GetVotes(_ context.Context, req *storagebp.VotesFilterRequest) (*storagebp.VotesFilterResponse, error) {
+func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) (*storagepb.VotesFilterResponse, error) {
 	limit, offset := defaultLimit, defaultOffset
 	if req.GetLimit() > 0 {
 		limit = int(req.GetLimit())
@@ -60,8 +60,8 @@ func (s *Server) GetVotes(_ context.Context, req *storagebp.VotesFilterRequest) 
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	res := &storagebp.VotesFilterResponse{
-		Votes:      make([]*storagebp.VoteInfo, len(list.Votes)),
+	res := &storagepb.VotesFilterResponse{
+		Votes:      make([]*storagepb.VoteInfo, len(list.Votes)),
 		TotalCount: uint64(list.TotalCount),
 	}
 
@@ -72,7 +72,7 @@ func (s *Server) GetVotes(_ context.Context, req *storagebp.VotesFilterRequest) 
 	return res, nil
 }
 
-func (s *Server) Validate(ctx context.Context, req *storagebp.ValidateRequest) (*storagebp.ValidateResponse, error) {
+func (s *Server) Validate(ctx context.Context, req *storagepb.ValidateRequest) (*storagepb.ValidateResponse, error) {
 	validateResp, err := s.sp.Validate(ctx, ValidateRequest{
 		Proposal: req.GetProposal(),
 		Voter:    req.GetVoter(),
@@ -83,22 +83,22 @@ func (s *Server) Validate(ctx context.Context, req *storagebp.ValidateRequest) (
 		return nil, status.Error(codes.Internal, "failed to validate vote")
 	}
 
-	var validationError *storagebp.ValidationError
+	var validationError *storagepb.ValidationError
 	if validateResp.ValidationError != nil {
-		validationError = &storagebp.ValidationError{
+		validationError = &storagepb.ValidationError{
 			Message: validateResp.ValidationError.Message,
 			Code:    validateResp.ValidationError.Code,
 		}
 	}
 
-	return &storagebp.ValidateResponse{
+	return &storagepb.ValidateResponse{
 		Ok:              validateResp.OK,
 		VotingPower:     validateResp.VotingPower,
 		ValidationError: validationError,
 	}, nil
 }
 
-func (s *Server) Prepare(ctx context.Context, req *storagebp.PrepareRequest) (*storagebp.PrepareResponse, error) {
+func (s *Server) Prepare(ctx context.Context, req *storagepb.PrepareRequest) (*storagepb.PrepareResponse, error) {
 	prepareResp, err := s.sp.Prepare(ctx, PrepareRequest{
 		Voter:    req.GetVoter(),
 		Proposal: req.GetProposal(),
@@ -111,13 +111,13 @@ func (s *Server) Prepare(ctx context.Context, req *storagebp.PrepareRequest) (*s
 		return nil, status.Error(codes.Internal, "failed to prepare vote")
 	}
 
-	return &storagebp.PrepareResponse{
+	return &storagepb.PrepareResponse{
 		Id:        prepareResp.ID,
 		TypedData: prepareResp.TypedData,
 	}, nil
 }
 
-func (s *Server) Vote(ctx context.Context, req *storagebp.VoteRequest) (*storagebp.VoteResponse, error) {
+func (s *Server) Vote(ctx context.Context, req *storagepb.VoteRequest) (*storagepb.VoteResponse, error) {
 	voteResp, err := s.sp.Vote(ctx, VoteRequest{
 		ID:  req.GetId(),
 		Sig: req.GetSig(),
@@ -128,23 +128,23 @@ func (s *Server) Vote(ctx context.Context, req *storagebp.VoteRequest) (*storage
 		return nil, status.Error(codes.Internal, "failed to vote")
 	}
 
-	return &storagebp.VoteResponse{
+	return &storagepb.VoteResponse{
 		Id:   voteResp.ID,
 		Ipfs: voteResp.IPFS,
-		Relayer: &storagebp.Relayer{
+		Relayer: &storagepb.Relayer{
 			Address: voteResp.Relayer.Address,
 			Receipt: voteResp.Relayer.Receipt,
 		},
 	}, nil
 }
 
-func convertVoteToAPI(info *Vote) *storagebp.VoteInfo {
+func convertVoteToAPI(info *Vote) *storagepb.VoteInfo {
 	vpByStrategies := make([]float32, len(info.VpByStrategy))
 	for i := range info.VpByStrategy {
 		vpByStrategies[i] = float32(info.VpByStrategy[i])
 	}
 
-	return &storagebp.VoteInfo{
+	return &storagepb.VoteInfo{
 		Id:         info.ID,
 		Ipfs:       info.Ipfs,
 		Voter:      info.Voter,

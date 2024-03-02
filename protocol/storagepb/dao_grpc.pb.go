@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.25.2
-// source: storagebp/dao.proto
+// source: storagepb/dao.proto
 
-package storagebp
+package storagepb
 
 import (
 	context "context"
@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Dao_GetByID_FullMethodName            = "/storagebp.Dao/GetByID"
-	Dao_GetByFilter_FullMethodName        = "/storagebp.Dao/GetByFilter"
-	Dao_GetTopByCategories_FullMethodName = "/storagebp.Dao/GetTopByCategories"
+	Dao_GetByID_FullMethodName            = "/storagepb.Dao/GetByID"
+	Dao_GetByFilter_FullMethodName        = "/storagepb.Dao/GetByFilter"
+	Dao_GetTopByCategories_FullMethodName = "/storagepb.Dao/GetTopByCategories"
 )
 
 // DaoClient is the client API for Dao service.
@@ -162,7 +162,7 @@ func _Dao_GetTopByCategories_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Dao_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "storagebp.Dao",
+	ServiceName: "storagepb.Dao",
 	HandlerType: (*DaoServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -179,5 +179,5 @@ var Dao_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "storagebp/dao.proto",
+	Metadata: "storagepb/dao.proto",
 }

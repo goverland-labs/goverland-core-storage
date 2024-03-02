@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 
-	proto "github.com/goverland-labs/goverland-core-storage/protocol/storagebp"
+	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 )
 
 const (
@@ -23,7 +23,7 @@ const (
 )
 
 type Server struct {
-	proto.UnimplementedDaoServer
+	storagepb.UnimplementedDaoServer
 
 	sp *Service
 }
@@ -34,7 +34,7 @@ func NewServer(sp *Service) *Server {
 	}
 }
 
-func (s *Server) GetByID(_ context.Context, req *proto.DaoByIDRequest) (*proto.DaoByIDResponse, error) {
+func (s *Server) GetByID(_ context.Context, req *storagepb.DaoByIDRequest) (*storagepb.DaoByIDResponse, error) {
 	if req.GetDaoId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
@@ -54,12 +54,12 @@ func (s *Server) GetByID(_ context.Context, req *proto.DaoByIDRequest) (*proto.D
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &proto.DaoByIDResponse{
+	return &storagepb.DaoByIDResponse{
 		Dao: convertDaoToAPI(dao),
 	}, nil
 }
 
-func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (*proto.DaoByFilterResponse, error) {
+func (s *Server) GetByFilter(_ context.Context, req *storagepb.DaoByFilterRequest) (*storagepb.DaoByFilterResponse, error) {
 	limit, offset := defaultDaoLimit, defaultOffset
 	if req.GetLimit() > 0 {
 		limit = int(req.GetLimit())
@@ -92,8 +92,8 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	res := &proto.DaoByFilterResponse{
-		Daos:       make([]*proto.DaoInfo, len(list.Daos)),
+	res := &storagepb.DaoByFilterResponse{
+		Daos:       make([]*storagepb.DaoInfo, len(list.Daos)),
 		TotalCount: uint64(list.TotalCount),
 	}
 
@@ -104,7 +104,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.DaoByFilterRequest) (
 	return res, nil
 }
 
-func (s *Server) GetTopByCategories(ctx context.Context, req *proto.TopByCategoriesRequest) (*proto.TopByCategoriesResponse, error) {
+func (s *Server) GetTopByCategories(ctx context.Context, req *storagepb.TopByCategoriesRequest) (*storagepb.TopByCategoriesResponse, error) {
 	limit := 10
 	if req.GetLimit() != 0 {
 		limit = int(req.GetLimit())
@@ -119,16 +119,16 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *proto.TopByCategor
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	res := &proto.TopByCategoriesResponse{
-		Categories: make([]*proto.TopCategory, len(list)),
+	res := &storagepb.TopByCategoriesResponse{
+		Categories: make([]*storagepb.TopCategory, len(list)),
 	}
 
 	idx := 0
 	for cat, details := range list {
-		info := &proto.TopCategory{
+		info := &storagepb.TopCategory{
 			Category:   cat,
 			TotalCount: uint64(details.Total),
-			Daos:       make([]*proto.DaoInfo, len(details.List)),
+			Daos:       make([]*storagepb.DaoInfo, len(details.List)),
 		}
 		for i, dao := range details.List {
 			info.Daos[i] = convertDaoToAPI(&dao)
@@ -142,8 +142,8 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *proto.TopByCategor
 	return res, nil
 }
 
-func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
-	return &proto.DaoInfo{
+func convertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
+	return &storagepb.DaoInfo{
 		Id:             dao.ID.String(),
 		Alias:          dao.OriginalID,
 		CreatedAt:      timestamppb.New(dao.CreatedAt),
@@ -179,12 +179,12 @@ func convertDaoToAPI(dao *Dao) *proto.DaoInfo {
 	}
 }
 
-func convertStrategiesToAPI(data Strategies) []*proto.Strategy {
-	res := make([]*proto.Strategy, len(data))
+func convertStrategiesToAPI(data Strategies) []*storagepb.Strategy {
+	res := make([]*storagepb.Strategy, len(data))
 	for i, info := range data {
 		params, _ := json.Marshal(info.Params)
 
-		res[i] = &proto.Strategy{
+		res[i] = &storagepb.Strategy{
 			Name:    info.Name,
 			Network: info.Network,
 			Params:  params,
@@ -194,10 +194,10 @@ func convertStrategiesToAPI(data Strategies) []*proto.Strategy {
 	return res
 }
 
-func convertTreasuriesToAPI(data Treasuries) []*proto.Treasury {
-	res := make([]*proto.Treasury, len(data))
+func convertTreasuriesToAPI(data Treasuries) []*storagepb.Treasury {
+	res := make([]*storagepb.Treasury, len(data))
 	for i, info := range data {
-		res[i] = &proto.Treasury{
+		res[i] = &storagepb.Treasury{
 			Name:    info.Name,
 			Address: info.Address,
 			Network: info.Network,
@@ -207,8 +207,8 @@ func convertTreasuriesToAPI(data Treasuries) []*proto.Treasury {
 	return res
 }
 
-func convertVotingToAPI(voting Voting) *proto.Voting {
-	return &proto.Voting{
+func convertVotingToAPI(voting Voting) *storagepb.Voting {
+	return &storagepb.Voting{
 		Delay:       uint64(voting.Delay),
 		Period:      uint64(voting.Period),
 		Type:        voting.Type,

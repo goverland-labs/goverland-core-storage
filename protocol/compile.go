@@ -1,3 +1,3 @@
-//go:generate sh bin/compile_proto.sh . . storagebp/*.proto
+//go:generate sh bin/compile_proto.sh . . storagepb/*.proto
 
 package protocol

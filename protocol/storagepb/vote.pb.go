@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.32.0
 // 	protoc        v4.25.2
-// source: storagebp/vote.proto
+// source: storagepb/vote.proto
 
-package storagebp
+package storagepb
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -36,7 +36,7 @@ type VotesFilterRequest struct {
 func (x *VotesFilterRequest) Reset() {
 	*x = VotesFilterRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[0]
+		mi := &file_storagepb_vote_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -49,7 +49,7 @@ func (x *VotesFilterRequest) String() string {
 func (*VotesFilterRequest) ProtoMessage() {}
 
 func (x *VotesFilterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[0]
+	mi := &file_storagepb_vote_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62,7 +62,7 @@ func (x *VotesFilterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VotesFilterRequest.ProtoReflect.Descriptor instead.
 func (*VotesFilterRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{0}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *VotesFilterRequest) GetProposalIds() []string {
@@ -123,7 +123,7 @@ type VoteInfo struct {
 func (x *VoteInfo) Reset() {
 	*x = VoteInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[1]
+		mi := &file_storagepb_vote_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -136,7 +136,7 @@ func (x *VoteInfo) String() string {
 func (*VoteInfo) ProtoMessage() {}
 
 func (x *VoteInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[1]
+	mi := &file_storagepb_vote_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -149,7 +149,7 @@ func (x *VoteInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VoteInfo.ProtoReflect.Descriptor instead.
 func (*VoteInfo) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{1}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *VoteInfo) GetId() string {
@@ -255,7 +255,7 @@ type VotesFilterResponse struct {
 func (x *VotesFilterResponse) Reset() {
 	*x = VotesFilterResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[2]
+		mi := &file_storagepb_vote_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -268,7 +268,7 @@ func (x *VotesFilterResponse) String() string {
 func (*VotesFilterResponse) ProtoMessage() {}
 
 func (x *VotesFilterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[2]
+	mi := &file_storagepb_vote_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -281,7 +281,7 @@ func (x *VotesFilterResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VotesFilterResponse.ProtoReflect.Descriptor instead.
 func (*VotesFilterResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{2}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *VotesFilterResponse) GetVotes() []*VoteInfo {
@@ -310,7 +310,7 @@ type ValidateRequest struct {
 func (x *ValidateRequest) Reset() {
 	*x = ValidateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[3]
+		mi := &file_storagepb_vote_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -323,7 +323,7 @@ func (x *ValidateRequest) String() string {
 func (*ValidateRequest) ProtoMessage() {}
 
 func (x *ValidateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[3]
+	mi := &file_storagepb_vote_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -336,7 +336,7 @@ func (x *ValidateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateRequest.ProtoReflect.Descriptor instead.
 func (*ValidateRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{3}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ValidateRequest) GetVoter() string {
@@ -366,7 +366,7 @@ type ValidateResponse struct {
 func (x *ValidateResponse) Reset() {
 	*x = ValidateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[4]
+		mi := &file_storagepb_vote_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -379,7 +379,7 @@ func (x *ValidateResponse) String() string {
 func (*ValidateResponse) ProtoMessage() {}
 
 func (x *ValidateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[4]
+	mi := &file_storagepb_vote_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -392,7 +392,7 @@ func (x *ValidateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateResponse.ProtoReflect.Descriptor instead.
 func (*ValidateResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{4}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ValidateResponse) GetOk() bool {
@@ -428,7 +428,7 @@ type ValidationError struct {
 func (x *ValidationError) Reset() {
 	*x = ValidationError{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[5]
+		mi := &file_storagepb_vote_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -441,7 +441,7 @@ func (x *ValidationError) String() string {
 func (*ValidationError) ProtoMessage() {}
 
 func (x *ValidationError) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[5]
+	mi := &file_storagepb_vote_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -454,7 +454,7 @@ func (x *ValidationError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidationError.ProtoReflect.Descriptor instead.
 func (*ValidationError) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{5}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ValidationError) GetMessage() string {
@@ -485,7 +485,7 @@ type PrepareRequest struct {
 func (x *PrepareRequest) Reset() {
 	*x = PrepareRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[6]
+		mi := &file_storagepb_vote_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -498,7 +498,7 @@ func (x *PrepareRequest) String() string {
 func (*PrepareRequest) ProtoMessage() {}
 
 func (x *PrepareRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[6]
+	mi := &file_storagepb_vote_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -511,7 +511,7 @@ func (x *PrepareRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PrepareRequest.ProtoReflect.Descriptor instead.
 func (*PrepareRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{6}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *PrepareRequest) GetVoter() string {
@@ -554,7 +554,7 @@ type PrepareResponse struct {
 func (x *PrepareResponse) Reset() {
 	*x = PrepareResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[7]
+		mi := &file_storagepb_vote_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -567,7 +567,7 @@ func (x *PrepareResponse) String() string {
 func (*PrepareResponse) ProtoMessage() {}
 
 func (x *PrepareResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[7]
+	mi := &file_storagepb_vote_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -580,7 +580,7 @@ func (x *PrepareResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PrepareResponse.ProtoReflect.Descriptor instead.
 func (*PrepareResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{7}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *PrepareResponse) GetId() string {
@@ -609,7 +609,7 @@ type VoteRequest struct {
 func (x *VoteRequest) Reset() {
 	*x = VoteRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[8]
+		mi := &file_storagepb_vote_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -622,7 +622,7 @@ func (x *VoteRequest) String() string {
 func (*VoteRequest) ProtoMessage() {}
 
 func (x *VoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[8]
+	mi := &file_storagepb_vote_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -635,7 +635,7 @@ func (x *VoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VoteRequest.ProtoReflect.Descriptor instead.
 func (*VoteRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{8}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *VoteRequest) GetId() string {
@@ -665,7 +665,7 @@ type VoteResponse struct {
 func (x *VoteResponse) Reset() {
 	*x = VoteResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[9]
+		mi := &file_storagepb_vote_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -678,7 +678,7 @@ func (x *VoteResponse) String() string {
 func (*VoteResponse) ProtoMessage() {}
 
 func (x *VoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[9]
+	mi := &file_storagepb_vote_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -691,7 +691,7 @@ func (x *VoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VoteResponse.ProtoReflect.Descriptor instead.
 func (*VoteResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{9}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *VoteResponse) GetId() string {
@@ -727,7 +727,7 @@ type Relayer struct {
 func (x *Relayer) Reset() {
 	*x = Relayer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_vote_proto_msgTypes[10]
+		mi := &file_storagepb_vote_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -740,7 +740,7 @@ func (x *Relayer) String() string {
 func (*Relayer) ProtoMessage() {}
 
 func (x *Relayer) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_vote_proto_msgTypes[10]
+	mi := &file_storagepb_vote_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -753,7 +753,7 @@ func (x *Relayer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Relayer.ProtoReflect.Descriptor instead.
 func (*Relayer) Descriptor() ([]byte, []int) {
-	return file_storagebp_vote_proto_rawDescGZIP(), []int{10}
+	return file_storagepb_vote_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Relayer) GetAddress() string {
@@ -770,12 +770,12 @@ func (x *Relayer) GetReceipt() string {
 	return ""
 }
 
-var File_storagebp_vote_proto protoreflect.FileDescriptor
+var File_storagepb_vote_proto protoreflect.FileDescriptor
 
-var file_storagebp_vote_proto_rawDesc = []byte{
-	0x0a, 0x14, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2f, 0x76, 0x6f, 0x74, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62,
-	0x70, 0x1a, 0x19, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+var file_storagepb_vote_proto_rawDesc = []byte{
+	0x0a, 0x14, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2f, 0x76, 0x6f, 0x74, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70,
+	0x62, 0x1a, 0x19, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
 	0x75, 0x66, 0x2f, 0x61, 0x6e, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe7, 0x01, 0x0a,
 	0x12, 0x56, 0x6f, 0x74, 0x65, 0x73, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75,
 	0x65, 0x73, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f,
@@ -816,7 +816,7 @@ var file_storagebp_vote_proto_rawDesc = []byte{
 	0x61, 0x6d, 0x65, 0x22, 0x61, 0x0a, 0x13, 0x56, 0x6f, 0x74, 0x65, 0x73, 0x46, 0x69, 0x6c, 0x74,
 	0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x29, 0x0a, 0x05, 0x76, 0x6f,
 	0x74, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x73, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x05,
+	0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x05,
 	0x76, 0x6f, 0x74, 0x65, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x63,
 	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x74, 0x6f, 0x74, 0x61,
 	0x6c, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x43, 0x0a, 0x0f, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61,
@@ -830,7 +830,7 @@ var file_storagebp_vote_proto_rawDesc = []byte{
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x0b, 0x76, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x50, 0x6f,
 	0x77, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x10, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f,
 	0x6e, 0x5f, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
-	0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61,
+	0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61,
 	0x74, 0x69, 0x6f, 0x6e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x48, 0x00, 0x52, 0x0f, 0x76, 0x61, 0x6c,
 	0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x88, 0x01, 0x01, 0x42,
 	0x13, 0x0a, 0x11, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x65,
@@ -860,73 +860,73 @@ var file_storagebp_vote_proto_rawDesc = []byte{
 	0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x69, 0x70, 0x66, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x04, 0x69, 0x70, 0x66, 0x73, 0x12, 0x2c, 0x0a, 0x07, 0x72, 0x65, 0x6c, 0x61, 0x79,
 	0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61,
-	0x67, 0x65, 0x62, 0x70, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x52, 0x07, 0x72, 0x65,
+	0x67, 0x65, 0x70, 0x62, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x52, 0x07, 0x72, 0x65,
 	0x6c, 0x61, 0x79, 0x65, 0x72, 0x22, 0x3d, 0x0a, 0x07, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72,
 	0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65,
 	0x63, 0x65, 0x69, 0x70, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x63,
 	0x65, 0x69, 0x70, 0x74, 0x32, 0x91, 0x02, 0x0a, 0x04, 0x56, 0x6f, 0x74, 0x65, 0x12, 0x49, 0x0a,
 	0x08, 0x47, 0x65, 0x74, 0x56, 0x6f, 0x74, 0x65, 0x73, 0x12, 0x1d, 0x2e, 0x73, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x73, 0x46, 0x69, 0x6c, 0x74, 0x65,
+	0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x73, 0x46, 0x69, 0x6c, 0x74, 0x65,
 	0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61,
-	0x67, 0x65, 0x62, 0x70, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x73, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72,
+	0x67, 0x65, 0x70, 0x62, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x73, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x43, 0x0a, 0x08, 0x56, 0x61, 0x6c, 0x69,
-	0x64, 0x61, 0x74, 0x65, 0x12, 0x1a, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x12, 0x1a, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62,
 	0x2e, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x1b, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x56, 0x61, 0x6c,
+	0x1a, 0x1b, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x56, 0x61, 0x6c,
 	0x69, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x40, 0x0a,
 	0x07, 0x50, 0x72, 0x65, 0x70, 0x61, 0x72, 0x65, 0x12, 0x19, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61,
-	0x67, 0x65, 0x62, 0x70, 0x2e, 0x50, 0x72, 0x65, 0x70, 0x61, 0x72, 0x65, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e,
+	0x67, 0x65, 0x70, 0x62, 0x2e, 0x50, 0x72, 0x65, 0x70, 0x61, 0x72, 0x65, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e,
 	0x50, 0x72, 0x65, 0x70, 0x61, 0x72, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
 	0x37, 0x0a, 0x04, 0x56, 0x6f, 0x74, 0x65, 0x12, 0x16, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
-	0x65, 0x62, 0x70, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x17, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x56, 0x6f, 0x74, 0x65,
+	0x65, 0x70, 0x62, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x17, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x56, 0x6f, 0x74, 0x65,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0d, 0x5a, 0x0b, 0x2e, 0x3b, 0x73, 0x74,
-	0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_storagebp_vote_proto_rawDescOnce sync.Once
-	file_storagebp_vote_proto_rawDescData = file_storagebp_vote_proto_rawDesc
+	file_storagepb_vote_proto_rawDescOnce sync.Once
+	file_storagepb_vote_proto_rawDescData = file_storagepb_vote_proto_rawDesc
 )
 
-func file_storagebp_vote_proto_rawDescGZIP() []byte {
-	file_storagebp_vote_proto_rawDescOnce.Do(func() {
-		file_storagebp_vote_proto_rawDescData = protoimpl.X.CompressGZIP(file_storagebp_vote_proto_rawDescData)
+func file_storagepb_vote_proto_rawDescGZIP() []byte {
+	file_storagepb_vote_proto_rawDescOnce.Do(func() {
+		file_storagepb_vote_proto_rawDescData = protoimpl.X.CompressGZIP(file_storagepb_vote_proto_rawDescData)
 	})
-	return file_storagebp_vote_proto_rawDescData
+	return file_storagepb_vote_proto_rawDescData
 }
 
-var file_storagebp_vote_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
-var file_storagebp_vote_proto_goTypes = []interface{}{
-	(*VotesFilterRequest)(nil),  // 0: storagebp.VotesFilterRequest
-	(*VoteInfo)(nil),            // 1: storagebp.VoteInfo
-	(*VotesFilterResponse)(nil), // 2: storagebp.VotesFilterResponse
-	(*ValidateRequest)(nil),     // 3: storagebp.ValidateRequest
-	(*ValidateResponse)(nil),    // 4: storagebp.ValidateResponse
-	(*ValidationError)(nil),     // 5: storagebp.ValidationError
-	(*PrepareRequest)(nil),      // 6: storagebp.PrepareRequest
-	(*PrepareResponse)(nil),     // 7: storagebp.PrepareResponse
-	(*VoteRequest)(nil),         // 8: storagebp.VoteRequest
-	(*VoteResponse)(nil),        // 9: storagebp.VoteResponse
-	(*Relayer)(nil),             // 10: storagebp.Relayer
+var file_storagepb_vote_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_storagepb_vote_proto_goTypes = []interface{}{
+	(*VotesFilterRequest)(nil),  // 0: storagepb.VotesFilterRequest
+	(*VoteInfo)(nil),            // 1: storagepb.VoteInfo
+	(*VotesFilterResponse)(nil), // 2: storagepb.VotesFilterResponse
+	(*ValidateRequest)(nil),     // 3: storagepb.ValidateRequest
+	(*ValidateResponse)(nil),    // 4: storagepb.ValidateResponse
+	(*ValidationError)(nil),     // 5: storagepb.ValidationError
+	(*PrepareRequest)(nil),      // 6: storagepb.PrepareRequest
+	(*PrepareResponse)(nil),     // 7: storagepb.PrepareResponse
+	(*VoteRequest)(nil),         // 8: storagepb.VoteRequest
+	(*VoteResponse)(nil),        // 9: storagepb.VoteResponse
+	(*Relayer)(nil),             // 10: storagepb.Relayer
 	(*anypb.Any)(nil),           // 11: google.protobuf.Any
 }
-var file_storagebp_vote_proto_depIdxs = []int32{
-	11, // 0: storagebp.VoteInfo.choice:type_name -> google.protobuf.Any
-	1,  // 1: storagebp.VotesFilterResponse.votes:type_name -> storagebp.VoteInfo
-	5,  // 2: storagebp.ValidateResponse.validation_error:type_name -> storagebp.ValidationError
-	11, // 3: storagebp.PrepareRequest.choice:type_name -> google.protobuf.Any
-	10, // 4: storagebp.VoteResponse.relayer:type_name -> storagebp.Relayer
-	0,  // 5: storagebp.Vote.GetVotes:input_type -> storagebp.VotesFilterRequest
-	3,  // 6: storagebp.Vote.Validate:input_type -> storagebp.ValidateRequest
-	6,  // 7: storagebp.Vote.Prepare:input_type -> storagebp.PrepareRequest
-	8,  // 8: storagebp.Vote.Vote:input_type -> storagebp.VoteRequest
-	2,  // 9: storagebp.Vote.GetVotes:output_type -> storagebp.VotesFilterResponse
-	4,  // 10: storagebp.Vote.Validate:output_type -> storagebp.ValidateResponse
-	7,  // 11: storagebp.Vote.Prepare:output_type -> storagebp.PrepareResponse
-	9,  // 12: storagebp.Vote.Vote:output_type -> storagebp.VoteResponse
+var file_storagepb_vote_proto_depIdxs = []int32{
+	11, // 0: storagepb.VoteInfo.choice:type_name -> google.protobuf.Any
+	1,  // 1: storagepb.VotesFilterResponse.votes:type_name -> storagepb.VoteInfo
+	5,  // 2: storagepb.ValidateResponse.validation_error:type_name -> storagepb.ValidationError
+	11, // 3: storagepb.PrepareRequest.choice:type_name -> google.protobuf.Any
+	10, // 4: storagepb.VoteResponse.relayer:type_name -> storagepb.Relayer
+	0,  // 5: storagepb.Vote.GetVotes:input_type -> storagepb.VotesFilterRequest
+	3,  // 6: storagepb.Vote.Validate:input_type -> storagepb.ValidateRequest
+	6,  // 7: storagepb.Vote.Prepare:input_type -> storagepb.PrepareRequest
+	8,  // 8: storagepb.Vote.Vote:input_type -> storagepb.VoteRequest
+	2,  // 9: storagepb.Vote.GetVotes:output_type -> storagepb.VotesFilterResponse
+	4,  // 10: storagepb.Vote.Validate:output_type -> storagepb.ValidateResponse
+	7,  // 11: storagepb.Vote.Prepare:output_type -> storagepb.PrepareResponse
+	9,  // 12: storagepb.Vote.Vote:output_type -> storagepb.VoteResponse
 	9,  // [9:13] is the sub-list for method output_type
 	5,  // [5:9] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
@@ -934,13 +934,13 @@ var file_storagebp_vote_proto_depIdxs = []int32{
 	0,  // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_storagebp_vote_proto_init() }
-func file_storagebp_vote_proto_init() {
-	if File_storagebp_vote_proto != nil {
+func init() { file_storagepb_vote_proto_init() }
+func file_storagepb_vote_proto_init() {
+	if File_storagepb_vote_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_storagebp_vote_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VotesFilterRequest); i {
 			case 0:
 				return &v.state
@@ -952,7 +952,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VoteInfo); i {
 			case 0:
 				return &v.state
@@ -964,7 +964,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VotesFilterResponse); i {
 			case 0:
 				return &v.state
@@ -976,7 +976,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ValidateRequest); i {
 			case 0:
 				return &v.state
@@ -988,7 +988,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ValidateResponse); i {
 			case 0:
 				return &v.state
@@ -1000,7 +1000,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ValidationError); i {
 			case 0:
 				return &v.state
@@ -1012,7 +1012,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PrepareRequest); i {
 			case 0:
 				return &v.state
@@ -1024,7 +1024,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PrepareResponse); i {
 			case 0:
 				return &v.state
@@ -1036,7 +1036,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VoteRequest); i {
 			case 0:
 				return &v.state
@@ -1048,7 +1048,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VoteResponse); i {
 			case 0:
 				return &v.state
@@ -1060,7 +1060,7 @@ func file_storagebp_vote_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_vote_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_vote_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Relayer); i {
 			case 0:
 				return &v.state
@@ -1073,25 +1073,25 @@ func file_storagebp_vote_proto_init() {
 			}
 		}
 	}
-	file_storagebp_vote_proto_msgTypes[0].OneofWrappers = []interface{}{}
-	file_storagebp_vote_proto_msgTypes[4].OneofWrappers = []interface{}{}
-	file_storagebp_vote_proto_msgTypes[6].OneofWrappers = []interface{}{}
+	file_storagepb_vote_proto_msgTypes[0].OneofWrappers = []interface{}{}
+	file_storagepb_vote_proto_msgTypes[4].OneofWrappers = []interface{}{}
+	file_storagepb_vote_proto_msgTypes[6].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_storagebp_vote_proto_rawDesc,
+			RawDescriptor: file_storagepb_vote_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_storagebp_vote_proto_goTypes,
-		DependencyIndexes: file_storagebp_vote_proto_depIdxs,
-		MessageInfos:      file_storagebp_vote_proto_msgTypes,
+		GoTypes:           file_storagepb_vote_proto_goTypes,
+		DependencyIndexes: file_storagepb_vote_proto_depIdxs,
+		MessageInfos:      file_storagepb_vote_proto_msgTypes,
 	}.Build()
-	File_storagebp_vote_proto = out.File
-	file_storagebp_vote_proto_rawDesc = nil
-	file_storagebp_vote_proto_goTypes = nil
-	file_storagebp_vote_proto_depIdxs = nil
+	File_storagepb_vote_proto = out.File
+	file_storagepb_vote_proto_rawDesc = nil
+	file_storagepb_vote_proto_goTypes = nil
+	file_storagepb_vote_proto_depIdxs = nil
 }

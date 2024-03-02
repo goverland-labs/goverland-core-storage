@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed type in protocol directory path
+
 ## [0.1.1] - 2024-03-02
 
 ### Changed

@@ -19,8 +19,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/goverland-labs/goverland-core-storage/protocol/storagebp"
-
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
 	"github.com/goverland-labs/goverland-core-storage/internal/ensresolver"
@@ -30,6 +28,7 @@ import (
 	"github.com/goverland-labs/goverland-core-storage/pkg/grpcsrv"
 	"github.com/goverland-labs/goverland-core-storage/pkg/health"
 	"github.com/goverland-labs/goverland-core-storage/pkg/prometheus"
+	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 )
 
 type Application struct {
@@ -292,9 +291,9 @@ func (a *Application) initAPI() error {
 		authInterceptor.AuthAndIdentifyTickerFunc,
 	)
 
-	storagebp.RegisterDaoServer(srv, dao.NewServer(a.daoService))
-	storagebp.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
-	storagebp.RegisterVoteServer(srv, vote.NewServer(a.voteService))
+	storagepb.RegisterDaoServer(srv, dao.NewServer(a.daoService))
+	storagepb.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
+	storagepb.RegisterVoteServer(srv, vote.NewServer(a.voteService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 

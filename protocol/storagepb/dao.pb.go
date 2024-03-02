@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.32.0
 // 	protoc        v4.25.2
-// source: storagebp/dao.proto
+// source: storagepb/dao.proto
 
-package storagebp
+package storagepb
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -32,7 +32,7 @@ type DaoByIDRequest struct {
 func (x *DaoByIDRequest) Reset() {
 	*x = DaoByIDRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[0]
+		mi := &file_storagepb_dao_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45,7 +45,7 @@ func (x *DaoByIDRequest) String() string {
 func (*DaoByIDRequest) ProtoMessage() {}
 
 func (x *DaoByIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[0]
+	mi := &file_storagepb_dao_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +58,7 @@ func (x *DaoByIDRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DaoByIDRequest.ProtoReflect.Descriptor instead.
 func (*DaoByIDRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{0}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *DaoByIDRequest) GetDaoId() string {
@@ -86,7 +86,7 @@ type Voting struct {
 func (x *Voting) Reset() {
 	*x = Voting{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[1]
+		mi := &file_storagepb_dao_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -99,7 +99,7 @@ func (x *Voting) String() string {
 func (*Voting) ProtoMessage() {}
 
 func (x *Voting) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[1]
+	mi := &file_storagepb_dao_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,7 +112,7 @@ func (x *Voting) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Voting.ProtoReflect.Descriptor instead.
 func (*Voting) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{1}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Voting) GetDelay() uint64 {
@@ -184,7 +184,7 @@ type Treasury struct {
 func (x *Treasury) Reset() {
 	*x = Treasury{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[2]
+		mi := &file_storagepb_dao_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -197,7 +197,7 @@ func (x *Treasury) String() string {
 func (*Treasury) ProtoMessage() {}
 
 func (x *Treasury) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[2]
+	mi := &file_storagepb_dao_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -210,7 +210,7 @@ func (x *Treasury) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Treasury.ProtoReflect.Descriptor instead.
 func (*Treasury) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{2}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Treasury) GetName() string {
@@ -276,7 +276,7 @@ type DaoInfo struct {
 func (x *DaoInfo) Reset() {
 	*x = DaoInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[3]
+		mi := &file_storagepb_dao_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -289,7 +289,7 @@ func (x *DaoInfo) String() string {
 func (*DaoInfo) ProtoMessage() {}
 
 func (x *DaoInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[3]
+	mi := &file_storagepb_dao_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +302,7 @@ func (x *DaoInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DaoInfo.ProtoReflect.Descriptor instead.
 func (*DaoInfo) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{3}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DaoInfo) GetId() string {
@@ -540,7 +540,7 @@ type DaoByIDResponse struct {
 func (x *DaoByIDResponse) Reset() {
 	*x = DaoByIDResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[4]
+		mi := &file_storagepb_dao_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -553,7 +553,7 @@ func (x *DaoByIDResponse) String() string {
 func (*DaoByIDResponse) ProtoMessage() {}
 
 func (x *DaoByIDResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[4]
+	mi := &file_storagepb_dao_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -566,7 +566,7 @@ func (x *DaoByIDResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DaoByIDResponse.ProtoReflect.Descriptor instead.
 func (*DaoByIDResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{4}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DaoByIDResponse) GetDao() *DaoInfo {
@@ -591,7 +591,7 @@ type DaoByFilterRequest struct {
 func (x *DaoByFilterRequest) Reset() {
 	*x = DaoByFilterRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[5]
+		mi := &file_storagepb_dao_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -604,7 +604,7 @@ func (x *DaoByFilterRequest) String() string {
 func (*DaoByFilterRequest) ProtoMessage() {}
 
 func (x *DaoByFilterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[5]
+	mi := &file_storagepb_dao_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -617,7 +617,7 @@ func (x *DaoByFilterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DaoByFilterRequest.ProtoReflect.Descriptor instead.
 func (*DaoByFilterRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{5}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *DaoByFilterRequest) GetQuery() string {
@@ -667,7 +667,7 @@ type DaoByFilterResponse struct {
 func (x *DaoByFilterResponse) Reset() {
 	*x = DaoByFilterResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[6]
+		mi := &file_storagepb_dao_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -680,7 +680,7 @@ func (x *DaoByFilterResponse) String() string {
 func (*DaoByFilterResponse) ProtoMessage() {}
 
 func (x *DaoByFilterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[6]
+	mi := &file_storagepb_dao_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -693,7 +693,7 @@ func (x *DaoByFilterResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DaoByFilterResponse.ProtoReflect.Descriptor instead.
 func (*DaoByFilterResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{6}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DaoByFilterResponse) GetDaos() []*DaoInfo {
@@ -723,7 +723,7 @@ type TopCategory struct {
 func (x *TopCategory) Reset() {
 	*x = TopCategory{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[7]
+		mi := &file_storagepb_dao_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -736,7 +736,7 @@ func (x *TopCategory) String() string {
 func (*TopCategory) ProtoMessage() {}
 
 func (x *TopCategory) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[7]
+	mi := &file_storagepb_dao_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -749,7 +749,7 @@ func (x *TopCategory) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TopCategory.ProtoReflect.Descriptor instead.
 func (*TopCategory) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{7}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *TopCategory) GetCategory() string {
@@ -784,7 +784,7 @@ type TopByCategoriesRequest struct {
 func (x *TopByCategoriesRequest) Reset() {
 	*x = TopByCategoriesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[8]
+		mi := &file_storagepb_dao_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -797,7 +797,7 @@ func (x *TopByCategoriesRequest) String() string {
 func (*TopByCategoriesRequest) ProtoMessage() {}
 
 func (x *TopByCategoriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[8]
+	mi := &file_storagepb_dao_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +810,7 @@ func (x *TopByCategoriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TopByCategoriesRequest.ProtoReflect.Descriptor instead.
 func (*TopByCategoriesRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{8}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TopByCategoriesRequest) GetLimit() uint64 {
@@ -831,7 +831,7 @@ type TopByCategoriesResponse struct {
 func (x *TopByCategoriesResponse) Reset() {
 	*x = TopByCategoriesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_dao_proto_msgTypes[9]
+		mi := &file_storagepb_dao_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -844,7 +844,7 @@ func (x *TopByCategoriesResponse) String() string {
 func (*TopByCategoriesResponse) ProtoMessage() {}
 
 func (x *TopByCategoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_dao_proto_msgTypes[9]
+	mi := &file_storagepb_dao_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -857,7 +857,7 @@ func (x *TopByCategoriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TopByCategoriesResponse.ProtoReflect.Descriptor instead.
 func (*TopByCategoriesResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_dao_proto_rawDescGZIP(), []int{9}
+	return file_storagepb_dao_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *TopByCategoriesResponse) GetCategories() []*TopCategory {
@@ -867,14 +867,14 @@ func (x *TopByCategoriesResponse) GetCategories() []*TopCategory {
 	return nil
 }
 
-var File_storagebp_dao_proto protoreflect.FileDescriptor
+var File_storagepb_dao_proto protoreflect.FileDescriptor
 
-var file_storagebp_dao_proto_rawDesc = []byte{
-	0x0a, 0x13, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2f, 0x64, 0x61, 0x6f, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70,
+var file_storagepb_dao_proto_rawDesc = []byte{
+	0x0a, 0x13, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2f, 0x64, 0x61, 0x6f, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62,
 	0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
 	0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x1a, 0x14, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2f, 0x62, 0x61, 0x73,
+	0x6f, 0x1a, 0x14, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2f, 0x62, 0x61, 0x73,
 	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x27, 0x0a, 0x0e, 0x44, 0x61, 0x6f, 0x42, 0x79,
 	0x49, 0x44, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x15, 0x0a, 0x06, 0x64, 0x61, 0x6f,
 	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x64, 0x61, 0x6f, 0x49, 0x64,
@@ -930,15 +930,15 @@ var file_storagebp_dao_proto_rawDesc = []byte{
 	0x6d, 0x61, 0x69, 0x6e, 0x18, 0x12, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x64, 0x6f, 0x6d, 0x61,
 	0x69, 0x6e, 0x12, 0x33, 0x0a, 0x0a, 0x73, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x69, 0x65, 0x73,
 	0x18, 0x13, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
-	0x62, 0x70, 0x2e, 0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x52, 0x0a, 0x73, 0x74, 0x72,
+	0x70, 0x62, 0x2e, 0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x52, 0x0a, 0x73, 0x74, 0x72,
 	0x61, 0x74, 0x65, 0x67, 0x69, 0x65, 0x73, 0x12, 0x29, 0x0a, 0x06, 0x76, 0x6f, 0x74, 0x69, 0x6e,
 	0x67, 0x18, 0x14, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
-	0x65, 0x62, 0x70, 0x2e, 0x56, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x76, 0x6f, 0x74, 0x69,
+	0x65, 0x70, 0x62, 0x2e, 0x56, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x52, 0x06, 0x76, 0x6f, 0x74, 0x69,
 	0x6e, 0x67, 0x12, 0x1e, 0x0a, 0x0a, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x69, 0x65, 0x73,
 	0x18, 0x15, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x69,
 	0x65, 0x73, 0x12, 0x33, 0x0a, 0x0a, 0x74, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x69, 0x65, 0x73,
 	0x18, 0x16, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
-	0x62, 0x70, 0x2e, 0x54, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x52, 0x0a, 0x74, 0x72, 0x65,
+	0x70, 0x62, 0x2e, 0x54, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x52, 0x0a, 0x74, 0x72, 0x65,
 	0x61, 0x73, 0x75, 0x72, 0x69, 0x65, 0x73, 0x12, 0x27, 0x0a, 0x0f, 0x66, 0x6f, 0x6c, 0x6c, 0x6f,
 	0x77, 0x65, 0x72, 0x73, 0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x17, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x0e, 0x66, 0x6f, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x72, 0x73, 0x43, 0x6f, 0x75, 0x6e, 0x74,
@@ -962,7 +962,7 @@ var file_storagebp_dao_proto_rawDesc = []byte{
 	0x64, 0x18, 0x20, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x76, 0x65, 0x72, 0x69, 0x66, 0x69, 0x65,
 	0x64, 0x22, 0x37, 0x0a, 0x0f, 0x44, 0x61, 0x6f, 0x42, 0x79, 0x49, 0x44, 0x52, 0x65, 0x73, 0x70,
 	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x24, 0x0a, 0x03, 0x64, 0x61, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x12, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x44, 0x61,
+	0x0b, 0x32, 0x12, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x44, 0x61,
 	0x6f, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x03, 0x64, 0x61, 0x6f, 0x22, 0xcd, 0x01, 0x0a, 0x12, 0x44,
 	0x61, 0x6f, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
 	0x74, 0x12, 0x19, 0x0a, 0x05, 0x71, 0x75, 0x65, 0x72, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
@@ -979,14 +979,14 @@ var file_storagebp_dao_proto_rawDesc = []byte{
 	0x09, 0x0a, 0x07, 0x5f, 0x6f, 0x66, 0x66, 0x73, 0x65, 0x74, 0x22, 0x5e, 0x0a, 0x13, 0x44, 0x61,
 	0x6f, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x26, 0x0a, 0x04, 0x64, 0x61, 0x6f, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x12, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x44, 0x61, 0x6f, 0x49,
+	0x12, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x44, 0x61, 0x6f, 0x49,
 	0x6e, 0x66, 0x6f, 0x52, 0x04, 0x64, 0x61, 0x6f, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x74, 0x6f, 0x74,
 	0x61, 0x6c, 0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a,
 	0x74, 0x6f, 0x74, 0x61, 0x6c, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x72, 0x0a, 0x0b, 0x54, 0x6f,
 	0x70, 0x43, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x61, 0x74,
 	0x65, 0x67, 0x6f, 0x72, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x61, 0x74,
 	0x65, 0x67, 0x6f, 0x72, 0x79, 0x12, 0x26, 0x0a, 0x04, 0x64, 0x61, 0x6f, 0x73, 0x18, 0x02, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e,
+	0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e,
 	0x44, 0x61, 0x6f, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x04, 0x64, 0x61, 0x6f, 0x73, 0x12, 0x1f, 0x0a,
 	0x0b, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01,
 	0x28, 0x04, 0x52, 0x0a, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x2e,
@@ -996,70 +996,70 @@ var file_storagebp_dao_proto_rawDesc = []byte{
 	0x0a, 0x17, 0x54, 0x6f, 0x70, 0x42, 0x79, 0x43, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x69, 0x65,
 	0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x36, 0x0a, 0x0a, 0x63, 0x61, 0x74,
 	0x65, 0x67, 0x6f, 0x72, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e,
-	0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x54, 0x6f, 0x70, 0x43, 0x61, 0x74,
+	0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x54, 0x6f, 0x70, 0x43, 0x61, 0x74,
 	0x65, 0x67, 0x6f, 0x72, 0x79, 0x52, 0x0a, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x69, 0x65,
 	0x73, 0x32, 0xf2, 0x01, 0x0a, 0x03, 0x44, 0x61, 0x6f, 0x12, 0x40, 0x0a, 0x07, 0x47, 0x65, 0x74,
-	0x42, 0x79, 0x49, 0x44, 0x12, 0x19, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70,
+	0x42, 0x79, 0x49, 0x44, 0x12, 0x19, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62,
 	0x2e, 0x44, 0x61, 0x6f, 0x42, 0x79, 0x49, 0x44, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x1a, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x44, 0x61, 0x6f, 0x42,
+	0x1a, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x44, 0x61, 0x6f, 0x42,
 	0x79, 0x49, 0x44, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4c, 0x0a, 0x0b, 0x47,
 	0x65, 0x74, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x12, 0x1d, 0x2e, 0x73, 0x74, 0x6f,
-	0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x44, 0x61, 0x6f, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74,
+	0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x44, 0x61, 0x6f, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74,
 	0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x73, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x44, 0x61, 0x6f, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65,
+	0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x44, 0x61, 0x6f, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65,
 	0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x5b, 0x0a, 0x12, 0x47, 0x65, 0x74,
 	0x54, 0x6f, 0x70, 0x42, 0x79, 0x43, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x69, 0x65, 0x73, 0x12,
-	0x21, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x54, 0x6f, 0x70, 0x42,
+	0x21, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x54, 0x6f, 0x70, 0x42,
 	0x79, 0x43, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x69, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x22, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x54,
+	0x73, 0x74, 0x1a, 0x22, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x54,
 	0x6f, 0x70, 0x42, 0x79, 0x43, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x69, 0x65, 0x73, 0x52, 0x65,
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0d, 0x5a, 0x0b, 0x2e, 0x3b, 0x73, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x62, 0x70, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x67, 0x65, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_storagebp_dao_proto_rawDescOnce sync.Once
-	file_storagebp_dao_proto_rawDescData = file_storagebp_dao_proto_rawDesc
+	file_storagepb_dao_proto_rawDescOnce sync.Once
+	file_storagepb_dao_proto_rawDescData = file_storagepb_dao_proto_rawDesc
 )
 
-func file_storagebp_dao_proto_rawDescGZIP() []byte {
-	file_storagebp_dao_proto_rawDescOnce.Do(func() {
-		file_storagebp_dao_proto_rawDescData = protoimpl.X.CompressGZIP(file_storagebp_dao_proto_rawDescData)
+func file_storagepb_dao_proto_rawDescGZIP() []byte {
+	file_storagepb_dao_proto_rawDescOnce.Do(func() {
+		file_storagepb_dao_proto_rawDescData = protoimpl.X.CompressGZIP(file_storagepb_dao_proto_rawDescData)
 	})
-	return file_storagebp_dao_proto_rawDescData
+	return file_storagepb_dao_proto_rawDescData
 }
 
-var file_storagebp_dao_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
-var file_storagebp_dao_proto_goTypes = []interface{}{
-	(*DaoByIDRequest)(nil),          // 0: storagebp.DaoByIDRequest
-	(*Voting)(nil),                  // 1: storagebp.Voting
-	(*Treasury)(nil),                // 2: storagebp.Treasury
-	(*DaoInfo)(nil),                 // 3: storagebp.DaoInfo
-	(*DaoByIDResponse)(nil),         // 4: storagebp.DaoByIDResponse
-	(*DaoByFilterRequest)(nil),      // 5: storagebp.DaoByFilterRequest
-	(*DaoByFilterResponse)(nil),     // 6: storagebp.DaoByFilterResponse
-	(*TopCategory)(nil),             // 7: storagebp.TopCategory
-	(*TopByCategoriesRequest)(nil),  // 8: storagebp.TopByCategoriesRequest
-	(*TopByCategoriesResponse)(nil), // 9: storagebp.TopByCategoriesResponse
+var file_storagepb_dao_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_storagepb_dao_proto_goTypes = []interface{}{
+	(*DaoByIDRequest)(nil),          // 0: storagepb.DaoByIDRequest
+	(*Voting)(nil),                  // 1: storagepb.Voting
+	(*Treasury)(nil),                // 2: storagepb.Treasury
+	(*DaoInfo)(nil),                 // 3: storagepb.DaoInfo
+	(*DaoByIDResponse)(nil),         // 4: storagepb.DaoByIDResponse
+	(*DaoByFilterRequest)(nil),      // 5: storagepb.DaoByFilterRequest
+	(*DaoByFilterResponse)(nil),     // 6: storagepb.DaoByFilterResponse
+	(*TopCategory)(nil),             // 7: storagepb.TopCategory
+	(*TopByCategoriesRequest)(nil),  // 8: storagepb.TopByCategoriesRequest
+	(*TopByCategoriesResponse)(nil), // 9: storagepb.TopByCategoriesResponse
 	(*timestamppb.Timestamp)(nil),   // 10: google.protobuf.Timestamp
-	(*Strategy)(nil),                // 11: storagebp.Strategy
+	(*Strategy)(nil),                // 11: storagepb.Strategy
 }
-var file_storagebp_dao_proto_depIdxs = []int32{
-	10, // 0: storagebp.DaoInfo.created_at:type_name -> google.protobuf.Timestamp
-	10, // 1: storagebp.DaoInfo.updated_at:type_name -> google.protobuf.Timestamp
-	11, // 2: storagebp.DaoInfo.strategies:type_name -> storagebp.Strategy
-	1,  // 3: storagebp.DaoInfo.voting:type_name -> storagebp.Voting
-	2,  // 4: storagebp.DaoInfo.treasuries:type_name -> storagebp.Treasury
-	3,  // 5: storagebp.DaoByIDResponse.dao:type_name -> storagebp.DaoInfo
-	3,  // 6: storagebp.DaoByFilterResponse.daos:type_name -> storagebp.DaoInfo
-	3,  // 7: storagebp.TopCategory.daos:type_name -> storagebp.DaoInfo
-	7,  // 8: storagebp.TopByCategoriesResponse.categories:type_name -> storagebp.TopCategory
-	0,  // 9: storagebp.Dao.GetByID:input_type -> storagebp.DaoByIDRequest
-	5,  // 10: storagebp.Dao.GetByFilter:input_type -> storagebp.DaoByFilterRequest
-	8,  // 11: storagebp.Dao.GetTopByCategories:input_type -> storagebp.TopByCategoriesRequest
-	4,  // 12: storagebp.Dao.GetByID:output_type -> storagebp.DaoByIDResponse
-	6,  // 13: storagebp.Dao.GetByFilter:output_type -> storagebp.DaoByFilterResponse
-	9,  // 14: storagebp.Dao.GetTopByCategories:output_type -> storagebp.TopByCategoriesResponse
+var file_storagepb_dao_proto_depIdxs = []int32{
+	10, // 0: storagepb.DaoInfo.created_at:type_name -> google.protobuf.Timestamp
+	10, // 1: storagepb.DaoInfo.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 2: storagepb.DaoInfo.strategies:type_name -> storagepb.Strategy
+	1,  // 3: storagepb.DaoInfo.voting:type_name -> storagepb.Voting
+	2,  // 4: storagepb.DaoInfo.treasuries:type_name -> storagepb.Treasury
+	3,  // 5: storagepb.DaoByIDResponse.dao:type_name -> storagepb.DaoInfo
+	3,  // 6: storagepb.DaoByFilterResponse.daos:type_name -> storagepb.DaoInfo
+	3,  // 7: storagepb.TopCategory.daos:type_name -> storagepb.DaoInfo
+	7,  // 8: storagepb.TopByCategoriesResponse.categories:type_name -> storagepb.TopCategory
+	0,  // 9: storagepb.Dao.GetByID:input_type -> storagepb.DaoByIDRequest
+	5,  // 10: storagepb.Dao.GetByFilter:input_type -> storagepb.DaoByFilterRequest
+	8,  // 11: storagepb.Dao.GetTopByCategories:input_type -> storagepb.TopByCategoriesRequest
+	4,  // 12: storagepb.Dao.GetByID:output_type -> storagepb.DaoByIDResponse
+	6,  // 13: storagepb.Dao.GetByFilter:output_type -> storagepb.DaoByFilterResponse
+	9,  // 14: storagepb.Dao.GetTopByCategories:output_type -> storagepb.TopByCategoriesResponse
 	12, // [12:15] is the sub-list for method output_type
 	9,  // [9:12] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
@@ -1067,14 +1067,14 @@ var file_storagebp_dao_proto_depIdxs = []int32{
 	0,  // [0:9] is the sub-list for field type_name
 }
 
-func init() { file_storagebp_dao_proto_init() }
-func file_storagebp_dao_proto_init() {
-	if File_storagebp_dao_proto != nil {
+func init() { file_storagepb_dao_proto_init() }
+func file_storagepb_dao_proto_init() {
+	if File_storagepb_dao_proto != nil {
 		return
 	}
-	file_storagebp_base_proto_init()
+	file_storagepb_base_proto_init()
 	if !protoimpl.UnsafeEnabled {
-		file_storagebp_dao_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DaoByIDRequest); i {
 			case 0:
 				return &v.state
@@ -1086,7 +1086,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Voting); i {
 			case 0:
 				return &v.state
@@ -1098,7 +1098,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Treasury); i {
 			case 0:
 				return &v.state
@@ -1110,7 +1110,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DaoInfo); i {
 			case 0:
 				return &v.state
@@ -1122,7 +1122,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DaoByIDResponse); i {
 			case 0:
 				return &v.state
@@ -1134,7 +1134,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DaoByFilterRequest); i {
 			case 0:
 				return &v.state
@@ -1146,7 +1146,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DaoByFilterResponse); i {
 			case 0:
 				return &v.state
@@ -1158,7 +1158,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TopCategory); i {
 			case 0:
 				return &v.state
@@ -1170,7 +1170,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TopByCategoriesRequest); i {
 			case 0:
 				return &v.state
@@ -1182,7 +1182,7 @@ func file_storagebp_dao_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_dao_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_dao_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TopByCategoriesResponse); i {
 			case 0:
 				return &v.state
@@ -1195,23 +1195,23 @@ func file_storagebp_dao_proto_init() {
 			}
 		}
 	}
-	file_storagebp_dao_proto_msgTypes[5].OneofWrappers = []interface{}{}
+	file_storagepb_dao_proto_msgTypes[5].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_storagebp_dao_proto_rawDesc,
+			RawDescriptor: file_storagepb_dao_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_storagebp_dao_proto_goTypes,
-		DependencyIndexes: file_storagebp_dao_proto_depIdxs,
-		MessageInfos:      file_storagebp_dao_proto_msgTypes,
+		GoTypes:           file_storagepb_dao_proto_goTypes,
+		DependencyIndexes: file_storagepb_dao_proto_depIdxs,
+		MessageInfos:      file_storagepb_dao_proto_msgTypes,
 	}.Build()
-	File_storagebp_dao_proto = out.File
-	file_storagebp_dao_proto_rawDesc = nil
-	file_storagebp_dao_proto_goTypes = nil
-	file_storagebp_dao_proto_depIdxs = nil
+	File_storagepb_dao_proto = out.File
+	file_storagepb_dao_proto_rawDesc = nil
+	file_storagepb_dao_proto_goTypes = nil
+	file_storagepb_dao_proto_depIdxs = nil
 }

@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.32.0
 // 	protoc        v4.25.2
-// source: storagebp/proposal.proto
+// source: storagepb/proposal.proto
 
-package storagebp
+package storagepb
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -75,11 +75,11 @@ func (x ProposalTimelineItem_TimelineAction) String() string {
 }
 
 func (ProposalTimelineItem_TimelineAction) Descriptor() protoreflect.EnumDescriptor {
-	return file_storagebp_proposal_proto_enumTypes[0].Descriptor()
+	return file_storagepb_proposal_proto_enumTypes[0].Descriptor()
 }
 
 func (ProposalTimelineItem_TimelineAction) Type() protoreflect.EnumType {
-	return &file_storagebp_proposal_proto_enumTypes[0]
+	return &file_storagepb_proposal_proto_enumTypes[0]
 }
 
 func (x ProposalTimelineItem_TimelineAction) Number() protoreflect.EnumNumber {
@@ -88,7 +88,7 @@ func (x ProposalTimelineItem_TimelineAction) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ProposalTimelineItem_TimelineAction.Descriptor instead.
 func (ProposalTimelineItem_TimelineAction) EnumDescriptor() ([]byte, []int) {
-	return file_storagebp_proposal_proto_rawDescGZIP(), []int{2, 0}
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{2, 0}
 }
 
 type ProposalByIDRequest struct {
@@ -102,7 +102,7 @@ type ProposalByIDRequest struct {
 func (x *ProposalByIDRequest) Reset() {
 	*x = ProposalByIDRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_proposal_proto_msgTypes[0]
+		mi := &file_storagepb_proposal_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -115,7 +115,7 @@ func (x *ProposalByIDRequest) String() string {
 func (*ProposalByIDRequest) ProtoMessage() {}
 
 func (x *ProposalByIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_proposal_proto_msgTypes[0]
+	mi := &file_storagepb_proposal_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -128,7 +128,7 @@ func (x *ProposalByIDRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProposalByIDRequest.ProtoReflect.Descriptor instead.
 func (*ProposalByIDRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_proposal_proto_rawDescGZIP(), []int{0}
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ProposalByIDRequest) GetProposalId() string {
@@ -178,7 +178,7 @@ type ProposalInfo struct {
 func (x *ProposalInfo) Reset() {
 	*x = ProposalInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_proposal_proto_msgTypes[1]
+		mi := &file_storagepb_proposal_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -191,7 +191,7 @@ func (x *ProposalInfo) String() string {
 func (*ProposalInfo) ProtoMessage() {}
 
 func (x *ProposalInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_proposal_proto_msgTypes[1]
+	mi := &file_storagepb_proposal_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -204,7 +204,7 @@ func (x *ProposalInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProposalInfo.ProtoReflect.Descriptor instead.
 func (*ProposalInfo) Descriptor() ([]byte, []int) {
-	return file_storagebp_proposal_proto_rawDescGZIP(), []int{1}
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ProposalInfo) GetId() string {
@@ -423,13 +423,13 @@ type ProposalTimelineItem struct {
 	unknownFields protoimpl.UnknownFields
 
 	CreatedAt *timestamppb.Timestamp              `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Action    ProposalTimelineItem_TimelineAction `protobuf:"varint,2,opt,name=action,proto3,enum=storagebp.ProposalTimelineItem_TimelineAction" json:"action,omitempty"`
+	Action    ProposalTimelineItem_TimelineAction `protobuf:"varint,2,opt,name=action,proto3,enum=storagepb.ProposalTimelineItem_TimelineAction" json:"action,omitempty"`
 }
 
 func (x *ProposalTimelineItem) Reset() {
 	*x = ProposalTimelineItem{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_proposal_proto_msgTypes[2]
+		mi := &file_storagepb_proposal_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -442,7 +442,7 @@ func (x *ProposalTimelineItem) String() string {
 func (*ProposalTimelineItem) ProtoMessage() {}
 
 func (x *ProposalTimelineItem) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_proposal_proto_msgTypes[2]
+	mi := &file_storagepb_proposal_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -455,7 +455,7 @@ func (x *ProposalTimelineItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProposalTimelineItem.ProtoReflect.Descriptor instead.
 func (*ProposalTimelineItem) Descriptor() ([]byte, []int) {
-	return file_storagebp_proposal_proto_rawDescGZIP(), []int{2}
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ProposalTimelineItem) GetCreatedAt() *timestamppb.Timestamp {
@@ -483,7 +483,7 @@ type ProposalByIDResponse struct {
 func (x *ProposalByIDResponse) Reset() {
 	*x = ProposalByIDResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_proposal_proto_msgTypes[3]
+		mi := &file_storagepb_proposal_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -496,7 +496,7 @@ func (x *ProposalByIDResponse) String() string {
 func (*ProposalByIDResponse) ProtoMessage() {}
 
 func (x *ProposalByIDResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_proposal_proto_msgTypes[3]
+	mi := &file_storagepb_proposal_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -509,7 +509,7 @@ func (x *ProposalByIDResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProposalByIDResponse.ProtoReflect.Descriptor instead.
 func (*ProposalByIDResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_proposal_proto_rawDescGZIP(), []int{3}
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ProposalByIDResponse) GetProposal() *ProposalInfo {
@@ -537,7 +537,7 @@ type ProposalByFilterRequest struct {
 func (x *ProposalByFilterRequest) Reset() {
 	*x = ProposalByFilterRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_proposal_proto_msgTypes[4]
+		mi := &file_storagepb_proposal_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -550,7 +550,7 @@ func (x *ProposalByFilterRequest) String() string {
 func (*ProposalByFilterRequest) ProtoMessage() {}
 
 func (x *ProposalByFilterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_proposal_proto_msgTypes[4]
+	mi := &file_storagepb_proposal_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -563,7 +563,7 @@ func (x *ProposalByFilterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProposalByFilterRequest.ProtoReflect.Descriptor instead.
 func (*ProposalByFilterRequest) Descriptor() ([]byte, []int) {
-	return file_storagebp_proposal_proto_rawDescGZIP(), []int{4}
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ProposalByFilterRequest) GetDao() string {
@@ -634,7 +634,7 @@ type ProposalByFilterResponse struct {
 func (x *ProposalByFilterResponse) Reset() {
 	*x = ProposalByFilterResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_storagebp_proposal_proto_msgTypes[5]
+		mi := &file_storagepb_proposal_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -647,7 +647,7 @@ func (x *ProposalByFilterResponse) String() string {
 func (*ProposalByFilterResponse) ProtoMessage() {}
 
 func (x *ProposalByFilterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storagebp_proposal_proto_msgTypes[5]
+	mi := &file_storagepb_proposal_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -660,7 +660,7 @@ func (x *ProposalByFilterResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProposalByFilterResponse.ProtoReflect.Descriptor instead.
 func (*ProposalByFilterResponse) Descriptor() ([]byte, []int) {
-	return file_storagebp_proposal_proto_rawDescGZIP(), []int{5}
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ProposalByFilterResponse) GetProposals() []*ProposalInfo {
@@ -677,15 +677,15 @@ func (x *ProposalByFilterResponse) GetTotalCount() uint64 {
 	return 0
 }
 
-var File_storagebp_proposal_proto protoreflect.FileDescriptor
+var File_storagepb_proposal_proto protoreflect.FileDescriptor
 
-var file_storagebp_proposal_proto_rawDesc = []byte{
-	0x0a, 0x18, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2f, 0x70, 0x72, 0x6f, 0x70,
+var file_storagepb_proposal_proto_rawDesc = []byte{
+	0x0a, 0x18, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x70,
 	0x6f, 0x73, 0x61, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x73, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x62, 0x70, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72,
+	0x61, 0x67, 0x65, 0x70, 0x62, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62,
-	0x70, 0x2f, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x36, 0x0a, 0x13,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70,
+	0x62, 0x2f, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x36, 0x0a, 0x13,
 	0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x42, 0x79, 0x49, 0x44, 0x52, 0x65, 0x71, 0x75,
 	0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f,
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73,
@@ -710,7 +710,7 @@ var file_storagebp_proposal_proto_rawDesc = []byte{
 	0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79,
 	0x70, 0x65, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x33,
 	0x0a, 0x0a, 0x73, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x69, 0x65, 0x73, 0x18, 0x0b, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x13, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x53,
+	0x28, 0x0b, 0x32, 0x13, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x53,
 	0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x52, 0x0a, 0x73, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67,
 	0x69, 0x65, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x69, 0x74, 0x6c, 0x65, 0x18, 0x0c, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x05, 0x74, 0x69, 0x74, 0x6c, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x62, 0x6f, 0x64,
@@ -741,7 +741,7 @@ var file_storagebp_proposal_proto_rawDesc = []byte{
 	0x0a, 0x05, 0x76, 0x6f, 0x74, 0x65, 0x73, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x76,
 	0x6f, 0x74, 0x65, 0x73, 0x12, 0x3b, 0x0a, 0x08, 0x74, 0x69, 0x6d, 0x65, 0x6c, 0x69, 0x6e, 0x65,
 	0x18, 0x1d, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
-	0x62, 0x70, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x69, 0x6d, 0x65, 0x6c,
+	0x70, 0x62, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x69, 0x6d, 0x65, 0x6c,
 	0x69, 0x6e, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x08, 0x74, 0x69, 0x6d, 0x65, 0x6c, 0x69, 0x6e,
 	0x65, 0x12, 0x19, 0x0a, 0x08, 0x65, 0x6e, 0x73, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x1e, 0x20,
 	0x01, 0x28, 0x09, 0x52, 0x07, 0x65, 0x6e, 0x73, 0x4e, 0x61, 0x6d, 0x65, 0x22, 0x96, 0x03, 0x0a,
@@ -751,7 +751,7 @@ var file_storagebp_proposal_proto_rawDesc = []byte{
 	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65,
 	0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74,
 	0x12, 0x46, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e,
-	0x32, 0x2e, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x50, 0x72, 0x6f,
+	0x32, 0x2e, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x50, 0x72, 0x6f,
 	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x69, 0x6d, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x49, 0x74, 0x65,
 	0x6d, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e,
 	0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xfa, 0x01, 0x0a, 0x0e, 0x54, 0x69, 0x6d,
@@ -773,7 +773,7 @@ var file_storagebp_proposal_proto_rawDesc = []byte{
 	0x6f, 0x6f, 0x6e, 0x10, 0x09, 0x22, 0x4b, 0x0a, 0x14, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61,
 	0x6c, 0x42, 0x79, 0x49, 0x44, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a,
 	0x08, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x17, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x50, 0x72, 0x6f, 0x70,
+	0x17, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x50, 0x72, 0x6f, 0x70,
 	0x6f, 0x73, 0x61, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73,
 	0x61, 0x6c, 0x22, 0xbf, 0x02, 0x0a, 0x17, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x42,
 	0x79, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x15,
@@ -798,63 +798,63 @@ var file_storagebp_proposal_proto_rawDesc = []byte{
 	0x5f, 0x74, 0x6f, 0x70, 0x22, 0x72, 0x0a, 0x18, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c,
 	0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
 	0x12, 0x35, 0x0a, 0x09, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x18, 0x01, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e,
+	0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e,
 	0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x09, 0x70, 0x72,
 	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x74, 0x6f, 0x74, 0x61, 0x6c,
 	0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x74, 0x6f,
 	0x74, 0x61, 0x6c, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x32, 0xae, 0x01, 0x0a, 0x08, 0x50, 0x72, 0x6f,
 	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x12, 0x4a, 0x0a, 0x07, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49, 0x44,
-	0x12, 0x1e, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x50, 0x72, 0x6f,
+	0x12, 0x1e, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x50, 0x72, 0x6f,
 	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x42, 0x79, 0x49, 0x44, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x1f, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x50, 0x72, 0x6f,
+	0x1a, 0x1f, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x50, 0x72, 0x6f,
 	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x42, 0x79, 0x49, 0x44, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x56, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72,
-	0x12, 0x22, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x2e, 0x50, 0x72, 0x6f,
+	0x12, 0x22, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x2e, 0x50, 0x72, 0x6f,
 	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x23, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x23, 0x2e, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62,
 	0x2e, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x42, 0x79, 0x46, 0x69, 0x6c, 0x74, 0x65,
 	0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0d, 0x5a, 0x0b, 0x2e, 0x3b, 0x73,
-	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x62, 0x70, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_storagebp_proposal_proto_rawDescOnce sync.Once
-	file_storagebp_proposal_proto_rawDescData = file_storagebp_proposal_proto_rawDesc
+	file_storagepb_proposal_proto_rawDescOnce sync.Once
+	file_storagepb_proposal_proto_rawDescData = file_storagepb_proposal_proto_rawDesc
 )
 
-func file_storagebp_proposal_proto_rawDescGZIP() []byte {
-	file_storagebp_proposal_proto_rawDescOnce.Do(func() {
-		file_storagebp_proposal_proto_rawDescData = protoimpl.X.CompressGZIP(file_storagebp_proposal_proto_rawDescData)
+func file_storagepb_proposal_proto_rawDescGZIP() []byte {
+	file_storagepb_proposal_proto_rawDescOnce.Do(func() {
+		file_storagepb_proposal_proto_rawDescData = protoimpl.X.CompressGZIP(file_storagepb_proposal_proto_rawDescData)
 	})
-	return file_storagebp_proposal_proto_rawDescData
+	return file_storagepb_proposal_proto_rawDescData
 }
 
-var file_storagebp_proposal_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_storagebp_proposal_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_storagebp_proposal_proto_goTypes = []interface{}{
-	(ProposalTimelineItem_TimelineAction)(0), // 0: storagebp.ProposalTimelineItem.TimelineAction
-	(*ProposalByIDRequest)(nil),              // 1: storagebp.ProposalByIDRequest
-	(*ProposalInfo)(nil),                     // 2: storagebp.ProposalInfo
-	(*ProposalTimelineItem)(nil),             // 3: storagebp.ProposalTimelineItem
-	(*ProposalByIDResponse)(nil),             // 4: storagebp.ProposalByIDResponse
-	(*ProposalByFilterRequest)(nil),          // 5: storagebp.ProposalByFilterRequest
-	(*ProposalByFilterResponse)(nil),         // 6: storagebp.ProposalByFilterResponse
+var file_storagepb_proposal_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_storagepb_proposal_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_storagepb_proposal_proto_goTypes = []interface{}{
+	(ProposalTimelineItem_TimelineAction)(0), // 0: storagepb.ProposalTimelineItem.TimelineAction
+	(*ProposalByIDRequest)(nil),              // 1: storagepb.ProposalByIDRequest
+	(*ProposalInfo)(nil),                     // 2: storagepb.ProposalInfo
+	(*ProposalTimelineItem)(nil),             // 3: storagepb.ProposalTimelineItem
+	(*ProposalByIDResponse)(nil),             // 4: storagepb.ProposalByIDResponse
+	(*ProposalByFilterRequest)(nil),          // 5: storagepb.ProposalByFilterRequest
+	(*ProposalByFilterResponse)(nil),         // 6: storagepb.ProposalByFilterResponse
 	(*timestamppb.Timestamp)(nil),            // 7: google.protobuf.Timestamp
-	(*Strategy)(nil),                         // 8: storagebp.Strategy
+	(*Strategy)(nil),                         // 8: storagepb.Strategy
 }
-var file_storagebp_proposal_proto_depIdxs = []int32{
-	7,  // 0: storagebp.ProposalInfo.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 1: storagebp.ProposalInfo.updated_at:type_name -> google.protobuf.Timestamp
-	8,  // 2: storagebp.ProposalInfo.strategies:type_name -> storagebp.Strategy
-	3,  // 3: storagebp.ProposalInfo.timeline:type_name -> storagebp.ProposalTimelineItem
-	7,  // 4: storagebp.ProposalTimelineItem.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 5: storagebp.ProposalTimelineItem.action:type_name -> storagebp.ProposalTimelineItem.TimelineAction
-	2,  // 6: storagebp.ProposalByIDResponse.proposal:type_name -> storagebp.ProposalInfo
-	2,  // 7: storagebp.ProposalByFilterResponse.proposals:type_name -> storagebp.ProposalInfo
-	1,  // 8: storagebp.Proposal.GetByID:input_type -> storagebp.ProposalByIDRequest
-	5,  // 9: storagebp.Proposal.GetByFilter:input_type -> storagebp.ProposalByFilterRequest
-	4,  // 10: storagebp.Proposal.GetByID:output_type -> storagebp.ProposalByIDResponse
-	6,  // 11: storagebp.Proposal.GetByFilter:output_type -> storagebp.ProposalByFilterResponse
+var file_storagepb_proposal_proto_depIdxs = []int32{
+	7,  // 0: storagepb.ProposalInfo.created_at:type_name -> google.protobuf.Timestamp
+	7,  // 1: storagepb.ProposalInfo.updated_at:type_name -> google.protobuf.Timestamp
+	8,  // 2: storagepb.ProposalInfo.strategies:type_name -> storagepb.Strategy
+	3,  // 3: storagepb.ProposalInfo.timeline:type_name -> storagepb.ProposalTimelineItem
+	7,  // 4: storagepb.ProposalTimelineItem.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 5: storagepb.ProposalTimelineItem.action:type_name -> storagepb.ProposalTimelineItem.TimelineAction
+	2,  // 6: storagepb.ProposalByIDResponse.proposal:type_name -> storagepb.ProposalInfo
+	2,  // 7: storagepb.ProposalByFilterResponse.proposals:type_name -> storagepb.ProposalInfo
+	1,  // 8: storagepb.Proposal.GetByID:input_type -> storagepb.ProposalByIDRequest
+	5,  // 9: storagepb.Proposal.GetByFilter:input_type -> storagepb.ProposalByFilterRequest
+	4,  // 10: storagepb.Proposal.GetByID:output_type -> storagepb.ProposalByIDResponse
+	6,  // 11: storagepb.Proposal.GetByFilter:output_type -> storagepb.ProposalByFilterResponse
 	10, // [10:12] is the sub-list for method output_type
 	8,  // [8:10] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
@@ -862,14 +862,14 @@ var file_storagebp_proposal_proto_depIdxs = []int32{
 	0,  // [0:8] is the sub-list for field type_name
 }
 
-func init() { file_storagebp_proposal_proto_init() }
-func file_storagebp_proposal_proto_init() {
-	if File_storagebp_proposal_proto != nil {
+func init() { file_storagepb_proposal_proto_init() }
+func file_storagepb_proposal_proto_init() {
+	if File_storagepb_proposal_proto != nil {
 		return
 	}
-	file_storagebp_base_proto_init()
+	file_storagepb_base_proto_init()
 	if !protoimpl.UnsafeEnabled {
-		file_storagebp_proposal_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_proposal_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProposalByIDRequest); i {
 			case 0:
 				return &v.state
@@ -881,7 +881,7 @@ func file_storagebp_proposal_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_proposal_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_proposal_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProposalInfo); i {
 			case 0:
 				return &v.state
@@ -893,7 +893,7 @@ func file_storagebp_proposal_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_proposal_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_proposal_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProposalTimelineItem); i {
 			case 0:
 				return &v.state
@@ -905,7 +905,7 @@ func file_storagebp_proposal_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_proposal_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_proposal_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProposalByIDResponse); i {
 			case 0:
 				return &v.state
@@ -917,7 +917,7 @@ func file_storagebp_proposal_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_proposal_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_proposal_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProposalByFilterRequest); i {
 			case 0:
 				return &v.state
@@ -929,7 +929,7 @@ func file_storagebp_proposal_proto_init() {
 				return nil
 			}
 		}
-		file_storagebp_proposal_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_storagepb_proposal_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProposalByFilterResponse); i {
 			case 0:
 				return &v.state
@@ -942,24 +942,24 @@ func file_storagebp_proposal_proto_init() {
 			}
 		}
 	}
-	file_storagebp_proposal_proto_msgTypes[4].OneofWrappers = []interface{}{}
+	file_storagepb_proposal_proto_msgTypes[4].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_storagebp_proposal_proto_rawDesc,
+			RawDescriptor: file_storagepb_proposal_proto_rawDesc,
 			NumEnums:      1,
 			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_storagebp_proposal_proto_goTypes,
-		DependencyIndexes: file_storagebp_proposal_proto_depIdxs,
-		EnumInfos:         file_storagebp_proposal_proto_enumTypes,
-		MessageInfos:      file_storagebp_proposal_proto_msgTypes,
+		GoTypes:           file_storagepb_proposal_proto_goTypes,
+		DependencyIndexes: file_storagepb_proposal_proto_depIdxs,
+		EnumInfos:         file_storagepb_proposal_proto_enumTypes,
+		MessageInfos:      file_storagepb_proposal_proto_msgTypes,
 	}.Build()
-	File_storagebp_proposal_proto = out.File
-	file_storagebp_proposal_proto_rawDesc = nil
-	file_storagebp_proposal_proto_goTypes = nil
-	file_storagebp_proposal_proto_depIdxs = nil
+	File_storagepb_proposal_proto = out.File
+	file_storagepb_proposal_proto_rawDesc = nil
+	file_storagepb_proposal_proto_goTypes = nil
+	file_storagepb_proposal_proto_depIdxs = nil
 }

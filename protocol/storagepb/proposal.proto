@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package storagebp;
+package storagepb;
 
 import "google/protobuf/timestamp.proto";
-import "storagebp/base.proto";
+import "storagepb/base.proto";
 
-option go_package = ".;storagebp";
+option go_package = ".;storagepb";
 
 service Proposal {
   rpc GetByID(ProposalByIDRequest) returns (ProposalByIDResponse);

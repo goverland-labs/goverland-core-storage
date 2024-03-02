@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.25.2
-// source: storagebp/proposal.proto
+// source: storagepb/proposal.proto
 
-package storagebp
+package storagepb
 
 import (
 	context "context"
@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Proposal_GetByID_FullMethodName     = "/storagebp.Proposal/GetByID"
-	Proposal_GetByFilter_FullMethodName = "/storagebp.Proposal/GetByFilter"
+	Proposal_GetByID_FullMethodName     = "/storagepb.Proposal/GetByID"
+	Proposal_GetByFilter_FullMethodName = "/storagepb.Proposal/GetByFilter"
 )
 
 // ProposalClient is the client API for Proposal service.
@@ -129,7 +129,7 @@ func _Proposal_GetByFilter_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Proposal_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "storagebp.Proposal",
+	ServiceName: "storagepb.Proposal",
 	HandlerType: (*ProposalServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -142,5 +142,5 @@ var Proposal_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "storagebp/proposal.proto",
+	Metadata: "storagepb/proposal.proto",
 }

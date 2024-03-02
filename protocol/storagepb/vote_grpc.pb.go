@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.25.2
-// source: storagebp/vote.proto
+// source: storagepb/vote.proto
 
-package storagebp
+package storagepb
 
 import (
 	context "context"
@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Vote_GetVotes_FullMethodName = "/storagebp.Vote/GetVotes"
-	Vote_Validate_FullMethodName = "/storagebp.Vote/Validate"
-	Vote_Prepare_FullMethodName  = "/storagebp.Vote/Prepare"
-	Vote_Vote_FullMethodName     = "/storagebp.Vote/Vote"
+	Vote_GetVotes_FullMethodName = "/storagepb.Vote/GetVotes"
+	Vote_Validate_FullMethodName = "/storagepb.Vote/Validate"
+	Vote_Prepare_FullMethodName  = "/storagepb.Vote/Prepare"
+	Vote_Vote_FullMethodName     = "/storagepb.Vote/Vote"
 )
 
 // VoteClient is the client API for Vote service.
@@ -195,7 +195,7 @@ func _Vote_Vote_Handler(srv interface{}, ctx context.Context, dec func(interface
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Vote_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "storagebp.Vote",
+	ServiceName: "storagepb.Vote",
 	HandlerType: (*VoteServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -216,5 +216,5 @@ var Vote_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "storagebp/vote.proto",
+	Metadata: "storagepb/vote.proto",
 }
