@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 
-	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
+	"github.com/goverland-labs/goverland-core-storage/protocol/storagebp"
 )
 
 const (
@@ -21,7 +21,7 @@ const (
 )
 
 type Server struct {
-	proto.UnimplementedProposalServer
+	storagebp.UnimplementedProposalServer
 
 	sp *Service
 }
@@ -32,7 +32,7 @@ func NewServer(sp *Service) *Server {
 	}
 }
 
-func (s *Server) GetByID(_ context.Context, req *proto.ProposalByIDRequest) (*proto.ProposalByIDResponse, error) {
+func (s *Server) GetByID(_ context.Context, req *storagebp.ProposalByIDRequest) (*storagebp.ProposalByIDResponse, error) {
 	if req.GetProposalId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid proposal ID")
 	}
@@ -47,12 +47,12 @@ func (s *Server) GetByID(_ context.Context, req *proto.ProposalByIDRequest) (*pr
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &proto.ProposalByIDResponse{
+	return &storagebp.ProposalByIDResponse{
 		Proposal: convertProposalToAPI(dao),
 	}, nil
 }
 
-func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterRequest) (*proto.ProposalByFilterResponse, error) {
+func (s *Server) GetByFilter(_ context.Context, req *storagebp.ProposalByFilterRequest) (*storagebp.ProposalByFilterResponse, error) {
 	limit, offset := defaultDaoLimit, defaultOffset
 	if req.GetLimit() > 0 {
 		limit = int(req.GetLimit())
@@ -109,8 +109,8 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	res := &proto.ProposalByFilterResponse{
-		Proposals:  make([]*proto.ProposalInfo, len(list.Proposals)),
+	res := &storagebp.ProposalByFilterResponse{
+		Proposals:  make([]*storagebp.ProposalInfo, len(list.Proposals)),
 		TotalCount: uint64(list.TotalCount),
 	}
 
@@ -121,8 +121,8 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.ProposalByFilterReque
 	return res, nil
 }
 
-func convertProposalToAPI(info *Proposal) *proto.ProposalInfo {
-	return &proto.ProposalInfo{
+func convertProposalToAPI(info *Proposal) *storagebp.ProposalInfo {
+	return &storagebp.ProposalInfo{
 		Id:            info.ID,
 		CreatedAt:     timestamppb.New(info.CreatedAt),
 		UpdatedAt:     timestamppb.New(info.UpdatedAt),
@@ -156,12 +156,12 @@ func convertProposalToAPI(info *Proposal) *proto.ProposalInfo {
 	}
 }
 
-func convertStrategiesToAPI(data Strategies) []*proto.Strategy {
-	res := make([]*proto.Strategy, len(data))
+func convertStrategiesToAPI(data Strategies) []*storagebp.Strategy {
+	res := make([]*storagebp.Strategy, len(data))
 	for i, info := range data {
 		params, _ := json.Marshal(info.Params)
 
-		res[i] = &proto.Strategy{
+		res[i] = &storagebp.Strategy{
 			Name:    info.Name,
 			Network: info.Network,
 			Params:  params,
@@ -171,14 +171,14 @@ func convertStrategiesToAPI(data Strategies) []*proto.Strategy {
 	return res
 }
 
-func convertTimelineToAPI(tl Timeline) []*proto.ProposalTimelineItem {
+func convertTimelineToAPI(tl Timeline) []*storagebp.ProposalTimelineItem {
 	if len(tl) == 0 {
 		return nil
 	}
 
-	res := make([]*proto.ProposalTimelineItem, len(tl))
+	res := make([]*storagebp.ProposalTimelineItem, len(tl))
 	for i := range tl {
-		res[i] = &proto.ProposalTimelineItem{
+		res[i] = &storagebp.ProposalTimelineItem{
 			CreatedAt: timestamppb.New(tl[i].CreatedAt),
 			Action:    convertTimelineActionToAPI(tl[i].Action),
 		}
@@ -187,23 +187,23 @@ func convertTimelineToAPI(tl Timeline) []*proto.ProposalTimelineItem {
 	return res
 }
 
-func convertTimelineActionToAPI(action TimelineAction) proto.ProposalTimelineItem_TimelineAction {
+func convertTimelineActionToAPI(action TimelineAction) storagebp.ProposalTimelineItem_TimelineAction {
 	switch action {
 	case ProposalCreated:
-		return proto.ProposalTimelineItem_ProposalCreated
+		return storagebp.ProposalTimelineItem_ProposalCreated
 	case ProposalUpdated:
-		return proto.ProposalTimelineItem_ProposalUpdated
+		return storagebp.ProposalTimelineItem_ProposalUpdated
 	case ProposalVotingStartsSoon:
-		return proto.ProposalTimelineItem_ProposalVotingStartsSoon
+		return storagebp.ProposalTimelineItem_ProposalVotingStartsSoon
 	case ProposalVotingStarted:
-		return proto.ProposalTimelineItem_ProposalVotingStarted
+		return storagebp.ProposalTimelineItem_ProposalVotingStarted
 	case ProposalVotingQuorumReached:
-		return proto.ProposalTimelineItem_ProposalVotingQuorumReached
+		return storagebp.ProposalTimelineItem_ProposalVotingQuorumReached
 	case ProposalVotingEnded:
-		return proto.ProposalTimelineItem_ProposalVotingEnded
+		return storagebp.ProposalTimelineItem_ProposalVotingEnded
 	case ProposalVotingEndsSoon:
-		return proto.ProposalTimelineItem_ProposalVotingEndsSoon
+		return storagebp.ProposalTimelineItem_ProposalVotingEndsSoon
 	default:
-		return proto.ProposalTimelineItem_Unspecified
+		return storagebp.ProposalTimelineItem_Unspecified
 	}
 }

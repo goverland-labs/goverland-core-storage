@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Migrated protocol to this repo as different module
+
 ## [0.1.0] - 2024-03-01
 
 ### Changed

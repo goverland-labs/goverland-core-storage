@@ -19,7 +19,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/goverland-labs/core-api/protobuf/internalapi"
+	"github.com/goverland-labs/goverland-core-storage/protocol/storagebp"
 
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
@@ -292,9 +292,9 @@ func (a *Application) initAPI() error {
 		authInterceptor.AuthAndIdentifyTickerFunc,
 	)
 
-	internalapi.RegisterDaoServer(srv, dao.NewServer(a.daoService))
-	internalapi.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
-	internalapi.RegisterVoteServer(srv, vote.NewServer(a.voteService))
+	storagebp.RegisterDaoServer(srv, dao.NewServer(a.daoService))
+	storagebp.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
+	storagebp.RegisterVoteServer(srv, vote.NewServer(a.voteService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 

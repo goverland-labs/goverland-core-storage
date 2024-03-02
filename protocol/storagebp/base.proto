@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package storagebp;
+
+option go_package = ".;storagebp";
+
+message  Strategy {
+  string name = 1;
+  string network = 2;
+  bytes params = 3;
+}
