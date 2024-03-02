@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package storagebp;
+
+option go_package = ".;storagebp";
+
+service Vote {
+  rpc GetVotes(VotesFilterRequest) returns (VotesFilterResponse);
+  rpc Validate(ValidateRequest) returns (ValidateResponse);
+  rpc Prepare(PrepareRequest) returns (PrepareResponse);
+  rpc Vote(VoteRequest) returns (VoteResponse);
+}
+
+message VotesFilterRequest {
+  repeated string proposal_ids = 1;
+  optional string voter = 2;
+  optional string order_by_voter = 3;
+  optional uint64 limit = 4;
+  optional uint64 offset = 5;
+}
+
+message VoteInfo {
+  string id = 1;
+  string ipfs = 2;
+  string voter = 3;
+  uint64 created = 4;
+  string dao_id = 5;
+  string proposal_id = 6;
+  google.protobuf.Any choice = 7;
+  string reason = 8;
+  string app = 9;
+  float vp = 10;
+  repeated float vp_by_strategy = 11;
+  string vp_state = 12;
+  string ens_name = 13;
+}
+
+message VotesFilterResponse {
+  repeated VoteInfo votes = 1;
+  uint64 total_count = 2;
+}
+
+message ValidateRequest {
+  string voter = 1;
+  string proposal = 2;
+}
+
+message ValidateResponse {
+  bool ok = 1;
+
+  double voting_power = 2;
+  optional ValidationError validation_error = 3;
+}
+
+message ValidationError {
+  string message = 2;
+  uint32 code = 3;
+}
+
+message PrepareRequest {
+  string voter = 1;
+  string proposal = 2;
+  google.protobuf.Any choice = 3;
+  optional string reason = 6;
+}
+
+message PrepareResponse {
+  string id = 1;
+  string typed_data = 2;
+}
+
+message VoteRequest {
+  string id = 1;
+  string sig = 2;
+}
+
+message VoteResponse {
+  string id = 1;
+  string ipfs = 2;
+  Relayer relayer = 3;
+}
+
+message Relayer {
+  string address = 1;
+  string receipt = 2;
+}

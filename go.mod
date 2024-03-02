@@ -2,13 +2,15 @@ module github.com/goverland-labs/goverland-core-storage
 
 go 1.22
 
+replace github.com/goverland-labs/goverland-core-storage/protocol => ./protocol
+
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	github.com/goverland-labs/core-api v0.0.25
+	github.com/goverland-labs/goverland-core-storage/protocol v0.0.25
 	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.4.1
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
 	github.com/goverland-labs/goverland-platform-events v0.2.1
