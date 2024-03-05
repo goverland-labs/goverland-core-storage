@@ -128,6 +128,8 @@ func (s *Server) Vote(ctx context.Context, req *storagepb.VoteRequest) (*storage
 		return nil, status.Error(codes.Internal, "failed to vote")
 	}
 
+	s.sp.FetchAndStoreVote(ctx, voteResp.ID)
+
 	return &storagepb.VoteResponse{
 		Id:   voteResp.ID,
 		Ipfs: voteResp.IPFS,

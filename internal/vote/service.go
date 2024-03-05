@@ -170,6 +170,22 @@ func (s *Service) Vote(ctx context.Context, req VoteRequest) (VoteResponse, erro
 	}, nil
 }
 
+func (s *Service) FetchAndStoreVote(ctx context.Context, id string) {
+	vote, err := s.dsClient.GetVote(ctx, &votingpb.GetVoteRequest{
+		Id: id,
+	})
+	if err != nil {
+		log.Error().Err(err).Msgf("fetch vote: %s", id)
+		return
+	}
+
+	err = s.HandleVotes(ctx, []Vote{convertFromProtoToInternal(vote)})
+	if err != nil {
+		log.Error().Err(err).Msgf("store vote: %s", id)
+		return
+	}
+}
+
 func (s *Service) HandleResolvedAddresses(list []ResolvedAddress) error {
 	if len(list) == 0 {
 		return nil
@@ -180,4 +196,21 @@ func (s *Service) HandleResolvedAddresses(list []ResolvedAddress) error {
 	}
 
 	return nil
+}
+
+func convertFromProtoToInternal(pl *votingpb.GetVoteResponse) Vote {
+	return Vote{
+		ID:            pl.GetId(),
+		Ipfs:          pl.GetIpfs(),
+		OriginalDaoID: pl.GetOriginalDaoId(),
+		ProposalID:    pl.GetProposalId(),
+		Voter:         pl.GetVoter(),
+		Created:       int(pl.GetCreated()),
+		Reason:        pl.GetReason(),
+		Choice:        pl.GetChoice().GetValue(),
+		App:           pl.GetApp(),
+		Vp:            pl.GetVp(),
+		VpByStrategy:  pl.GetVpByStrategy(),
+		VpState:       pl.GetVpState(),
+	}
 }
