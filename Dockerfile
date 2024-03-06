@@ -18,6 +18,7 @@ RUN go env -w GOPRIVATE=github.com/goverland-labs/*
 
 # Download dependencies
 COPY go.mod go.sum ./
+COPY protocol/go.mod protocol/go.sum ./
 RUN go mod download && go mod verify
 
 # Copy an application's source
