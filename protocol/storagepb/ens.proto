@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package storagepb;
+
+option go_package = ".;storagepb";
+
+service Ens {
+  rpc GetEnsByAddresses(EnsByAddressesRequest) returns (EnsByAddressesResponse);
+}
+
+message EnsByAddressesRequest {
+  repeated string addresses = 1;
+}
+
+message EnsName {
+  string address = 1;
+  string name = 2;
+}
+
+message EnsByAddressesResponse {
+  repeated EnsName ens_names = 1;
+}

@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.4] - 2024-03-11
+
+### Added
+- Added the method to get ens names by addresses
+
 ## [0.1.3] - 2024-03-06
 
 ### Fixed
