@@ -31,3 +31,11 @@ func (r *Repo) BatchCreate(data []EnsName) error {
 		DoNothing: true,
 	}).CreateInBatches(data, defaultBatchSize).Error
 }
+
+func (r *Repo) GetByAddresses(addresses []string) ([]EnsName, error) {
+	db := r.db.Model(&EnsName{}).Where("address IN ?", addresses)
+	var list []EnsName
+	err := db.Find(&list).Error
+
+	return list, err
+}

@@ -294,6 +294,7 @@ func (a *Application) initAPI() error {
 	storagepb.RegisterDaoServer(srv, dao.NewServer(a.daoService))
 	storagepb.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
 	storagepb.RegisterVoteServer(srv, vote.NewServer(a.voteService))
+	storagepb.RegisterEnsServer(srv, ensresolver.NewServer(a.ensService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 

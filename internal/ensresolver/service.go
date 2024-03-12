@@ -140,6 +140,10 @@ func (s *Service) AddRequests(list []string) {
 	go s.resolve()
 }
 
+func (s *Service) GetByAddresses(addresses []string) ([]EnsName, error) {
+	return s.repo.GetByAddresses(addresses)
+}
+
 func chunkSlice(slice []string, chunkSize int) [][]string {
 	var chunks [][]string
 	for {
