@@ -40,6 +40,7 @@ message VoteInfo {
 message VotesFilterResponse {
   repeated VoteInfo votes = 1;
   uint64 total_count = 2;
+  float total_vp = 3;
 }
 
 message ValidateRequest {

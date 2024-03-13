@@ -1,8 +1,19 @@
 package vote
 
 import (
-	"fmt"
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 	"gorm.io/gorm"
+)
+
+var (
+	OrderByVp = proposal.Order{
+		Field:     "vp",
+		Direction: proposal.DirectionDesc,
+	}
+	OrderByCreated = proposal.Order{
+		Field:     "created",
+		Direction: proposal.DirectionDesc,
+	}
 )
 
 type Filter interface {
@@ -32,19 +43,4 @@ type VoterFilter struct {
 
 func (f VoterFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("voter = ?", f.Voter)
-}
-
-type OrderByCreatedFilter struct {
-}
-
-func (f OrderByCreatedFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order("created desc")
-}
-
-type OrderByVoterAndCreatedFilter struct {
-	Voter string
-}
-
-func (f OrderByVoterAndCreatedFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order(fmt.Sprintf("case when voter = '%s' then 0 else 1 end, created desc", f.Voter))
 }

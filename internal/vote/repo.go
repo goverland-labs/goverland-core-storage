@@ -2,6 +2,7 @@ package vote
 
 import (
 	"fmt"
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 	"strings"
 
 	"gorm.io/gorm"
@@ -34,6 +35,7 @@ func (r *Repo) BatchCreate(data []Vote) error {
 type List struct {
 	Votes      []Vote
 	TotalCount int64
+	TotalVp    float32
 }
 
 func (r *Repo) GetByFilters(filters []Filter) (List, error) {
@@ -42,19 +44,21 @@ func (r *Repo) GetByFilters(filters []Filter) (List, error) {
 		if _, ok := f.(PageFilter); ok {
 			continue
 		}
+		if _, ok := f.(proposal.OrderFilter); ok {
+			continue
+		}
 		db = f.Apply(db)
 	}
+	var totals Totals
+	err := db.Select([]string{"count(*) as Votes", "sum(vp) as Vp"}).Scan(&totals).Error
 
-	var cnt int64
-	err := db.Count(&cnt).Error
 	if err != nil {
 		return List{}, err
 	}
 
+	db = r.db.Model(&Vote{})
 	for _, f := range filters {
-		if _, ok := f.(PageFilter); ok {
-			db = f.Apply(db)
-		}
+		db = f.Apply(db)
 	}
 
 	var list []Vote
@@ -65,7 +69,8 @@ func (r *Repo) GetByFilters(filters []Filter) (List, error) {
 
 	return List{
 		Votes:      list,
-		TotalCount: cnt,
+		TotalCount: totals.Votes,
+		TotalVp:    totals.Vp,
 	}, nil
 }
 

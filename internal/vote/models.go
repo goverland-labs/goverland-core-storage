@@ -76,3 +76,8 @@ type ResolvedAddress struct {
 	Address string
 	Name    string
 }
+
+type Totals struct {
+	Votes int64
+	Vp    float32
+}
