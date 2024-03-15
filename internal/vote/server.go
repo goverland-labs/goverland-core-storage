@@ -2,12 +2,14 @@ package vote
 
 import (
 	"context"
+	"fmt"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 )
 
@@ -41,9 +43,13 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 	}
 
 	if req.GetOrderByVoter() != "" {
-		filters = append(filters, OrderByVoterAndCreatedFilter{Voter: req.GetOrderByVoter()})
+		filters = append(filters, proposal.OrderFilter{
+			Orders: []proposal.Order{{Field: fmt.Sprintf("case when voter = '%s' then 0 else 1 end", req.GetOrderByVoter()), Direction: proposal.DirectionAsc}, OrderByVp, OrderByCreated},
+		})
 	} else {
-		filters = append(filters, OrderByCreatedFilter{})
+		filters = append(filters, proposal.OrderFilter{
+			Orders: []proposal.Order{OrderByVp, OrderByCreated},
+		})
 	}
 
 	if req.GetProposalIds() != nil {
@@ -63,6 +69,7 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 	res := &storagepb.VotesFilterResponse{
 		Votes:      make([]*storagepb.VoteInfo, len(list.Votes)),
 		TotalCount: uint64(list.TotalCount),
+		TotalVp:    list.TotalVp,
 	}
 
 	for i, info := range list.Votes {
