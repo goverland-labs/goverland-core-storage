@@ -39,7 +39,7 @@ type List struct {
 }
 
 func (r *Repo) GetByFilters(filters []Filter) (List, error) {
-	db := r.db.Model(&Vote{})
+	db := r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
 	for _, f := range filters {
 		if _, ok := f.(PageFilter); ok {
 			continue
@@ -56,7 +56,7 @@ func (r *Repo) GetByFilters(filters []Filter) (List, error) {
 		return List{}, err
 	}
 
-	db = r.db.Model(&Vote{})
+	db = r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
 	for _, f := range filters {
 		db = f.Apply(db)
 	}
