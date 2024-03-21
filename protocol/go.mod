@@ -1,6 +1,6 @@
 module github.com/goverland-labs/goverland-core-storage/protocol
 
-go 1.21
+go 1.22
 
 require (
 	google.golang.org/grpc v1.62.0
