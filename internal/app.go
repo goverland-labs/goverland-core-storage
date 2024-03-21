@@ -19,16 +19,18 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
+
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
 	"github.com/goverland-labs/goverland-core-storage/internal/ensresolver"
 	"github.com/goverland-labs/goverland-core-storage/internal/events"
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
+	"github.com/goverland-labs/goverland-core-storage/internal/stats"
 	"github.com/goverland-labs/goverland-core-storage/internal/vote"
 	"github.com/goverland-labs/goverland-core-storage/pkg/grpcsrv"
 	"github.com/goverland-labs/goverland-core-storage/pkg/health"
 	"github.com/goverland-labs/goverland-core-storage/pkg/prometheus"
-	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 )
 
 type Application struct {
@@ -54,6 +56,8 @@ type Application struct {
 	ensService *ensresolver.Service
 
 	eventsRepo *events.Repo
+
+	statsService *stats.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -171,6 +175,8 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init vote: %w", err)
 	}
 
+	a.initStats()
+
 	err = a.initAPI()
 	if err != nil {
 		return fmt.Errorf("init api: %w", err)
@@ -282,6 +288,13 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 	return nil
 }
 
+func (a *Application) initStats() {
+	a.statsService = stats.NewService(a.daoRepo, a.proposalRepo)
+	cw := stats.NewCalcTotalsWorker(a.statsService)
+
+	a.manager.AddWorker(process.NewCallbackWorker("calc-totals", cw.Start))
+}
+
 func (a *Application) initAPI() error {
 	authInterceptor := grpcsrv.NewAuthInterceptor()
 	srv := grpcsrv.NewGrpcServer(
@@ -295,6 +308,7 @@ func (a *Application) initAPI() error {
 	storagepb.RegisterProposalServer(srv, proposal.NewServer(a.proposalService))
 	storagepb.RegisterVoteServer(srv, vote.NewServer(a.voteService))
 	storagepb.RegisterEnsServer(srv, ensresolver.NewServer(a.ensService))
+	storagepb.RegisterStatsServer(srv, stats.NewServer(a.statsService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 

@@ -36,6 +36,18 @@ func (f CategoryFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("categories @> ?", fmt.Sprintf("\"%s\"", f.Category))
 }
 
+type VerifiedFilter struct {
+}
+
+func (f VerifiedFilter) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy Dao
+		_     = dummy.Verified
+	)
+
+	return db.Where("verified is true")
+}
+
 type NotCategoryFilter struct {
 	Category string
 }

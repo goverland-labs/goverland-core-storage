@@ -10,7 +10,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	github.com/goverland-labs/goverland-core-storage/protocol v0.0.25
+	github.com/goverland-labs/goverland-core-storage/protocol v0.0.0
 	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.4.4
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
 	github.com/goverland-labs/goverland-platform-events v0.2.1
@@ -23,6 +23,7 @@ require (
 	github.com/s-larionov/process-manager v0.0.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/sync v0.6.0
 	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
 	gorm.io/driver/postgres v1.5.2
