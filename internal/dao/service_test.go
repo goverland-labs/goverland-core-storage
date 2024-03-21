@@ -70,11 +70,13 @@ func TestUnitHandleDao(t *testing.T) {
 				m := NewMockDataProvider(ctrl)
 				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
 				m.EXPECT().Create(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateProposalCnt(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateActiveVotes(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(3).Return(nil)
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return m
 			},
 			event:    Dao{ID: id1},
@@ -85,6 +87,8 @@ func TestUnitHandleDao(t *testing.T) {
 				m := NewMockDataProvider(ctrl)
 				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: id1, Name: "updated"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateProposalCnt(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateActiveVotes(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
@@ -138,11 +142,13 @@ func TestUnitHandleDao(t *testing.T) {
 				m := NewMockDataProvider(ctrl)
 				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(nil, gorm.ErrRecordNotFound)
 				m.EXPECT().Create(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateProposalCnt(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateActiveVotes(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(3).Return(errors.New("unexpected error"))
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(errors.New("unexpected error"))
 				return m
 			},
 			event:    Dao{ID: id1},
@@ -166,6 +172,8 @@ func TestUnitHandleDao(t *testing.T) {
 				m := NewMockDataProvider(ctrl)
 				m.EXPECT().GetByID(gomock.Any()).Times(1).Return(&Dao{ID: id1, Name: "name"}, nil)
 				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateProposalCnt(gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().UpdateActiveVotes(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
