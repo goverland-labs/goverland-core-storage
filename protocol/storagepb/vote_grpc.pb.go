@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Vote_GetVotes_FullMethodName = "/storagepb.Vote/GetVotes"
-	Vote_Validate_FullMethodName = "/storagepb.Vote/Validate"
-	Vote_Prepare_FullMethodName  = "/storagepb.Vote/Prepare"
-	Vote_Vote_FullMethodName     = "/storagepb.Vote/Vote"
+	Vote_GetVotes_FullMethodName       = "/storagepb.Vote/GetVotes"
+	Vote_Validate_FullMethodName       = "/storagepb.Vote/Validate"
+	Vote_Prepare_FullMethodName        = "/storagepb.Vote/Prepare"
+	Vote_Vote_FullMethodName           = "/storagepb.Vote/Vote"
+	Vote_GetDaosVotedIn_FullMethodName = "/storagepb.Vote/GetDaosVotedIn"
 )
 
 // VoteClient is the client API for Vote service.
@@ -33,6 +34,7 @@ type VoteClient interface {
 	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error)
 	Prepare(ctx context.Context, in *PrepareRequest, opts ...grpc.CallOption) (*PrepareResponse, error)
 	Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*VoteResponse, error)
+	GetDaosVotedIn(ctx context.Context, in *DaosVotedInRequest, opts ...grpc.CallOption) (*DaosVotedInResponse, error)
 }
 
 type voteClient struct {
@@ -79,6 +81,15 @@ func (c *voteClient) Vote(ctx context.Context, in *VoteRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *voteClient) GetDaosVotedIn(ctx context.Context, in *DaosVotedInRequest, opts ...grpc.CallOption) (*DaosVotedInResponse, error) {
+	out := new(DaosVotedInResponse)
+	err := c.cc.Invoke(ctx, Vote_GetDaosVotedIn_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VoteServer is the server API for Vote service.
 // All implementations must embed UnimplementedVoteServer
 // for forward compatibility
@@ -87,6 +98,7 @@ type VoteServer interface {
 	Validate(context.Context, *ValidateRequest) (*ValidateResponse, error)
 	Prepare(context.Context, *PrepareRequest) (*PrepareResponse, error)
 	Vote(context.Context, *VoteRequest) (*VoteResponse, error)
+	GetDaosVotedIn(context.Context, *DaosVotedInRequest) (*DaosVotedInResponse, error)
 	mustEmbedUnimplementedVoteServer()
 }
 
@@ -105,6 +117,9 @@ func (UnimplementedVoteServer) Prepare(context.Context, *PrepareRequest) (*Prepa
 }
 func (UnimplementedVoteServer) Vote(context.Context, *VoteRequest) (*VoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Vote not implemented")
+}
+func (UnimplementedVoteServer) GetDaosVotedIn(context.Context, *DaosVotedInRequest) (*DaosVotedInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDaosVotedIn not implemented")
 }
 func (UnimplementedVoteServer) mustEmbedUnimplementedVoteServer() {}
 
@@ -191,6 +206,24 @@ func _Vote_Vote_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Vote_GetDaosVotedIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DaosVotedInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VoteServer).GetDaosVotedIn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Vote_GetDaosVotedIn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VoteServer).GetDaosVotedIn(ctx, req.(*DaosVotedInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Vote_ServiceDesc is the grpc.ServiceDesc for Vote service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -213,6 +246,10 @@ var Vote_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Vote",
 			Handler:    _Vote_Vote_Handler,
+		},
+		{
+			MethodName: "GetDaosVotedIn",
+			Handler:    _Vote_GetDaosVotedIn_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

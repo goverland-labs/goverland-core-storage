@@ -22,6 +22,7 @@ type DataProvider interface {
 	GetByFilters(filters []Filter) (List, error)
 	UpdateVotes(list []ResolvedAddress) error
 	GetUnique(string, int64) ([]string, error)
+	GetByVoter(string) ([]string, error)
 }
 
 type DaoProvider interface {
@@ -196,6 +197,10 @@ func (s *Service) HandleResolvedAddresses(list []ResolvedAddress) error {
 	}
 
 	return nil
+}
+
+func (s *Service) GetDaosVotedIn(voter string) ([]string, error) {
+	return s.repo.GetByVoter(voter)
 }
 
 func convertFromProtoToInternal(pl *votingpb.GetVoteResponse) Vote {
