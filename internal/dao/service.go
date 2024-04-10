@@ -65,27 +65,25 @@ type Service struct {
 	daoIds map[string]uuid.UUID
 	daoMu  sync.RWMutex
 
-	topMu    sync.RWMutex
-	topCache map[int]map[string]topList
-
 	repo       DataProvider
 	uniqueRepo UniqueVoterProvider
 	events     Publisher
 	idProvider DaoIDProvider
 	proposals  ProposalProvider
+
+	topDAOCache *TopDAOCache
 }
 
-func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider) (*Service, error) {
+func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache) (*Service, error) {
 	return &Service{
-		repo:       r,
-		uniqueRepo: ur,
-		events:     p,
-		idProvider: ip,
-		proposals:  pp,
-		daoIds:     make(map[string]uuid.UUID),
-		daoMu:      sync.RWMutex{},
-		topMu:      sync.RWMutex{},
-		topCache:   map[int]map[string]topList{},
+		repo:        r,
+		uniqueRepo:  ur,
+		events:      p,
+		idProvider:  ip,
+		proposals:   pp,
+		daoIds:      make(map[string]uuid.UUID),
+		daoMu:       sync.RWMutex{},
+		topDAOCache: topDAOCache,
 	}, nil
 }
 
@@ -251,66 +249,7 @@ type topList struct {
 }
 
 func (s *Service) GetTopByCategories(_ context.Context, limit int) (map[string]topList, error) {
-	s.topMu.RLock()
-	cached, ok := s.topCache[limit]
-	s.topMu.RUnlock()
-	if ok && len(cached) != 0 {
-		return makeCopy(cached), nil
-	}
-
-	categories, err := s.repo.GetCategories()
-	if err != nil {
-		return nil, fmt.Errorf("get categories: %w", err)
-	}
-
-	list := make(map[string]topList)
-	for _, category := range categories {
-		filters := []Filter{
-			CategoryFilter{Category: category},
-			PageFilter{Limit: limit, Offset: 0},
-			OrderByPopularityIndexFilter{},
-		}
-
-		data, err := s.repo.GetByFilters(filters, true)
-		if err != nil {
-			return nil, fmt.Errorf("get by category %s: %w", category, err)
-		}
-
-		list[category] = topList{
-			List:  data.Daos,
-			Total: data.TotalCount,
-		}
-	}
-
-	s.topMu.Lock()
-	s.topCache[limit] = list
-	s.topMu.Unlock()
-
-	go func() {
-		<-time.After(topCachingTTL)
-
-		s.topMu.Lock()
-		delete(s.topCache, limit)
-		s.topMu.Unlock()
-	}()
-
-	return list, nil
-}
-
-func makeCopy(src map[string]topList) map[string]topList {
-	copied := map[string]topList{}
-	for k, v := range src {
-		copied[k] = topList{
-			List:  make([]Dao, len(v.List)),
-			Total: v.Total,
-		}
-
-		for i := range v.List { // nolint:gosimple
-			copied[k].List[i] = v.List[i]
-		}
-	}
-
-	return copied
+	return s.topDAOCache.GetTopList(uint(limit)), nil
 }
 
 func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, error) {

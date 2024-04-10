@@ -10,6 +10,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.1.9] - 2024-04-10
 
 ### Added
+- Added top dao cache worker
+
+### Added
 - Indexes for slow queries
 - Daos voted in
 
