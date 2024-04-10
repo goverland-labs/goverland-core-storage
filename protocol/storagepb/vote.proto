@@ -11,6 +11,7 @@ service Vote {
   rpc Validate(ValidateRequest) returns (ValidateResponse);
   rpc Prepare(PrepareRequest) returns (PrepareResponse);
   rpc Vote(VoteRequest) returns (VoteResponse);
+  rpc GetDaosVotedIn(DaosVotedInRequest) returns (DaosVotedInResponse);
 }
 
 message VotesFilterRequest {
@@ -86,4 +87,13 @@ message VoteResponse {
 message Relayer {
   string address = 1;
   string receipt = 2;
+}
+
+message DaosVotedInRequest {
+  string voter = 1;
+}
+
+message DaosVotedInResponse {
+  repeated string dao_ids = 1;
+  uint64 total_count = 2;
 }

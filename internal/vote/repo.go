@@ -116,3 +116,13 @@ limit ?
 
 	return list, err
 }
+
+func (r *Repo) GetByVoter(voter string) ([]string, error) {
+	var res []string
+	request := r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id").Distinct("dao_id").Where(&Vote{Voter: voter}).Find(&res)
+	if err := request.Error; err != nil {
+		return nil, fmt.Errorf("get dao list by voter #%s: %w", voter, err)
+	}
+
+	return res, nil
+}

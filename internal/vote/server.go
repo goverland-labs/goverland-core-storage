@@ -2,7 +2,9 @@ package vote
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"gorm.io/gorm"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
 	"github.com/rs/zerolog/log"
@@ -144,6 +146,30 @@ func (s *Server) Vote(ctx context.Context, req *storagepb.VoteRequest) (*storage
 			Address: voteResp.Relayer.Address,
 			Receipt: voteResp.Relayer.Receipt,
 		},
+	}, nil
+}
+
+func (s *Server) GetDaosVotedIn(_ context.Context, req *storagepb.DaosVotedInRequest) (*storagepb.DaosVotedInResponse, error) {
+	if req.GetVoter() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid voter")
+	}
+
+	daos, err := s.sp.GetDaosVotedIn(req.GetVoter())
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &storagepb.DaosVotedInResponse{
+			DaoIds:     []string{},
+			TotalCount: 0,
+		}, nil
+	}
+
+	if err != nil {
+		log.Error().Err(err).Msgf("get daos by voter: %s", req.GetVoter())
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &storagepb.DaosVotedInResponse{
+		DaoIds:     daos,
+		TotalCount: uint64(len(daos)),
 	}, nil
 }
 
