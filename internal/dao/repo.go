@@ -96,6 +96,25 @@ func (r *Repo) GetByFilters(filters []Filter, count bool) (DaoList, error) {
 	}, nil
 }
 
+func (r *Repo) GetCountByFilters(filters []Filter) (int64, error) {
+	db := r.db.Model(&Dao{})
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			continue
+		}
+
+		db = f.Apply(db)
+	}
+
+	var cnt int64
+	err := db.Count(&cnt).Error
+	if err != nil {
+		return 0, fmt.Errorf("db.Count: %w", err)
+	}
+
+	return cnt, nil
+}
+
 func (r *Repo) GetCategories() ([]string, error) {
 	var res []string
 	err := r.db.Raw(`SELECT distinct JSONB_ARRAY_ELEMENTS_TEXT(categories) AS category FROM daos ORDER BY category`).Scan(&res).Error

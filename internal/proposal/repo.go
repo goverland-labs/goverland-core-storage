@@ -84,6 +84,28 @@ func (r *Repo) GetByFilters(filters []Filter) (ProposalList, error) {
 	return getProposalList(db, filters, cnt)
 }
 
+func (r *Repo) GetCountByFilters(filters []Filter) (int64, error) {
+	db := r.db.
+		Model(&Proposal{}).
+		InnerJoins("inner join daos on daos.id = proposals.dao_id")
+
+	for _, f := range filters {
+		if _, ok := f.(PageFilter); ok {
+			continue
+		}
+
+		db = f.Apply(db)
+	}
+
+	var cnt int64
+	err := db.Count(&cnt).Error
+	if err != nil {
+		return 0, fmt.Errorf("db.Count: %w", err)
+	}
+
+	return cnt, nil
+}
+
 func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
 	db := getTopProposalOfDaoTable(r.db)
 	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id").Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")

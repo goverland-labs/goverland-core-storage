@@ -97,7 +97,7 @@ func TestUnitHandleProposal(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return m
 			},
 			event:    Proposal{ID: "id-1", Title: "name", Quorum: 50},
@@ -178,7 +178,7 @@ func TestUnitHandleProposal(t *testing.T) {
 			},
 			p: func(ctrl *gomock.Controller) Publisher {
 				m := NewMockPublisher(ctrl)
-				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(errors.New("unexpected error"))
+				m.EXPECT().PublishJSON(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(errors.New("unexpected error"))
 				return m
 			},
 			event:    Proposal{ID: "id-1", Quorum: 50},
@@ -239,6 +239,7 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 						End:       int(time.Now().Add(time.Hour * 24).Unix()),
 					},
 				}, nil)
+				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			er: func(ctrl *gomock.Controller) EventRegistered {
@@ -266,6 +267,7 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 						End:       int(time.Now().Add(-time.Hour * 1).Unix()),
 					},
 				}, nil)
+				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			er: func(ctrl *gomock.Controller) EventRegistered {
@@ -293,6 +295,7 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 						End:       int(time.Now().Add(time.Hour * 24 * 7).Unix()),
 					},
 				}, nil)
+				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			er: func(ctrl *gomock.Controller) EventRegistered {
@@ -320,6 +323,7 @@ func TestUnitProcessAvailableForVoting(t *testing.T) {
 						End:       int(time.Now().Add(time.Hour * 24).Unix()),
 					},
 				}, nil)
+				m.EXPECT().Update(gomock.Any()).Times(1).Return(nil)
 				return m
 			},
 			er: func(ctrl *gomock.Controller) EventRegistered {

@@ -7,10 +7,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.1.8] - 2024-04-10
+## [0.1.9] - 2024-04-10
 
 ### Added
+- Indexes for slow queries
 - Daos voted in
+
+## [0.1.8] - 2024-03-22
+
+### Added
+- Stats server
 
 ## [0.1.7] - 2024-03-20
 

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package storagepb;
+
+option go_package = ".;storagepb";
+
+service Stats {
+  rpc GetTotals(GetTotalsRequest) returns (GetTotalsResponse);
+}
+
+message GetTotalsRequest {
+
+}
+
+message DaoStats {
+  int64 total = 1;
+  int64 total_verified = 2;
+}
+
+message ProposalsStats {
+  int64 total = 1;
+}
+
+message GetTotalsResponse {
+  DaoStats dao = 1;
+  ProposalsStats proposals = 2;
+}
