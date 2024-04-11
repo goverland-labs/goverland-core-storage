@@ -94,7 +94,7 @@ func makeCopy(src map[string]topList, limit uint) map[string]topList {
 			Total: v.Total,
 		}
 
-		for i := range limit { // nolint:gosimple
+		for i := 0; i < int(newLen); i++ {
 			copied[k].List[i] = v.List[i]
 		}
 	}

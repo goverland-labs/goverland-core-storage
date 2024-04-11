@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed dao top iterator
+- Fixed linter
+
 ## [0.1.10] - 2024-04-11
 
 ### Added

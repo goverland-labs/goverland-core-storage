@@ -21,8 +21,6 @@ import (
 const (
 	newDaoCategoryName     = "new_daos"
 	popularDaoCategoryName = "popular_daos"
-
-	topCachingTTL = 5 * time.Minute
 )
 
 var (
