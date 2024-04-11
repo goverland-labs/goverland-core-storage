@@ -204,7 +204,9 @@ func (a *Application) initEnsResolver(pb *natsclient.Publisher) error {
 func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.daoIDService = dao.NewDaoIDService(a.daoIDRepo)
 
-	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo)
+	topDAOCache := dao.NewTopDAOCache(a.daoRepo)
+
+	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
@@ -229,6 +231,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-voters-worker", mc.ProcessNew))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-popular-category-process-worker", pcw.Process))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-active-votes-worker", avw.Process))
+	a.manager.AddWorker(process.NewCallbackWorker("top-dao-cache-worker", topDAOCache.Start))
 
 	return nil
 }

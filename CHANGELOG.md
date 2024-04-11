@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Added top dao cache worker
+
 ## [0.1.9] - 2024-04-10
 
 ### Added
