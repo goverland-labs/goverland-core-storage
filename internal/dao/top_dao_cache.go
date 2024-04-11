@@ -79,6 +79,9 @@ func (w *TopDAOCache) reload() error {
 	defer w.cacheLock.Unlock()
 
 	w.cache = list
+
+	log.Info().Int("category_count", len(w.cache)).Msg("Top DAO cache reloaded")
+
 	return nil
 }
 
