@@ -219,3 +219,26 @@ func convertVotingToAPI(voting Voting) *storagepb.Voting {
 		Aliased:     voting.Aliased,
 	}
 }
+
+func (s *Server) GetRecommendationsList(
+	_ context.Context,
+	_ *storagepb.GetRecommendationsListRequest,
+) (*storagepb.GetRecommendationsListResponse, error) {
+	list := s.sp.getRecommendations()
+	resp := &storagepb.GetRecommendationsListResponse{
+		List: make([]*storagepb.DaoRecommendationDetails, 0, len(list)),
+	}
+
+	for _, details := range list {
+		resp.List = append(resp.List, &storagepb.DaoRecommendationDetails{
+			OriginalId: details.OriginalId,
+			InternalId: details.InternalId,
+			Name:       details.Name,
+			Symbol:     details.Symbol,
+			NetworkId:  details.NetworkId,
+			Address:    details.Address,
+		})
+	}
+
+	return resp, nil
+}

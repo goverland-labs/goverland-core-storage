@@ -226,12 +226,14 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	mc := dao.NewVotersCountWorker(service)
 	pcw := dao.NewPopularCategoryWorker(service)
 	avw := dao.NewActiveVotesWorker(service)
+	rw := dao.NewRecommendationWorker(service)
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-process-worker", cw.ProcessNew))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-outdated-worker", cw.RemoveOutdated))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-voters-worker", mc.ProcessNew))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-popular-category-process-worker", pcw.Process))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-active-votes-worker", avw.Process))
 	a.manager.AddWorker(process.NewCallbackWorker("top-dao-cache-worker", topDAOCache.Start))
+	a.manager.AddWorker(process.NewCallbackWorker("dao-recommendations", rw.Process))
 
 	return nil
 }
