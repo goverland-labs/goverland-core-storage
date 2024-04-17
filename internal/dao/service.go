@@ -465,7 +465,7 @@ func (s *Service) processActiveVotes(_ context.Context) error {
 
 func (s *Service) getRecommendations() []Recommendation {
 	s.recommendationsMu.RLock()
-	data := make([]Recommendation, 0, len(s.recommendations))
+	data := make([]Recommendation, len(s.recommendations))
 	copy(data, s.recommendations)
 	s.recommendationsMu.RUnlock()
 
