@@ -180,7 +180,7 @@ from (select daos.original_id,
       where st."Name" <> 'multichain'
         and verified is true) data
 where name in
-      ('erc20-votes', 'erc20-balance-of',
+      ('erc20-votes', 'erc20-balance-of', 'uni',
        'eth-balance', 'erc721', 'eth-with-balance',
        'contract-call', 'erc1155-balance-of', 'ens-domains-owned')
   and params ->> 'symbol' is not null
