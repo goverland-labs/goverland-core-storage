@@ -68,6 +68,7 @@ message DaoInfo {
   uint64 voters_count = 30;
   uint64 active_votes = 31;
   bool verified = 32;
+  double popularity_index = 33;
 }
 
 message DaoByIDResponse {
