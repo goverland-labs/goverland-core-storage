@@ -164,14 +164,22 @@ where daos.id = cnt.dao_id
 // GetRecommended returns the list of available dao strategies in our system
 func (r *Repo) GetRecommended() ([]Recommendation, error) {
 	query := `
+with active_daos as (select distinct dao_id
+                     from proposals pr
+                     where (
+                         to_timestamp(pr.start::double precision) >= NOW() - INTERVAL '4 month'
+                             or to_timestamp(pr.end::double precision) >= NOW() - INTERVAL '4 month'
+                         )
+                       and spam is not true)
+
 select original_id,
-       uuid,
+       internal_id,
        name                 strategy_name,
        params ->> 'symbol'  symbol,
        network              network_id,
        params ->> 'address' address
 from (select daos.original_id,
-             daos.id        uuid,
+             daos.id        internal_id,
              daos.network,
              st."Name"   as name,
              st."Params" as params
@@ -179,6 +187,7 @@ from (select daos.original_id,
            jsonb_to_recordset(daos.strategies) AS st("Name" text, "Params" jsonb)
       where st."Name" <> 'multichain'
         and verified is true) data
+         inner join active_daos ad on ad.dao_id = data.internal_id
 where name in
       ('erc20-votes', 'erc20-balance-of', 'uni',
        'eth-balance', 'erc721', 'eth-with-balance',
@@ -189,17 +198,19 @@ where name in
 union all
 
 select data.original_id,
-       data.uuid,
+       data.internal_id,
        st.name as              strategy_name,
        st.params ->> 'symbol'  symbol,
        data.network            network_id,
        st.params ->> 'address' address
 from (select daos.original_id,
-             daos.id        uuid,
+             daos.id        internal_id,
              daos.network,
              st."Name"   as name,
              st."Params" as params
-      from daos,
+      from (select *
+            from daos
+                     inner join active_daos ad on ad.dao_id = daos.id) daos,
            jsonb_to_recordset(daos.strategies) AS st("Name" text, "Params" jsonb)
       where st."Name" = 'multichain'
         and verified is true) data,
