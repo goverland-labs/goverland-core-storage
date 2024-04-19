@@ -94,6 +94,21 @@ func (mr *MockDataProviderMockRecorder) GetCategories() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategories", reflect.TypeOf((*MockDataProvider)(nil).GetCategories))
 }
 
+// GetRecommended mocks base method.
+func (m *MockDataProvider) GetRecommended() ([]Recommendation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecommended")
+	ret0, _ := ret[0].([]Recommendation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRecommended indicates an expected call of GetRecommended.
+func (mr *MockDataProviderMockRecorder) GetRecommended() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommended", reflect.TypeOf((*MockDataProvider)(nil).GetRecommended))
+}
+
 // Update mocks base method.
 func (m *MockDataProvider) Update(arg0 Dao) error {
 	m.ctrl.T.Helper()

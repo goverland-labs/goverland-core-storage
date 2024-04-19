@@ -43,6 +43,7 @@ type DataProvider interface {
 	UpdateActiveVotesAll() error
 	GetByFilters(filters []Filter, count bool) (DaoList, error)
 	GetCategories() ([]string, error)
+	GetRecommended() ([]Recommendation, error)
 }
 
 type DaoIDProvider interface {
@@ -62,6 +63,9 @@ type ProposalProvider interface {
 type Service struct {
 	daoIds map[string]uuid.UUID
 	daoMu  sync.RWMutex
+
+	recommendations   []Recommendation
+	recommendationsMu sync.RWMutex
 
 	repo       DataProvider
 	uniqueRepo UniqueVoterProvider
@@ -455,6 +459,28 @@ func (s *Service) processActiveVotes(_ context.Context) error {
 	if err != nil {
 		return fmt.Errorf("UpdateActiveVotesAll: %w", err)
 	}
+
+	return nil
+}
+
+func (s *Service) getRecommendations() []Recommendation {
+	s.recommendationsMu.RLock()
+	data := make([]Recommendation, len(s.recommendations))
+	copy(data, s.recommendations)
+	s.recommendationsMu.RUnlock()
+
+	return data
+}
+
+func (s *Service) syncRecommendations(_ context.Context) error {
+	list, err := s.repo.GetRecommended()
+	if err != nil {
+		return fmt.Errorf("getRecommended: %w", err)
+	}
+
+	s.recommendationsMu.Lock()
+	s.recommendations = list
+	s.recommendationsMu.Unlock()
 
 	return nil
 }

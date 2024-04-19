@@ -144,37 +144,38 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *storagepb.TopByCat
 
 func convertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
 	return &storagepb.DaoInfo{
-		Id:             dao.ID.String(),
-		Alias:          dao.OriginalID,
-		CreatedAt:      timestamppb.New(dao.CreatedAt),
-		UpdatedAt:      timestamppb.New(dao.UpdatedAt),
-		Name:           dao.Name,
-		Private:        dao.Private,
-		About:          dao.About,
-		Avatar:         dao.Avatar,
-		Terms:          dao.Terms,
-		Location:       dao.Location,
-		Website:        dao.Website,
-		Twitter:        dao.Twitter,
-		Github:         dao.Github,
-		Coingeko:       dao.Coingecko,
-		Email:          dao.Email,
-		Network:        dao.Network,
-		Symbol:         dao.Symbol,
-		Skin:           dao.Skin,
-		Domain:         dao.Domain,
-		Strategies:     convertStrategiesToAPI(dao.Strategies),
-		Voting:         convertVotingToAPI(dao.Voting),
-		Categories:     dao.Categories,
-		Treasuries:     convertTreasuriesToAPI(dao.Treasures),
-		FollowersCount: uint64(dao.VotersCount),
-		ProposalsCount: uint64(dao.ProposalsCount),
-		Guidelines:     dao.Guidelines,
-		Template:       dao.Template,
-		ActivitySince:  uint64(dao.ActivitySince),
-		VotersCount:    uint64(dao.VotersCount),
-		ActiveVotes:    uint64(dao.ActiveVotes),
-		Verified:       dao.Verified,
+		Id:              dao.ID.String(),
+		Alias:           dao.OriginalID,
+		CreatedAt:       timestamppb.New(dao.CreatedAt),
+		UpdatedAt:       timestamppb.New(dao.UpdatedAt),
+		Name:            dao.Name,
+		Private:         dao.Private,
+		About:           dao.About,
+		Avatar:          dao.Avatar,
+		Terms:           dao.Terms,
+		Location:        dao.Location,
+		Website:         dao.Website,
+		Twitter:         dao.Twitter,
+		Github:          dao.Github,
+		Coingeko:        dao.Coingecko,
+		Email:           dao.Email,
+		Network:         dao.Network,
+		Symbol:          dao.Symbol,
+		Skin:            dao.Skin,
+		Domain:          dao.Domain,
+		Strategies:      convertStrategiesToAPI(dao.Strategies),
+		Voting:          convertVotingToAPI(dao.Voting),
+		Categories:      dao.Categories,
+		Treasuries:      convertTreasuriesToAPI(dao.Treasures),
+		FollowersCount:  uint64(dao.VotersCount),
+		ProposalsCount:  uint64(dao.ProposalsCount),
+		Guidelines:      dao.Guidelines,
+		Template:        dao.Template,
+		ActivitySince:   uint64(dao.ActivitySince),
+		VotersCount:     uint64(dao.VotersCount),
+		ActiveVotes:     uint64(dao.ActiveVotes),
+		Verified:        dao.Verified,
+		PopularityIndex: dao.PopularityIndex,
 		// TODO: parentID
 	}
 }
@@ -218,4 +219,27 @@ func convertVotingToAPI(voting Voting) *storagepb.Voting {
 		Privacy:     voting.Privacy,
 		Aliased:     voting.Aliased,
 	}
+}
+
+func (s *Server) GetRecommendationsList(
+	_ context.Context,
+	_ *storagepb.GetRecommendationsListRequest,
+) (*storagepb.GetRecommendationsListResponse, error) {
+	list := s.sp.getRecommendations()
+	resp := &storagepb.GetRecommendationsListResponse{
+		List: make([]*storagepb.DaoRecommendationDetails, 0, len(list)),
+	}
+
+	for _, details := range list {
+		resp.List = append(resp.List, &storagepb.DaoRecommendationDetails{
+			OriginalId: details.OriginalId,
+			InternalId: details.InternalId,
+			Name:       details.Name,
+			Symbol:     details.Symbol,
+			NetworkId:  details.NetworkId,
+			Address:    details.Address,
+		})
+	}
+
+	return resp, nil
 }

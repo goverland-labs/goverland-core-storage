@@ -11,6 +11,7 @@ service Dao {
   rpc GetByID(DaoByIDRequest) returns (DaoByIDResponse);
   rpc GetByFilter(DaoByFilterRequest) returns (DaoByFilterResponse);
   rpc GetTopByCategories(TopByCategoriesRequest) returns (TopByCategoriesResponse);
+  rpc GetRecommendationsList(GetRecommendationsListRequest) returns (GetRecommendationsListResponse);
 }
 
 message DaoByIDRequest {
@@ -67,6 +68,7 @@ message DaoInfo {
   uint64 voters_count = 30;
   uint64 active_votes = 31;
   bool verified = 32;
+  double popularity_index = 33;
 }
 
 message DaoByIDResponse {
@@ -98,4 +100,20 @@ message TopByCategoriesRequest {
 
 message TopByCategoriesResponse {
   repeated TopCategory categories = 1;
+}
+
+message GetRecommendationsListRequest {
+}
+
+message DaoRecommendationDetails {
+  string original_id = 1;
+  string internal_id = 2;
+  string name = 3;
+  string symbol = 4;
+  string network_id = 5;
+  string address = 6;
+}
+
+message GetRecommendationsListResponse {
+  repeated DaoRecommendationDetails list = 1;
 }

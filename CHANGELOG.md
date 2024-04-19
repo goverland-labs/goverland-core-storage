@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Described and implemented protocol for dao recommendations
+- Export DAO popularity index
+
 ## [0.1.12] - 2024-04-11
 
 ### Fixed
