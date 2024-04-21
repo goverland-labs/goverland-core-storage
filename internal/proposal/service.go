@@ -333,8 +333,6 @@ func (s *Service) GetTop(limit, offset int) (ProposalList, error) {
 
 func (s *Service) prepareTop() {
 	list, err := s.repo.GetTop([]Filter{
-		SkipCanceled{},
-		SkipSpamFilter{},
 		PageFilter{Limit: 100, Offset: 0},
 	})
 	if err != nil {
