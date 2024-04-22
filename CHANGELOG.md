@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.14] - 2024-04-21
+- Update top proposals logic to include only verified daos and allow 2 proposals from one dao
+
 ## [0.1.13] - 2024-04-19
 
 ### Added

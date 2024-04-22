@@ -107,8 +107,12 @@ func (r *Repo) GetCountByFilters(filters []Filter) (int64, error) {
 }
 
 func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
-	db := getTopProposalOfDaoTable(r.db)
-	db = db.InnerJoins("inner join daos on daos.id = proposals.dao_id").Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
+	db := r.db.
+		Model(&Proposal{}).
+		InnerJoins("inner join (select id, rank() over (partition by dao_id order by votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc) as r " +
+			"from proposals where state = 'active' and spam is not true and votes >= 30) pr on pr.id = proposals.id and pr.r <= 2").
+		InnerJoins("inner join daos on daos.id = proposals.dao_id and daos.verified is true").
+		Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
 
 	var (
 		cnt   int64
@@ -156,12 +160,6 @@ func (r *Repo) UpdateVotes(list []ResolvedAddress) error {
 `, strings.Join(placeholders, ","))
 
 	return r.db.Exec(query, args...).Error
-}
-
-func getTopProposalOfDaoTable(db *gorm.DB) *gorm.DB {
-	result := db.Raw("select distinct on(dao_id) * from proposals where state = 'active' and spam is not true and votes >= 30 " +
-		"order by dao_id, votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
-	return db.Table("(?) as proposals", result)
 }
 
 func getProposalList(db *gorm.DB, filters []Filter, cnt int64) (ProposalList, error) {
