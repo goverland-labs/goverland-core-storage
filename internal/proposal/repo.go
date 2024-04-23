@@ -111,7 +111,8 @@ func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
 		Model(&Proposal{}).
 		InnerJoins("inner join (select id, rank() over (partition by dao_id order by votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc) as r " +
 			"from proposals where state = 'active' and spam is not true and votes >= 30) pr on pr.id = proposals.id and pr.r <= 2").
-		InnerJoins("inner join daos on daos.id = proposals.dao_id and daos.verified is true").
+		InnerJoins("inner join daos on daos.id = proposals.dao_id").
+		Order("daos.verified desc").
 		Order("votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc")
 
 	var (
