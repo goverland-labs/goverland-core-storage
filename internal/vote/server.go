@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"gorm.io/gorm"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
@@ -11,8 +12,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
+
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 )
 
 const (
@@ -50,7 +52,7 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 		})
 	} else {
 		filters = append(filters, proposal.OrderFilter{
-			Orders: []proposal.Order{OrderByVp, OrderByCreated},
+			Orders: []proposal.Order{OrderByCreated},
 		})
 	}
 
