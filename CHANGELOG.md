@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Fix user votes sorting from "vp desc, created desc" to "created desc"
+
 ## [0.1.15] - 2024-04-23
 - Update top proposals logic to include not verified daos at the end
 
