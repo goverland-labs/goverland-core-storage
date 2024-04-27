@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.16] - 2024-04-27
+
 ### Changed
 - Fix user votes sorting from "vp desc, created desc" to "created desc"
 
