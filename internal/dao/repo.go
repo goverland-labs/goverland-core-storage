@@ -218,6 +218,17 @@ from (select daos.original_id,
 where st.params ->> 'symbol' is not null
   and st.params ->> 'address' is not null
 
+union all
+
+select data.original_id,
+       cr.dao_id internal_id,
+       cr.strategy_name,
+       cr.symbol,
+       cr.network_id,
+       cr.address
+from custom_dao_recommendations cr
+         inner join daos data on cr.dao_id = data.id
+
 order by original_id, symbol`
 
 	rows, err := r.db.Raw(query).Rows()

@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Extend DAO recommendations with custom data
+
 ## [0.1.16] - 2024-04-27
 
 ### Changed
