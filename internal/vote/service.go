@@ -19,7 +19,7 @@ type Publisher interface {
 
 type DataProvider interface {
 	BatchCreate(data []Vote) error
-	GetByFilters(filters []Filter) (List, error)
+	GetByFilters(filters []Filter, limit int, offset int, firstVoter string) (List, error)
 	UpdateVotes(list []ResolvedAddress) error
 	GetUnique(string, int64) ([]string, error)
 	GetByVoter(string) ([]string, error)
@@ -100,8 +100,8 @@ func (s *Service) HandleVotes(ctx context.Context, votes []Vote) error {
 	return nil
 }
 
-func (s *Service) GetByFilters(filters []Filter) (List, error) {
-	list, err := s.repo.GetByFilters(filters)
+func (s *Service) GetByFilters(filters []Filter, limit int, offset int, firstVoter string) (List, error) {
+	list, err := s.repo.GetByFilters(filters, limit, offset, firstVoter)
 	if err != nil {
 		return List{}, fmt.Errorf("get by filters: %w", err)
 	}
