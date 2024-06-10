@@ -123,6 +123,11 @@ func (r *Repo) GetCategories() ([]string, error) {
 }
 
 func (r *Repo) UpdateProposalCnt(id uuid.UUID) error {
+	var (
+		dummy = Dao{}
+		_     = dummy.ProposalsCount
+	)
+
 	return r.db.Exec(`
 update daos
 set proposals_count = cnt.proposals_count
