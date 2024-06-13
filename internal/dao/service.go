@@ -58,6 +58,7 @@ type UniqueVoterProvider interface {
 
 type ProposalProvider interface {
 	GetEarliestByDaoID(uuid.UUID) (*proposal.Proposal, error)
+	GetByID(string) (*proposal.Proposal, error)
 }
 
 type Service struct {
@@ -390,6 +391,14 @@ func (s *Service) ProcessExistedProposal(_ context.Context, originalDaoID string
 
 	if err = s.repo.UpdateActiveVotes(daoID); err != nil {
 		return fmt.Errorf("UpdateActiveVotes: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) ProcessDeletedProposal(_ context.Context, daoID uuid.UUID) error {
+	if err := s.repo.UpdateProposalCnt(daoID); err != nil {
+		return fmt.Errorf("UpdateProposalCnt: %w", err)
 	}
 
 	return nil
