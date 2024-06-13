@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.18] - 2024-06-13
+
 ### Added
 - Recalculate proposals count on delete proposal event
 
