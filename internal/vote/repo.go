@@ -1,6 +1,7 @@
 package vote
 
 import (
+	"errors"
 	"fmt"
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 	"strings"
@@ -38,12 +39,9 @@ type List struct {
 	TotalVp    float32
 }
 
-func (r *Repo) GetByFilters(filters []Filter) (List, error) {
+func (r *Repo) GetByFilters(filters []Filter, limit int, offset int, firstVoter string) (List, error) {
 	db := r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
 	for _, f := range filters {
-		if _, ok := f.(PageFilter); ok {
-			continue
-		}
 		if _, ok := f.(proposal.OrderFilter); ok {
 			continue
 		}
@@ -56,15 +54,54 @@ func (r *Repo) GetByFilters(filters []Filter) (List, error) {
 		return List{}, err
 	}
 
-	db = r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
-	for _, f := range filters {
-		db = f.Apply(db)
-	}
-
 	var list []Vote
-	err = db.Find(&list).Error
-	if err != nil {
-		return List{}, err
+	if firstVoter == "" {
+		db = r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
+		filters = append(filters, PageFilter{Limit: limit, Offset: offset})
+		for _, f := range filters {
+			db = f.Apply(db)
+		}
+
+		err = db.Find(&list).Error
+		if err != nil {
+			return List{}, err
+		}
+	} else {
+		db = r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
+		for _, f := range filters {
+			db = f.Apply(db)
+		}
+		db = VoterFilter{Voter: firstVoter}.Apply(db)
+		var v Vote
+		request := db.First(&v)
+		if err := request.Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return List{}, err
+		}
+
+		db = r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
+		prepend := false
+		if request.RowsAffected > 0 {
+			filters = append(filters, ExcludeVoterFilter{Voter: firstVoter})
+			if offset == 0 {
+				limit = limit - 1
+				prepend = true
+			} else {
+				offset = offset - 1
+			}
+		}
+		filters = append(filters, PageFilter{Limit: limit, Offset: offset})
+
+		for _, f := range filters {
+			db = f.Apply(db)
+		}
+
+		err = db.Find(&list).Error
+		if err != nil {
+			return List{}, err
+		}
+		if prepend {
+			list = append([]Vote{v}, list...)
+		}
 	}
 
 	return List{

@@ -3,8 +3,6 @@ package vote
 import (
 	"context"
 	"errors"
-	"fmt"
-
 	"gorm.io/gorm"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
@@ -42,13 +40,11 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 	if req.GetOffset() > 0 {
 		offset = int(req.GetOffset())
 	}
-	filters := []Filter{
-		PageFilter{Limit: limit, Offset: offset},
-	}
+	var filters []Filter
 
 	if req.GetOrderByVoter() != "" {
 		filters = append(filters, proposal.OrderFilter{
-			Orders: []proposal.Order{{Field: fmt.Sprintf("case when voter = '%s' then 0 else 1 end", req.GetOrderByVoter()), Direction: proposal.DirectionAsc}, OrderByVp, OrderByCreated},
+			Orders: []proposal.Order{OrderByVp, OrderByCreated},
 		})
 	} else {
 		filters = append(filters, proposal.OrderFilter{
@@ -64,7 +60,7 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 		filters = append(filters, VoterFilter{Voter: req.GetVoter()})
 	}
 
-	list, err := s.sp.GetByFilters(filters)
+	list, err := s.sp.GetByFilters(filters, limit, offset, req.GetOrderByVoter())
 	if err != nil {
 		log.Error().Err(err).Msgf("get votes by filter: %+v", req)
 		return nil, status.Error(codes.Internal, "internal error")
