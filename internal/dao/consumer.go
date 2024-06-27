@@ -2,11 +2,13 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 
 	pevents "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 	"github.com/goverland-labs/goverland-platform-events/events/core"
@@ -143,6 +145,31 @@ func (c *Consumer) handleProposalCreated() pevents.ProposalHandler {
 	}
 }
 
+func (c *Consumer) handleProposalDeleted() pevents.ProposalHandler {
+	return func(payload pevents.ProposalPayload) error {
+		pr, err := c.service.proposals.GetByID(payload.ID)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+
+		if err != nil {
+			log.Error().Err(err).Msg("process dao proposal deleted")
+
+			return fmt.Errorf("proposals.GetByID: %s: %w", payload.ID, err)
+		}
+
+		if err := c.service.ProcessDeletedProposal(context.TODO(), pr.DaoID); err != nil {
+			log.Error().Err(err).Msg("process dao proposal created")
+
+			return err
+		}
+
+		log.Debug().Msg("dao consumer: proposal deleted event was processed")
+
+		return nil
+	}
+}
+
 func (c *Consumer) handleProposalUpdated() pevents.ProposalHandler {
 	return func(payload pevents.ProposalPayload) error {
 		var err error
@@ -229,6 +256,10 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, core.SubjectPopularityIndexUpdated, err)
 	}
+	pd, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectProposalDeleted, c.handleProposalDeleted(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectProposalDeleted, err)
+	}
 
 	c.consumers = append(
 		c.consumers,
@@ -239,6 +270,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 		pc,
 		pu,
 		piu,
+		pd,
 	)
 
 	log.Info().Msg("dao consumers is started")

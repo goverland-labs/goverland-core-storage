@@ -7,10 +7,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.1.18] - 2024-06-03
+## [0.1.19] - 2024-06-27
 
 ### Changed
 - Speed up votes retrieving
+
+## [0.1.18] - 2024-06-13
+
+### Added
+- Recalculate proposals count on delete proposal event
 
 ## [0.1.17] - 2024-05-15
 
