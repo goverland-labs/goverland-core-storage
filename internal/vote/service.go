@@ -171,20 +171,22 @@ func (s *Service) Vote(ctx context.Context, req VoteRequest) (VoteResponse, erro
 	}, nil
 }
 
-func (s *Service) FetchAndStoreVote(ctx context.Context, id string) {
+func (s *Service) FetchAndStoreVote(ctx context.Context, id string) *Vote {
 	vote, err := s.dsClient.GetVote(ctx, &votingpb.GetVoteRequest{
 		Id: id,
 	})
 	if err != nil {
 		log.Error().Err(err).Msgf("fetch vote: %s", id)
-		return
+		return nil
 	}
 
-	err = s.HandleVotes(ctx, []Vote{convertFromProtoToInternal(vote)})
+	internal := convertFromProtoToInternal(vote)
+	err = s.HandleVotes(ctx, []Vote{internal})
 	if err != nil {
 		log.Error().Err(err).Msgf("store vote: %s", id)
-		return
 	}
+
+	return &internal
 }
 
 func (s *Service) HandleResolvedAddresses(list []ResolvedAddress) error {

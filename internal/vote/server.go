@@ -3,6 +3,7 @@ package vote
 import (
 	"context"
 	"errors"
+
 	"gorm.io/gorm"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
@@ -135,11 +136,16 @@ func (s *Server) Vote(ctx context.Context, req *storagepb.VoteRequest) (*storage
 		return nil, status.Error(codes.Internal, "failed to vote")
 	}
 
-	s.sp.FetchAndStoreVote(ctx, voteResp.ID)
+	vote := s.sp.FetchAndStoreVote(ctx, voteResp.ID)
+	var proposalID string
+	if vote != nil {
+		proposalID = vote.ProposalID
+	}
 
 	return &storagepb.VoteResponse{
-		Id:   voteResp.ID,
-		Ipfs: voteResp.IPFS,
+		Id:         voteResp.ID,
+		Ipfs:       voteResp.IPFS,
+		ProposalId: proposalID,
 		Relayer: &storagepb.Relayer{
 			Address: voteResp.Relayer.Address,
 			Receipt: voteResp.Relayer.Receipt,

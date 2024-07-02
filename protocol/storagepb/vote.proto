@@ -82,6 +82,7 @@ message VoteResponse {
   string id = 1;
   string ipfs = 2;
   Relayer relayer = 3;
+  string proposal_id = 4;
 }
 
 message Relayer {

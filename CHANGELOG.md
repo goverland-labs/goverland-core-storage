@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Extend vote response with proposal identifier
+
 ## [0.1.19] - 2024-06-27
 
 ### Changed
