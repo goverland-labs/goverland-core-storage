@@ -49,8 +49,8 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGa
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
-github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.4.4 h1:vR7pk6NlFG2YbyiwmZNSZfXeAMdUH00WyDqmKDdyqhc=
-github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.4.4/go.mod h1:YEfWXRljVwjMnbPbolcatOwY6+QtjcKy1Tc4oLWCPA0=
+github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.5.5-0.20240703075637-63213e62ccef h1:G0AAshBs6QkXwTdGmpyWH1kxo5i53simMjRW8+rbqhs=
+github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.5.5-0.20240703075637-63213e62ccef/go.mod h1:YEfWXRljVwjMnbPbolcatOwY6+QtjcKy1Tc4oLWCPA0=
 github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0 h1:Gc0aRk6jL9zJV2Ce5h+bsIl49OJHn3m27IPVeYOJTrE=
 github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0/go.mod h1:jyJGoBmFVY0o6b/3PNy5+bHtKqff6m/kw0eq4g0knBc=
 github.com/goverland-labs/goverland-platform-events v0.3.3 h1:OC26Hew5zw6+tao70ycIkeMEIKwTHkLsiQUbOWQxt+o=

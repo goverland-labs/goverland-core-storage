@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package storagepb;
+
+option go_package = "./storagepb";
+
+service Delegate {
+  rpc GetDelegates(GetDelegatesRequest) returns (GetDelegatesResponse);
+}
+
+message GetDelegatesRequest {
+  repeated string addresses = 1;
+  string sort = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetDelegatesResponse {
+  repeated DelegateEntry delegates = 1;
+}
+
+message DelegateEntry {
+  string address = 1;
+  int32 delegator_count = 2;
+  int32 percent_of_delegators = 3; // in basis points
+  double votingPower = 4;
+  int32 percent_of_voting_power = 5; // in basis points
+  string about = 6;
+  string statement = 7;
+  double user_delegated_voting_power = 8;
+  int32 votes_count = 9;
+  int32 proposals_count = 10;
+  int32 create_proposals_count = 11;
+}
