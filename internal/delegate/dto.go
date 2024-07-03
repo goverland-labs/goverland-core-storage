@@ -1,6 +1,11 @@
 package delegate
 
+import (
+	"github.com/google/uuid"
+)
+
 type GetDelegatesRequest struct {
+	DaoID     uuid.UUID
 	Addresses []string
 	Sort      string
 	Limit     int
