@@ -3,6 +3,7 @@ package delegate
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -22,7 +23,17 @@ func NewServer(sp *Service) *Server {
 }
 
 func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRequest) (*storagepb.GetDelegatesResponse, error) {
+	if req.GetDaoId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
+	}
+
+	daoID, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
+	}
+
 	delegatesResponse, err := s.sp.GetDelegates(ctx, GetDelegatesRequest{
+		DaoID:     daoID,
 		Addresses: req.GetAddresses(),
 		Sort:      req.GetSort(),
 		Limit:     int(req.GetLimit()),
