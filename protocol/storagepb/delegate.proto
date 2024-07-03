@@ -9,10 +9,11 @@ service Delegate {
 }
 
 message GetDelegatesRequest {
-  repeated string addresses = 1;
-  string sort = 2;
-  int32 limit = 3;
-  int32 offset = 4;
+  string dao_id = 1;
+  repeated string addresses = 2;
+  string sort = 3;
+  int32 limit = 4;
+  int32 offset = 5;
 }
 
 message GetDelegatesResponse {
