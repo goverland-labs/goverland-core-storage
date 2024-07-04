@@ -52,3 +52,11 @@ type ExcludeVoterFilter struct {
 func (f ExcludeVoterFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("voter != ?", f.Voter)
 }
+
+type NameFilter struct {
+	Name string
+}
+
+func (f NameFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("voter = ? or ens_name = ?", f.Name, f.Name)
+}
