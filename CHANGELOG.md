@@ -7,8 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.22] - 2024-07-22
+
 ### Added
 - Search for votes
+
+## [0.1.21] - 2024-07-06
+
+### Changed
+- Top proposals calculation
+
+## [0.1.20] - 2024-07-05
 
 ### Changed
 - Extend vote response with proposal identifier
