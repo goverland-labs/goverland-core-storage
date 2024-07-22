@@ -61,6 +61,10 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 		filters = append(filters, VoterFilter{Voter: req.GetVoter()})
 	}
 
+	if req.GetName() != "" {
+		filters = append(filters, NameFilter{Name: req.GetName()})
+	}
+
 	list, err := s.sp.GetByFilters(filters, limit, offset, req.GetOrderByVoter())
 	if err != nil {
 		log.Error().Err(err).Msgf("get votes by filter: %+v", req)
