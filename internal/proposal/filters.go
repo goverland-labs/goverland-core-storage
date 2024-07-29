@@ -77,6 +77,10 @@ var (
 		Field:     "array_position(array ['active','pending','succeeded','failed','defeated','canceled'], state)",
 		Direction: DirectionAsc,
 	}
+	OrderByCreated = Order{
+		Field:     "created",
+		Direction: DirectionAsc,
+	}
 )
 
 func (f OrderFilter) Apply(db *gorm.DB) *gorm.DB {
