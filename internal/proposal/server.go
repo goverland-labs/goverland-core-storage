@@ -88,11 +88,15 @@ func (s *Server) GetByFilter(_ context.Context, req *storagepb.ProposalByFilterR
 					Orders: []Order{
 						OrderByStates,
 						OrderByVotes,
+						OrderByCreated,
 					},
 				})
 		} else {
 			filters = append(filters, OrderFilter{
-				Orders: []Order{OrderByVotes},
+				Orders: []Order{
+					OrderByVotes,
+					OrderByCreated,
+				},
 			})
 		}
 
