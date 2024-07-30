@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.23] - 2024-07-30
+
 ### Fix
 - Sorting proposals list with equal voters count
 
