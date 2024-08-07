@@ -319,7 +319,7 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
 
 	delegateClient := delegatepb.NewDelegateClient(dsConn)
-	delegateService := delegate.NewService(delegateClient, a.daoService)
+	delegateService := delegate.NewService(delegateClient, a.daoService, a.ensService)
 	a.delegateService = delegateService
 
 	return nil

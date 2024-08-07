@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -33,13 +34,18 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 	}
 
 	delegatesResponse, err := s.sp.GetDelegates(ctx, GetDelegatesRequest{
-		DaoID:     daoID,
-		Addresses: req.GetAddresses(),
-		Sort:      req.GetSort(),
-		Limit:     int(req.GetLimit()),
-		Offset:    int(req.GetOffset()),
+		DaoID:         daoID,
+		QueryAccounts: req.GetQueryAccounts(),
+		Sort:          req.Sort,
+		Limit:         int(req.GetLimit()),
+		Offset:        int(req.GetOffset()),
 	})
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("dao_id", daoID.String()).
+			Msg("failed to get delegates")
+
 		return nil, status.Errorf(codes.Internal, "failed to get delegates: %v", err)
 	}
 

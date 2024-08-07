@@ -10,8 +10,8 @@ service Delegate {
 
 message GetDelegatesRequest {
   string dao_id = 1;
-  repeated string addresses = 2;
-  string sort = 3;
+  repeated string query_accounts = 2;
+  optional string sort = 3;
   int32 limit = 4;
   int32 offset = 5;
 }
@@ -23,9 +23,9 @@ message GetDelegatesResponse {
 message DelegateEntry {
   string address = 1;
   int32 delegator_count = 2;
-  int32 percent_of_delegators = 3; // in basis points
+  double percent_of_delegators = 3; // in basis points
   double votingPower = 4;
-  int32 percent_of_voting_power = 5; // in basis points
+  double percent_of_voting_power = 5; // in basis points
   string about = 6;
   string statement = 7;
   double user_delegated_voting_power = 8;
