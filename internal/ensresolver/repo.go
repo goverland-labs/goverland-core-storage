@@ -39,3 +39,11 @@ func (r *Repo) GetByAddresses(addresses []string) ([]EnsName, error) {
 
 	return list, err
 }
+
+func (r *Repo) GetByNames(names []string) ([]EnsName, error) {
+	db := r.db.Model(&EnsName{}).Where("name IN ?", names)
+	var list []EnsName
+	err := db.Find(&list).Error
+
+	return list, err
+}

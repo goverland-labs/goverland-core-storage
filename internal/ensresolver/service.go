@@ -144,6 +144,10 @@ func (s *Service) GetByAddresses(addresses []string) ([]EnsName, error) {
 	return s.repo.GetByAddresses(addresses)
 }
 
+func (s *Service) GetByNames(names []string) ([]EnsName, error) {
+	return s.repo.GetByNames(names)
+}
+
 func chunkSlice(slice []string, chunkSize int) [][]string {
 	var chunks [][]string
 	for {
