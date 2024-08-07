@@ -22,14 +22,15 @@ message GetDelegatesResponse {
 
 message DelegateEntry {
   string address = 1;
-  int32 delegator_count = 2;
-  double percent_of_delegators = 3; // in basis points
-  double votingPower = 4;
-  double percent_of_voting_power = 5; // in basis points
-  string about = 6;
-  string statement = 7;
-  double user_delegated_voting_power = 8;
-  int32 votes_count = 9;
-  int32 proposals_count = 10;
-  int32 create_proposals_count = 11;
+  string ens_name = 2;
+  int32 delegator_count = 3;
+  double percent_of_delegators = 4; // in basis points
+  double votingPower = 5;
+  double percent_of_voting_power = 6; // in basis points
+  string about = 7;
+  string statement = 8;
+  double user_delegated_voting_power = 9;
+  int32 votes_count = 10;
+  int32 proposals_count = 11;
+  int32 create_proposals_count = 12;
 }

@@ -53,6 +53,7 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 	for _, d := range delegatesResponse.Delegates {
 		delegatesResult = append(delegatesResult, &storagepb.DelegateEntry{
 			Address:                  d.Address,
+			EnsName:                  d.ENSName,
 			DelegatorCount:           d.DelegatorCount,
 			PercentOfDelegators:      d.PercentOfDelegators,
 			VotingPower:              d.VotingPower,
