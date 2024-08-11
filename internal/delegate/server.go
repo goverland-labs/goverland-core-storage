@@ -98,6 +98,7 @@ func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDeleg
 	for _, d := range profile.Delegates {
 		delegates = append(delegates, &storagepb.ProfileDelegateItem{
 			Address:        d.Address,
+			EnsName:        d.ENSName,
 			Weight:         d.Weight,
 			DelegatedPower: d.DelegatedPower,
 		})

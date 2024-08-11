@@ -53,6 +53,7 @@ message GetDelegateProfileResponse {
 
 message ProfileDelegateItem {
   string address = 1;
-  double weight = 2;
-  double delegated_power = 3;
+  string ens_name = 2;
+  double weight = 3;
+  double delegated_power = 4;
 }
