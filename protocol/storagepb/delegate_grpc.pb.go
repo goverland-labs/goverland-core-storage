@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	Delegate_GetDelegates_FullMethodName = "/storagepb.Delegate/GetDelegates"
+	Delegate_GetDelegates_FullMethodName       = "/storagepb.Delegate/GetDelegates"
+	Delegate_GetDelegateProfile_FullMethodName = "/storagepb.Delegate/GetDelegateProfile"
 )
 
 // DelegateClient is the client API for Delegate service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DelegateClient interface {
 	GetDelegates(ctx context.Context, in *GetDelegatesRequest, opts ...grpc.CallOption) (*GetDelegatesResponse, error)
+	GetDelegateProfile(ctx context.Context, in *GetDelegateProfileRequest, opts ...grpc.CallOption) (*GetDelegateProfileResponse, error)
 }
 
 type delegateClient struct {
@@ -47,11 +49,22 @@ func (c *delegateClient) GetDelegates(ctx context.Context, in *GetDelegatesReque
 	return out, nil
 }
 
+func (c *delegateClient) GetDelegateProfile(ctx context.Context, in *GetDelegateProfileRequest, opts ...grpc.CallOption) (*GetDelegateProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDelegateProfileResponse)
+	err := c.cc.Invoke(ctx, Delegate_GetDelegateProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DelegateServer is the server API for Delegate service.
 // All implementations must embed UnimplementedDelegateServer
 // for forward compatibility
 type DelegateServer interface {
 	GetDelegates(context.Context, *GetDelegatesRequest) (*GetDelegatesResponse, error)
+	GetDelegateProfile(context.Context, *GetDelegateProfileRequest) (*GetDelegateProfileResponse, error)
 	mustEmbedUnimplementedDelegateServer()
 }
 
@@ -61,6 +74,9 @@ type UnimplementedDelegateServer struct {
 
 func (UnimplementedDelegateServer) GetDelegates(context.Context, *GetDelegatesRequest) (*GetDelegatesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegates not implemented")
+}
+func (UnimplementedDelegateServer) GetDelegateProfile(context.Context, *GetDelegateProfileRequest) (*GetDelegateProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateProfile not implemented")
 }
 func (UnimplementedDelegateServer) mustEmbedUnimplementedDelegateServer() {}
 
@@ -93,6 +109,24 @@ func _Delegate_GetDelegates_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Delegate_GetDelegateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDelegateProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetDelegateProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetDelegateProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetDelegateProfile(ctx, req.(*GetDelegateProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Delegate_ServiceDesc is the grpc.ServiceDesc for Delegate service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,6 +137,10 @@ var Delegate_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDelegates",
 			Handler:    _Delegate_GetDelegates_Handler,
+		},
+		{
+			MethodName: "GetDelegateProfile",
+			Handler:    _Delegate_GetDelegateProfile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

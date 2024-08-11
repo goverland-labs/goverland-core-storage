@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package storagepb;
 
+import "google/protobuf/any.proto";
+
 option go_package = "./storagepb";
 
 service Delegate {
   rpc GetDelegates(GetDelegatesRequest) returns (GetDelegatesResponse);
+  rpc GetDelegateProfile(GetDelegateProfileRequest) returns (GetDelegateProfileResponse);
 }
 
 message GetDelegatesRequest {
@@ -25,12 +28,31 @@ message DelegateEntry {
   string ens_name = 2;
   int32 delegator_count = 3;
   double percent_of_delegators = 4; // in basis points
-  double votingPower = 5;
+  double voting_power = 5;
   double percent_of_voting_power = 6; // in basis points
   string about = 7;
   string statement = 8;
-  double user_delegated_voting_power = 9;
-  int32 votes_count = 10;
-  int32 proposals_count = 11;
-  int32 create_proposals_count = 12;
+  int32 votes_count = 9;
+  int32 created_proposals_count = 10;
+}
+
+message GetDelegateProfileRequest {
+  string dao_id = 1;
+  string address = 2;
+}
+
+message GetDelegateProfileResponse {
+  string address = 1;
+  double voting_power = 2;
+  double incoming_power = 3;
+  double outgoing_power = 4;
+  double percent_of_voting_power = 5;
+  double percent_of_delegators = 6;
+  repeated ProfileDelegateItem delegates = 7;
+}
+
+message ProfileDelegateItem {
+  string address = 1;
+  double weight = 2;
+  double delegated_power = 3;
 }

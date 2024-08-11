@@ -52,22 +52,63 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 	delegatesResult := make([]*storagepb.DelegateEntry, 0, len(delegatesResponse.Delegates))
 	for _, d := range delegatesResponse.Delegates {
 		delegatesResult = append(delegatesResult, &storagepb.DelegateEntry{
-			Address:                  d.Address,
-			EnsName:                  d.ENSName,
-			DelegatorCount:           d.DelegatorCount,
-			PercentOfDelegators:      d.PercentOfDelegators,
-			VotingPower:              d.VotingPower,
-			PercentOfVotingPower:     d.PercentOfVotingPower,
-			About:                    d.About,
-			Statement:                d.Statement,
-			UserDelegatedVotingPower: d.UserDelegatedVotingPower,
-			VotesCount:               d.VotesCount,
-			ProposalsCount:           d.ProposalsCount,
-			CreateProposalsCount:     d.CreateProposalsCount,
+			Address:               d.Address,
+			EnsName:               d.ENSName,
+			DelegatorCount:        d.DelegatorCount,
+			PercentOfDelegators:   d.PercentOfDelegators,
+			VotingPower:           d.VotingPower,
+			PercentOfVotingPower:  d.PercentOfVotingPower,
+			About:                 d.About,
+			Statement:             d.Statement,
+			VotesCount:            d.VotesCount,
+			CreatedProposalsCount: d.CreatedProposalsCount,
 		})
 	}
 
 	return &storagepb.GetDelegatesResponse{
 		Delegates: delegatesResult,
+	}, nil
+}
+
+func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDelegateProfileRequest) (*storagepb.GetDelegateProfileResponse, error) {
+	if req.GetDaoId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
+	}
+
+	daoID, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
+	}
+
+	profile, err := s.sp.GetDelegateProfile(ctx, GetDelegateProfileRequest{
+		DaoID:   daoID,
+		Address: req.GetAddress(),
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("dao_id", daoID.String()).
+			Str("address", req.GetAddress()).
+			Msg("failed to get delegate profile")
+
+		return nil, status.Errorf(codes.Internal, "failed to get delegate profile: %v", err)
+	}
+
+	delegates := make([]*storagepb.ProfileDelegateItem, 0, len(profile.Delegates))
+	for _, d := range profile.Delegates {
+		delegates = append(delegates, &storagepb.ProfileDelegateItem{
+			Address:        d.Address,
+			Weight:         d.Weight,
+			DelegatedPower: d.DelegatedPower,
+		})
+	}
+
+	return &storagepb.GetDelegateProfileResponse{
+		Address:              profile.Address,
+		VotingPower:          profile.VotingPower,
+		IncomingPower:        profile.IncomingPower,
+		OutgoingPower:        profile.OutgoingPower,
+		PercentOfVotingPower: profile.PercentOfVotingPower,
+		PercentOfDelegators:  profile.PercentOfDelegators,
 	}, nil
 }

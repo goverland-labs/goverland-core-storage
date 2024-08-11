@@ -229,12 +229,12 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 		return fmt.Errorf("PrefillDaoIDs: %w", err)
 	}
 
-	cs, err := dao.NewConsumer(nc, service)
-	if err != nil {
-		return fmt.Errorf("dao consumer: %w", err)
-	}
+	//cs, err := dao.NewConsumer(nc, service)
+	//if err != nil {
+	//	return fmt.Errorf("dao consumer: %w", err)
+	//}
 
-	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
 
 	cw := dao.NewNewCategoryWorker(service)
 	mc := dao.NewVotersCountWorker(service)
@@ -264,12 +264,12 @@ func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) erro
 	}
 	a.proposalService = service
 
-	cs, err := proposal.NewConsumer(nc, service)
-	if err != nil {
-		return fmt.Errorf("proposal consumer: %w", err)
-	}
+	//cs, err := proposal.NewConsumer(nc, service)
+	//if err != nil {
+	//	return fmt.Errorf("proposal consumer: %w", err)
+	//}
 
-	a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
+	//a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
 
 	vw := proposal.NewVotingWorker(service)
 	a.manager.AddWorker(process.NewCallbackWorker("voting-worker", vw.Start))
@@ -311,12 +311,12 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 	}
 	a.voteService = service
 
-	cs, err := vote.NewConsumer(nc, service)
-	if err != nil {
-		return fmt.Errorf("vote consumer: %w", err)
-	}
+	//cs, err := vote.NewConsumer(nc, service)
+	//if err != nil {
+	//	return fmt.Errorf("vote consumer: %w", err)
+	//}
 
-	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
+	//a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
 
 	delegateClient := delegatepb.NewDelegateClient(dsConn)
 	delegateService := delegate.NewService(delegateClient, a.daoService, a.ensService)

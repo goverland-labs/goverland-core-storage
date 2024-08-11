@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/goverland-labs/goverland-core-storage/protocol v0.0.0
-	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.5.5-0.20240804104750-2ae1a60e39aa
+	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.5.5-0.20240811131852-d137aeb385d1
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
 	github.com/goverland-labs/goverland-platform-events v0.3.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
