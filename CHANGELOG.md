@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.24] - 2024-08-13
+
+### Changed
+- Parameter's name for search
+- Display no more than 2 proposals from one DAO in top proposal 
+
 ## [0.1.23] - 2024-07-30
 
 ### Fix

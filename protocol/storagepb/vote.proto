@@ -18,7 +18,7 @@ message VotesFilterRequest {
   repeated string proposal_ids = 1;
   optional string voter = 2;
   optional string order_by_voter = 3;
-  optional string name = 4;
+  optional string query = 4;
   optional uint64 limit = 5;
   optional uint64 offset = 6;
 }

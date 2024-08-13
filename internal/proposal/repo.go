@@ -109,7 +109,7 @@ func (r *Repo) GetCountByFilters(filters []Filter) (int64, error) {
 func (r *Repo) GetTop(filters []Filter) (ProposalList, error) {
 	db := r.db.
 		Model(&Proposal{}).
-		InnerJoins("inner join (select id, rank() over (partition by dao_id order by votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc) as r " +
+		InnerJoins("inner join (select id, row_number() over (partition by dao_id order by votes/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)-start) desc) as r " +
 			"from proposals where state = 'active' and spam is not true and votes >= 30) pr on pr.id = proposals.id and pr.r <= 2").
 		InnerJoins("inner join daos on daos.id = proposals.dao_id").
 		Order("daos.verified desc").
