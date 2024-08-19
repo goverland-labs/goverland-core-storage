@@ -39,12 +39,16 @@ func (s *Server) GetByID(_ context.Context, req *storagepb.DaoByIDRequest) (*sto
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
 
-	id, err := uuid.Parse(req.GetDaoId())
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
+	var (
+		dao *Dao
+		err error
+	)
+	if id, err := uuid.Parse(req.GetDaoId()); err == nil {
+		dao, err = s.sp.GetByID(id)
+	} else {
+		dao, err = s.sp.GetDaoByOriginalID(req.GetDaoId())
 	}
 
-	dao, err := s.sp.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}

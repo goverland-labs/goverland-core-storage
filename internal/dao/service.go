@@ -38,6 +38,7 @@ type DataProvider interface {
 	Create(dao Dao) error
 	Update(dao Dao) error
 	GetByID(id uuid.UUID) (*Dao, error)
+	GetByOriginalID(id string) (*Dao, error)
 	UpdateProposalCnt(id uuid.UUID) error
 	UpdateActiveVotes(id uuid.UUID) error
 	UpdateActiveVotesAll() error
@@ -212,6 +213,15 @@ func (s *Service) GetByID(id uuid.UUID) (*Dao, error) {
 	dao, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("get by id: %w", err)
+	}
+
+	return dao, nil
+}
+
+func (s *Service) GetDaoByOriginalID(id string) (*Dao, error) {
+	dao, err := s.repo.GetByOriginalID(id)
+	if err != nil {
+		return nil, fmt.Errorf("get by original id: %w", err)
 	}
 
 	return dao, nil
