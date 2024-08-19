@@ -43,7 +43,7 @@ func (s *Server) GetByID(_ context.Context, req *storagepb.DaoByIDRequest) (*sto
 		dao *Dao
 		err error
 	)
-	if id, err := uuid.Parse(req.GetDaoId()); err == nil {
+	if id, errV := uuid.Parse(req.GetDaoId()); errV == nil {
 		dao, err = s.sp.GetByID(id)
 	} else {
 		dao, err = s.sp.GetDaoByOriginalID(req.GetDaoId())
