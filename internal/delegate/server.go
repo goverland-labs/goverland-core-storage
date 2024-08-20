@@ -111,5 +111,6 @@ func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDeleg
 		OutgoingPower:        profile.OutgoingPower,
 		PercentOfVotingPower: profile.PercentOfVotingPower,
 		PercentOfDelegators:  profile.PercentOfDelegators,
+		Delegates:            delegates,
 	}, nil
 }
