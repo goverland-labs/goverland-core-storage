@@ -79,6 +79,21 @@ func (mr *MockDataProviderMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockDataProvider)(nil).GetByID), arg0)
 }
 
+// GetByOriginalID mocks base method.
+func (m *MockDataProvider) GetByOriginalID(arg0 string) (*Dao, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByOriginalID", arg0)
+	ret0, _ := ret[0].(*Dao)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByOriginalID indicates an expected call of GetByOriginalID.
+func (mr *MockDataProviderMockRecorder) GetByOriginalID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByOriginalID", reflect.TypeOf((*MockDataProvider)(nil).GetByOriginalID), arg0)
+}
+
 // GetCategories mocks base method.
 func (m *MockDataProvider) GetCategories() ([]string, error) {
 	m.ctrl.T.Helper()
