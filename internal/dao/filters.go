@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -75,7 +76,31 @@ type DaoIDsFilter struct {
 }
 
 func (f DaoIDsFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("id IN ?", f.DaoIDs)
+	if len(f.DaoIDs) == 0 {
+		return db
+	}
+
+	uids := make([]string, 0, len(f.DaoIDs))
+	regular := make([]string, 0, len(f.DaoIDs))
+	for _, id := range f.DaoIDs {
+		if uid, err := uuid.Parse(id); err == nil {
+			uids = append(uids, uid.String())
+
+			continue
+		}
+
+		regular = append(regular, id)
+	}
+
+	if len(regular) == 0 {
+		return db.Where("id IN ?", uids)
+	}
+
+	if len(uids) == 0 {
+		return db.Where("original_id IN ?", regular)
+	}
+
+	return db.Where("id IN ? or original_id IN ?", uids, regular)
 }
 
 type ActivitySinceRangeFilter struct {
