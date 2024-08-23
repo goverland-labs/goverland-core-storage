@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.26] - 2024-08-23
+
 ### Fixed
 - Smart filtering daos by uids and aliases
 
