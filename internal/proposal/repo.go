@@ -181,3 +181,12 @@ func getProposalList(db *gorm.DB, filters []Filter, cnt int64) (ProposalList, er
 		TotalCount: cnt,
 	}, nil
 }
+
+func (r *Repo) GetSucceededChoices(daoId uuid.UUID) []string {
+	var sc DaoSucceededChoices
+	request := r.db.Where(&DaoSucceededChoices{DaoID: daoId}).First(&sc)
+	if err := request.Error; err != nil {
+		return nil
+	}
+	return sc.Choices
+}
