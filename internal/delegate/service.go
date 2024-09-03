@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	protoany "github.com/golang/protobuf/ptypes/any"
@@ -24,6 +25,7 @@ type DaoProvider interface {
 type EnsResolver interface {
 	GetByNames(names []string) ([]ensresolver.EnsName, error)
 	GetByAddresses(addresses []string) ([]ensresolver.EnsName, error)
+	AddRequests(list []string)
 }
 
 type Service struct {
@@ -144,6 +146,12 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 		})
 	}
 
+	var expiration *time.Time
+	if resp.GetExpiration() != nil {
+		expirationTime := resp.GetExpiration().AsTime()
+		expiration = &expirationTime
+	}
+
 	return GetDelegateProfileResponse{
 		Address:              resp.GetAddress(),
 		VotingPower:          resp.GetVotingPower(),
@@ -152,6 +160,7 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 		PercentOfVotingPower: resp.GetPercentOfVotingPower(),
 		PercentOfDelegators:  resp.GetPercentOfDelegators(),
 		Delegates:            delegates,
+		Expiration:           expiration,
 	}, nil
 }
 

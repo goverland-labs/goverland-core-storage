@@ -1,6 +1,8 @@
 package delegate
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -42,6 +44,7 @@ type GetDelegateProfileResponse struct {
 	PercentOfVotingPower float64
 	PercentOfDelegators  float64
 	Delegates            []ProfileDelegateItem
+	Expiration           *time.Time
 }
 
 type ProfileDelegateItem struct {
