@@ -24,7 +24,7 @@ func (r *Repo) Create(dao Dao) error {
 // Update single dao object in database
 // todo: think about updating fields to default value(boolean, string etc)
 func (r *Repo) Update(dao Dao) error {
-	return r.db.Omit("name", "original_id").Save(&dao).Error
+	return r.db.Omit("original_id").Save(&dao).Error
 }
 
 func (r *Repo) GetByID(id uuid.UUID) (*Dao, error) {
