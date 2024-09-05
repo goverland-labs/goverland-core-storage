@@ -1,6 +1,9 @@
 package proposal
 
 import (
+	"github.com/lib/pq"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -48,39 +51,45 @@ func convertToStrategies(list Strategies) []events.StrategyPayload {
 // Proposal model
 // todo: check queries to the DB and add indexes
 type Proposal struct {
-	ID            string `gorm:"primary_key"`
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	Ipfs          string
-	Author        string
-	Created       int
-	DaoOriginalID string `gorm:"-"`
-	DaoID         uuid.UUID
-	Network       string
-	Symbol        string
-	Type          string
-	Strategies    Strategies `gorm:"serializer:json"`
-	Title         string
-	Body          string
-	Discussion    string
-	Choices       Choices `gorm:"serializer:json"`
-	Start         int
-	End           int
-	Quorum        float64
-	Privacy       string
-	Snapshot      string
-	State         State
-	OriginalState string
-	Link          string
-	App           string
-	Scores        Scores `gorm:"serializer:json"`
-	ScoresState   string
-	ScoresTotal   float32
-	ScoresUpdated int
-	Votes         int
-	Timeline      Timeline `gorm:"serializer:json"`
-	EnsName       string
-	Spam          bool
+	ID               string `gorm:"primary_key"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	Ipfs             string
+	Author           string
+	Created          int
+	DaoOriginalID    string `gorm:"-"`
+	DaoID            uuid.UUID
+	Network          string
+	Symbol           string
+	Type             string
+	Strategies       Strategies `gorm:"serializer:json"`
+	Title            string
+	Body             string
+	Discussion       string
+	Choices          Choices `gorm:"serializer:json"`
+	Start            int
+	End              int
+	Quorum           float64
+	Privacy          string
+	Snapshot         string
+	State            State
+	OriginalState    string
+	Link             string
+	App              string
+	Scores           Scores `gorm:"serializer:json"`
+	ScoresState      string
+	ScoresTotal      float32
+	ScoresUpdated    int
+	Votes            int
+	Timeline         Timeline `gorm:"serializer:json"`
+	EnsName          string
+	Spam             bool
+	SucceededChoices Choices `gorm:"-"`
+}
+
+type DaoSucceededChoices struct {
+	DaoID   uuid.UUID      `gorm:"primary_key"`
+	Choices pq.StringArray `gorm:"type:text[]"`
 }
 
 func convertToCoreEvent(p Proposal) events.ProposalPayload {
@@ -216,6 +225,10 @@ func (p *Proposal) CalculateState() State {
 		return StateDefeated
 	}
 
+	if p.IsNotSucceededChoice() {
+		return StateDefeated
+	}
+
 	return StateSucceeded
 }
 
@@ -252,6 +265,10 @@ func (p *Proposal) IsBasic() bool {
 	return p.Type == "basic"
 }
 
+func (p *Proposal) IsSingleChoice() bool {
+	return p.Type == "single-choice"
+}
+
 func (p *Proposal) IsVotedAgainst() bool {
 	if !p.IsBasic() {
 		return false
@@ -269,4 +286,22 @@ func (p *Proposal) IsVotedAgainst() bool {
 	againstVotes := p.Scores[1]
 
 	return againstVotes > forVotes
+}
+
+func (p *Proposal) IsNotSucceededChoice() bool {
+	if !p.IsSingleChoice() || p.SucceededChoices == nil {
+		return false
+	}
+
+	maxScore := slices.Max(p.Scores)
+	succeededChoiceExist := false
+	for i, c := range p.Choices {
+		if slices.Contains(p.SucceededChoices, strings.ToLower(c)) {
+			if p.Scores[i] == maxScore {
+				return false
+			}
+			succeededChoiceExist = true
+		}
+	}
+	return succeededChoiceExist
 }

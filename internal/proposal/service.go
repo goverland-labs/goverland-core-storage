@@ -39,6 +39,7 @@ type DataProvider interface {
 	GetByFilters(filters []Filter) (ProposalList, error)
 	GetTop(filters []Filter) (ProposalList, error)
 	UpdateVotes(list []ResolvedAddress) error
+	GetSucceededChoices(daoId uuid.UUID) []string
 }
 
 type DaoProvider interface {
@@ -83,6 +84,7 @@ func (s *Service) HandleProposal(ctx context.Context, pro Proposal) error {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("handle: %w", err)
 	}
+	s.enrichWithSucceededChoices(&pro)
 
 	if existed == nil {
 		return s.processNew(ctx, pro)
@@ -220,6 +222,7 @@ func compare(p1, p2 Proposal) bool {
 	p1.DaoOriginalID = p2.DaoOriginalID
 	p1.State = p2.State
 	p1.EnsName = p2.EnsName
+	p1.SucceededChoices = p2.SucceededChoices
 
 	return reflect.DeepEqual(p1, p2)
 }
@@ -258,6 +261,7 @@ func (s *Service) processAvailableForVoting(ctx context.Context) error {
 			go s.registerEventOnce(ctx, *pr, groupName, coreevents.SubjectProposalVotingEndsSoon)
 		}
 
+		s.enrichWithSucceededChoices(pr)
 		state := pr.CalculateState()
 		if state != pr.State {
 			pr.State = state
@@ -370,4 +374,10 @@ func (s *Service) HandleResolvedAddresses(ctx context.Context, list []ResolvedAd
 	}
 
 	return nil
+}
+
+func (s *Service) enrichWithSucceededChoices(pro *Proposal) {
+	if pro.IsSingleChoice() {
+		pro.SucceededChoices = s.repo.GetSucceededChoices(pro.DaoID)
+	}
 }

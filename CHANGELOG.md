@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.27] - 2024-09-03
+
+### Added
+- Expand the calculation of proposal's status taking into account dao succeeded choices
+
 ## [0.1.26] - 2024-08-23
 
 ### Fixed

@@ -16,6 +16,7 @@ require (
 	github.com/goverland-labs/goverland-platform-events v0.2.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+	github.com/lib/pq v1.10.9
 	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021
 	github.com/nats-io/nats.go v1.30.2
 	github.com/prometheus/client_golang v1.18.0

@@ -138,6 +138,20 @@ func (mr *MockDataProviderMockRecorder) UpdateVotes(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVotes", reflect.TypeOf((*MockDataProvider)(nil).UpdateVotes), arg0)
 }
 
+// GetSucceededChoices mocks base method.
+func (m *MockDataProvider) GetSucceededChoices(arg0 uuid.UUID) []string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSucceededChoices", arg0)
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// GetSucceededChoices indicates an expected call of GetSucceededChoices.
+func (mr *MockDataProviderMockRecorder) GetSucceededChoices(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSucceededChoices", reflect.TypeOf((*MockDataProvider)(nil).GetSucceededChoices), arg0)
+}
+
 // MockPublisher is a mock of Publisher interface.
 type MockPublisher struct {
 	ctrl     *gomock.Controller
