@@ -48,7 +48,7 @@ func (s *Service) GetDelegates(ctx context.Context, request GetDelegatesRequest)
 		return nil, fmt.Errorf("failed to get dao: %w", err)
 	}
 
-	delegationStrategyJson, err := s.getDelegationStrategy(daoEntity, err)
+	delegationStrategyJson, err := s.getDelegationStrategy(daoEntity)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get delegation strategy: %w", err)
 	}
@@ -111,7 +111,7 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 		return GetDelegateProfileResponse{}, fmt.Errorf("failed to get dao: %w", err)
 	}
 
-	delegationStrategyJson, err := s.getDelegationStrategy(daoEntity, err)
+	delegationStrategyJson, err := s.getDelegationStrategy(daoEntity)
 	if err != nil {
 		return GetDelegateProfileResponse{}, fmt.Errorf("failed to get delegation strategy: %w", err)
 	}
@@ -164,7 +164,7 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 	}, nil
 }
 
-func (s *Service) getDelegationStrategy(daoEntity *dao.Dao, err error) ([]byte, error) {
+func (s *Service) getDelegationStrategy(daoEntity *dao.Dao) ([]byte, error) {
 	var delegationStrategy *dao.Strategy
 	for _, strategy := range daoEntity.Strategies {
 		if strategy.Name == "split-delegation" {

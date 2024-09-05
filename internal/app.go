@@ -200,7 +200,7 @@ func (a *Application) initServices() error {
 }
 
 func (a *Application) initEnsResolver(pb *natsclient.Publisher) error {
-	conn, err := grpc.Dial(a.cfg.InternalAPI.EnsResolverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(a.cfg.InternalAPI.EnsResolverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("create connection with ens resolver: %v", err)
 	}
@@ -293,7 +293,7 @@ func (a *Application) initDelegates(nc *nats.Conn) error {
 }
 
 func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
-	dsConn, err := grpc.Dial(
+	dsConn, err := grpc.NewClient(
 		a.cfg.InternalAPI.DatasourceSnapshotAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
