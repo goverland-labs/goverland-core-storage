@@ -9,7 +9,6 @@ import (
 )
 
 var (
-	actionSet    string = "set"
 	actionClear  string = "clear"
 	actionExpire string = "expire"
 )
