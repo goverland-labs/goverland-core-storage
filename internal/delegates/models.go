@@ -83,12 +83,16 @@ func (Summary) TableName() string {
 	return "delegates_summary"
 }
 
-func (s Summary) Expired() bool {
+func (s *Summary) Expired() bool {
 	if s.ExpiresAt == 0 {
 		return false
 	}
 
 	return time.Now().Unix() > s.ExpiresAt
+}
+
+func (s *Summary) SelfDelegation() bool {
+	return s.AddressTo == s.AddressFrom
 }
 
 type Proposal struct {

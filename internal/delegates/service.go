@@ -121,6 +121,10 @@ func (s *Service) handleProposalCreated(ctx context.Context, pr Proposal) error 
 		return nil
 	}
 
+	if summary.SelfDelegation() {
+		return nil
+	}
+
 	// delegation is expired
 	if summary.Expired() {
 		return nil
