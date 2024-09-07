@@ -27,6 +27,12 @@ func NewService(repo *Repo, dp DaoProvider) *Service {
 
 func (s *Service) HandleDelegate(_ context.Context, hr History) error {
 	if err := s.repo.CallInTx(func(tx *gorm.DB) error {
+		if hr.OriginalSpaceID == "" {
+			log.Warn().Msgf("skip processing block %d from %s cause dao id is empty", hr.BlockNumber, hr.ChainID)
+
+			return nil
+		}
+
 		// store to history
 		if err := s.repo.CreateHistory(tx, hr); err != nil {
 			return fmt.Errorf("repo.CreateHistory: %w", err)
