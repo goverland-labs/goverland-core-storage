@@ -100,3 +100,18 @@ func (r *Repo) RemoveSummary(tx *gorm.DB, addressFrom, daoID string) error {
 
 	return nil
 }
+
+func (r *Repo) FindDelegator(daoID, author string) (*Summary, error) {
+	var si Summary
+	if err := r.db.
+		Where(Summary{
+			DaoID:     daoID,
+			AddressTo: author,
+		}).
+		First(&si).
+		Error; err != nil {
+		return nil, fmt.Errorf("find delegator: %w", err)
+	}
+
+	return &si, nil
+}

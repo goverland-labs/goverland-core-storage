@@ -37,9 +37,9 @@ func NewConsumer(nc *nats.Conn, s *Service) (*Consumer, error) {
 	return c, nil
 }
 
-func (c *Consumer) handler() events.DelegateHandler {
+func (c *Consumer) handleDelegates() events.DelegateHandler {
 	return func(payload events.DelegatePayload) error {
-		if err := c.service.HandleDelegate(context.TODO(), convertToInternal(payload)); err != nil {
+		if err := c.service.handleDelegate(context.TODO(), convertToInternal(payload)); err != nil {
 			log.Error().Err(err).Msg("process delegates info")
 
 			return fmt.Errorf("process delegates info: %w", err)
@@ -51,13 +51,31 @@ func (c *Consumer) handler() events.DelegateHandler {
 	}
 }
 
+func (c *Consumer) handleProposalCreated() events.ProposalHandler {
+	return func(payload events.ProposalPayload) error {
+		if err := c.service.handleProposalCreated(context.TODO(), convertEventToProposal(payload)); err != nil {
+			log.Error().Err(err).Msg("delegates: process proposal create")
+
+			return fmt.Errorf("delegates: process proposal create: %w", err)
+		}
+
+		log.Debug().Msgf("delegates: proposal create event was processed: %s %s %s", payload.ID, payload.DaoID, payload.Author)
+
+		return nil
+	}
+}
+
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
-	de, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateUpsert, c.handler(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	de, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateUpsert, c.handleDelegates(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectDelegateUpsert, err)
 	}
-	c.consumers = append(c.consumers, de)
+	pr, err := client.NewConsumer(ctx, c.conn, group, events.SubjectProposalCreated, c.handleProposalCreated(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectProposalCreated, err)
+	}
+	c.consumers = append(c.consumers, de, pr)
 
 	log.Info().Msg("delegates consumers is started")
 

@@ -82,3 +82,17 @@ type Summary struct {
 func (Summary) TableName() string {
 	return "delegates_summary"
 }
+
+type Proposal struct {
+	ID            string
+	OriginalDaoID string
+	Author        string
+}
+
+func convertEventToProposal(event events.ProposalPayload) Proposal {
+	return Proposal{
+		ID:            event.ID,
+		OriginalDaoID: event.DaoID,
+		Author:        event.Author,
+	}
+}
