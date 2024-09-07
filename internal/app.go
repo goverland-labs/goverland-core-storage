@@ -23,6 +23,7 @@ import (
 
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
+	"github.com/goverland-labs/goverland-core-storage/internal/delegates"
 	"github.com/goverland-labs/goverland-core-storage/internal/ensresolver"
 	"github.com/goverland-labs/goverland-core-storage/internal/events"
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
@@ -54,6 +55,9 @@ type Application struct {
 
 	ensRepo    *ensresolver.Repo
 	ensService *ensresolver.Service
+
+	delegatesRepo    *delegates.Repo
+	delegatesService *delegates.Service
 
 	eventsRepo *events.Repo
 
@@ -135,6 +139,7 @@ func (a *Application) initDB() error {
 	a.voteRepo = vote.NewRepo(a.db)
 	a.eventsRepo = events.NewRepo(a.db)
 	a.ensRepo = ensresolver.NewRepo(a.db)
+	a.delegatesRepo = delegates.NewRepo(a.db)
 
 	return err
 }
@@ -173,6 +178,11 @@ func (a *Application) initServices() error {
 	err = a.initVote(nc, pb)
 	if err != nil {
 		return fmt.Errorf("init vote: %w", err)
+	}
+
+	err = a.initDelegates(nc)
+	if err != nil {
+		return fmt.Errorf("init delegates: %w", err)
 	}
 
 	a.initStats()
@@ -262,6 +272,20 @@ func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) erro
 
 	tw := proposal.NewTopWorker(service)
 	a.manager.AddWorker(process.NewCallbackWorker("proposal-top-worker", tw.Start))
+
+	return nil
+}
+
+func (a *Application) initDelegates(nc *nats.Conn) error {
+	service := delegates.NewService(a.delegatesRepo, a.daoService)
+	a.delegatesService = service
+
+	cs, err := delegates.NewConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("delegates consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("delegates-consumer", cs.Start))
 
 	return nil
 }
