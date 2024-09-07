@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	events "github.com/goverland-labs/goverland-platform-events/events/core"
+	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 	client "github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"

@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	events "github.com/goverland-labs/goverland-platform-events/events/core"
+	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 )
 
 var (
-	actionClear  string = "clear"
-	actionExpire string = "expire"
+	actionClear  = "clear"
+	actionExpire = "expire"
 )
 
 type DelegationDetails struct {

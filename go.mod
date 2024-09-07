@@ -13,7 +13,7 @@ require (
 	github.com/goverland-labs/goverland-core-storage/protocol v0.0.0
 	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.4.4
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
-	github.com/goverland-labs/goverland-platform-events v0.3.2
+	github.com/goverland-labs/goverland-platform-events v0.3.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/lib/pq v1.10.9
