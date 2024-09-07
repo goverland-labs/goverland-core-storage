@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	events "github.com/goverland-labs/goverland-platform-events/events/core"
 
@@ -123,7 +122,7 @@ func (s *Service) handleProposalCreated(ctx context.Context, pr Proposal) error 
 	}
 
 	// delegation is expired
-	if summary.ExpiresAt > 0 && time.Now().Unix() > summary.ExpiresAt {
+	if summary.Expired() {
 		return nil
 	}
 
