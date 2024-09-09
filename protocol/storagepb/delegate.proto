@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package storagepb;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./storagepb";
+
+service Delegate {
+  rpc GetDelegates(GetDelegatesRequest) returns (GetDelegatesResponse);
+  rpc GetDelegateProfile(GetDelegateProfileRequest) returns (GetDelegateProfileResponse);
+}
+
+message GetDelegatesRequest {
+  string dao_id = 1;
+  repeated string query_accounts = 2;
+  optional string sort = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message GetDelegatesResponse {
+  repeated DelegateEntry delegates = 1;
+}
+
+message DelegateEntry {
+  string address = 1;
+  string ens_name = 2;
+  int32 delegator_count = 3;
+  double percent_of_delegators = 4; // in basis points
+  double voting_power = 5;
+  double percent_of_voting_power = 6; // in basis points
+  string about = 7;
+  string statement = 8;
+  int32 votes_count = 9;
+  int32 created_proposals_count = 10;
+}
+
+message GetDelegateProfileRequest {
+  string dao_id = 1;
+  string address = 2;
+}
+
+message GetDelegateProfileResponse {
+  string address = 1;
+  double voting_power = 2;
+  double incoming_power = 3;
+  double outgoing_power = 4;
+  double percent_of_voting_power = 5;
+  double percent_of_delegators = 6;
+  repeated ProfileDelegateItem delegates = 7;
+  google.protobuf.Timestamp expiration = 8;
+}
+
+message ProfileDelegateItem {
+  string address = 1;
+  string ens_name = 2;
+  double weight = 3;
+  double delegated_power = 4;
+}

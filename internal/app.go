@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/delegatepb"
 	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/votingpb"
 	"github.com/goverland-labs/goverland-helpers-ens-resolver/protocol/enspb"
 	"github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
@@ -19,6 +20,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/goverland-labs/goverland-core-storage/internal/delegate"
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
@@ -52,6 +54,8 @@ type Application struct {
 
 	voteRepo    *vote.Repo
 	voteService *vote.Service
+
+	delegateService *delegate.Service
 
 	ensRepo    *ensresolver.Repo
 	ensService *ensresolver.Service
@@ -196,7 +200,7 @@ func (a *Application) initServices() error {
 }
 
 func (a *Application) initEnsResolver(pb *natsclient.Publisher) error {
-	conn, err := grpc.Dial(a.cfg.InternalAPI.EnsResolverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(a.cfg.InternalAPI.EnsResolverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("create connection with ens resolver: %v", err)
 	}
@@ -229,7 +233,6 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	if err != nil {
 		return fmt.Errorf("dao consumer: %w", err)
 	}
-
 	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
 
 	cw := dao.NewNewCategoryWorker(service)
@@ -264,7 +267,6 @@ func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) erro
 	if err != nil {
 		return fmt.Errorf("proposal consumer: %w", err)
 	}
-
 	a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
 
 	vw := proposal.NewVotingWorker(service)
@@ -291,7 +293,7 @@ func (a *Application) initDelegates(nc *nats.Conn) error {
 }
 
 func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
-	dsConn, err := grpc.Dial(
+	dsConn, err := grpc.NewClient(
 		a.cfg.InternalAPI.DatasourceSnapshotAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
@@ -311,8 +313,11 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 	if err != nil {
 		return fmt.Errorf("vote consumer: %w", err)
 	}
-
 	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
+
+	delegateClient := delegatepb.NewDelegateClient(dsConn)
+	delegateService := delegate.NewService(delegateClient, a.daoService, a.ensService)
+	a.delegateService = delegateService
 
 	return nil
 }
@@ -338,6 +343,7 @@ func (a *Application) initAPI() error {
 	storagepb.RegisterVoteServer(srv, vote.NewServer(a.voteService))
 	storagepb.RegisterEnsServer(srv, ensresolver.NewServer(a.ensService))
 	storagepb.RegisterStatsServer(srv, stats.NewServer(a.statsService))
+	storagepb.RegisterDelegateServer(srv, delegate.NewServer(a.delegateService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 
