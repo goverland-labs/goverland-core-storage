@@ -184,7 +184,7 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init vote: %w", err)
 	}
 
-	err = a.initDelegates(nc)
+	err = a.initDelegates(nc, pb)
 	if err != nil {
 		return fmt.Errorf("init delegates: %w", err)
 	}
@@ -278,8 +278,8 @@ func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) erro
 	return nil
 }
 
-func (a *Application) initDelegates(nc *nats.Conn) error {
-	service := delegates.NewService(a.delegatesRepo, a.daoService)
+func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) error {
+	service := delegates.NewService(a.delegatesRepo, a.daoService, pb)
 	a.delegatesService = service
 
 	cs, err := delegates.NewConsumer(nc, service)

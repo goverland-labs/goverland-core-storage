@@ -2,7 +2,11 @@ package delegates
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
+
+	events "github.com/goverland-labs/goverland-platform-events/events/core"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -13,19 +17,25 @@ type DaoProvider interface {
 	GetIDByOriginalID(string) (uuid.UUID, error)
 }
 
-type Service struct {
-	repo *Repo
-	dp   DaoProvider
+type Publisher interface {
+	PublishJSON(ctx context.Context, subject string, obj any) error
 }
 
-func NewService(repo *Repo, dp DaoProvider) *Service {
+type Service struct {
+	repo      *Repo
+	dp        DaoProvider
+	publisher Publisher
+}
+
+func NewService(repo *Repo, dp DaoProvider, p Publisher) *Service {
 	return &Service{
-		repo: repo,
-		dp:   dp,
+		repo:      repo,
+		dp:        dp,
+		publisher: p,
 	}
 }
 
-func (s *Service) HandleDelegate(_ context.Context, hr History) error {
+func (s *Service) handleDelegate(_ context.Context, hr History) error {
 	if err := s.repo.CallInTx(func(tx *gorm.DB) error {
 		if hr.OriginalSpaceID == "" {
 			log.Warn().Msgf("skip processing block %d from %s cause dao id is empty", hr.BlockNumber, hr.ChainID)
@@ -44,7 +54,7 @@ func (s *Service) HandleDelegate(_ context.Context, hr History) error {
 			return fmt.Errorf("dp.GetIDByOriginalID: %w", err)
 		}
 
-		bts, err := s.repo.GetSummaryBlockTimestamp(tx, hr.AddressFrom, daoID.String())
+		bts, err := s.repo.GetSummaryBlockTimestamp(tx, strings.ToLower(hr.AddressFrom), daoID.String())
 		if err != nil {
 			return fmt.Errorf("s.repo.GetSummaryBlockTimestamp: %w", err)
 		}
@@ -57,14 +67,14 @@ func (s *Service) HandleDelegate(_ context.Context, hr History) error {
 		}
 
 		if hr.Action == actionExpire {
-			if err := s.repo.UpdateSummaryExpiration(tx, hr.AddressFrom, daoID.String(), hr.Delegations.Expiration, hr.BlockTimestamp); err != nil {
+			if err := s.repo.UpdateSummaryExpiration(tx, strings.ToLower(hr.AddressFrom), daoID.String(), hr.Delegations.Expiration, hr.BlockTimestamp); err != nil {
 				return fmt.Errorf("UpdateSummaryExpiration: %w", err)
 			}
 
 			return nil
 		}
 
-		if err := s.repo.RemoveSummary(tx, hr.AddressFrom, daoID.String()); err != nil {
+		if err := s.repo.RemoveSummary(tx, strings.ToLower(hr.AddressFrom), daoID.String()); err != nil {
 			return fmt.Errorf("UpdateSummaryExpiration: %w", err)
 		}
 
@@ -74,8 +84,8 @@ func (s *Service) HandleDelegate(_ context.Context, hr History) error {
 
 		for _, info := range hr.Delegations.Details {
 			if err = s.repo.CreateSummary(Summary{
-				AddressFrom:        hr.AddressFrom,
-				AddressTo:          info.Address,
+				AddressFrom:        strings.ToLower(hr.AddressFrom),
+				AddressTo:          strings.ToLower(info.Address),
 				DaoID:              daoID.String(),
 				Weight:             info.Weight,
 				LastBlockTimestamp: hr.BlockTimestamp,
@@ -88,6 +98,47 @@ func (s *Service) HandleDelegate(_ context.Context, hr History) error {
 		return nil
 	}); err != nil {
 		return fmt.Errorf("repo.CallInTx: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) handleProposalCreated(ctx context.Context, pr Proposal) error {
+	// get space id by provided original_space_id
+	daoID, err := s.dp.GetIDByOriginalID(pr.OriginalDaoID)
+	if err != nil {
+		return fmt.Errorf("dp.GetIDByOriginalID: %w", err)
+	}
+
+	// find delegator by author in specific space id
+	summary, err := s.repo.FindDelegator(daoID.String(), strings.ToLower(pr.Author))
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("repo.FindDelegator: %w", err)
+	}
+
+	// author doesn't have any delegation relations
+	if summary == nil {
+		return nil
+	}
+
+	if summary.SelfDelegation() {
+		return nil
+	}
+
+	// delegation is expired
+	if summary.Expired() {
+		return nil
+	}
+
+	// make an event
+	event := events.DelegatePayload{
+		Initiator:  strings.ToLower(pr.Author),
+		Delegator:  summary.AddressFrom,
+		DaoID:      daoID,
+		ProposalID: pr.ID,
+	}
+	if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateCreateProposal, event); err != nil {
+		return fmt.Errorf("s.publisher.PublishJSON: %w", err)
 	}
 
 	return nil

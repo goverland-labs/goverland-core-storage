@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Register event for "delegate create proposal”
+
 ## [0.2.3] - 2024-09-13
 
 ### Added

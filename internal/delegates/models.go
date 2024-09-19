@@ -82,3 +82,29 @@ type Summary struct {
 func (Summary) TableName() string {
 	return "delegates_summary"
 }
+
+func (s *Summary) Expired() bool {
+	if s.ExpiresAt == 0 {
+		return false
+	}
+
+	return time.Now().Unix() > s.ExpiresAt
+}
+
+func (s *Summary) SelfDelegation() bool {
+	return s.AddressTo == s.AddressFrom
+}
+
+type Proposal struct {
+	ID            string
+	OriginalDaoID string
+	Author        string
+}
+
+func convertEventToProposal(event events.ProposalPayload) Proposal {
+	return Proposal{
+		ID:            event.ID,
+		OriginalDaoID: event.DaoID,
+		Author:        event.Author,
+	}
+}
