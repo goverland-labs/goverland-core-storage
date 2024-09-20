@@ -143,3 +143,35 @@ func (s *Service) handleProposalCreated(ctx context.Context, pr Proposal) error 
 
 	return nil
 }
+
+func (s *Service) handleVotesCreated(ctx context.Context, batch []Vote) error {
+	summary, err := s.repo.FindDelegatorsByVotes(batch)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("repo.FindDelegatorsByVotes: %w", err)
+	}
+
+	for _, info := range summary {
+		if info.SelfDelegation() {
+			continue
+		}
+
+		// delegation is expired
+		if info.Expired() {
+			continue
+		}
+
+		// make an event
+		event := events.DelegatePayload{
+			Initiator:  strings.ToLower(info.AddressTo),
+			Delegator:  info.AddressFrom,
+			DaoID:      uuid.MustParse(info.DaoID),
+			ProposalID: info.ProposalID,
+		}
+
+		if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateVotingVoted, event); err != nil {
+			log.Err(err).Msgf("publish delegate voted: %s %s", info.AddressTo, info.ProposalID)
+		}
+	}
+
+	return nil
+}
