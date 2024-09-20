@@ -21,8 +21,8 @@ func (r *Repo) CreateHistory(tx *gorm.DB, dd History) error {
 }
 
 // CreateSummary creates one summary info
-func (r *Repo) CreateSummary(sm Summary) error {
-	return r.db.Create(&sm).Error
+func (r *Repo) CreateSummary(tx *gorm.DB, sm Summary) error {
+	return tx.Create(&sm).Error
 }
 
 func (r *Repo) CallInTx(cb func(tx *gorm.DB) error) error {
@@ -166,4 +166,32 @@ func (r *Repo) FindDelegatorsByVotes(votes []Vote) ([]summaryByVote, error) {
 	}
 
 	return result, nil
+}
+
+func (r *Repo) GetByFilters(filters []Filter) ([]Summary, error) {
+	db := r.db.Model(&Summary{})
+	for _, f := range filters {
+		db = f.Apply(db)
+	}
+
+	var list []Summary
+	if err := db.Find(&list).Error; err != nil {
+		return nil, fmt.Errorf("db.Find: %w", err)
+	}
+
+	return list, nil
+}
+
+func (r *Repo) GetCnt(filters []Filter) (int64, error) {
+	db := r.db.Model(&Summary{})
+	for _, f := range filters {
+		db = f.Apply(db)
+	}
+
+	var cnt int64
+	if err := db.Count(&cnt).Error; err != nil {
+		return cnt, fmt.Errorf("db.Count: %w", err)
+	}
+
+	return cnt, nil
 }

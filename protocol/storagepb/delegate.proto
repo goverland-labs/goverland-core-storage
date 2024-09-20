@@ -3,12 +3,21 @@ syntax = "proto3";
 package storagepb;
 
 import "google/protobuf/timestamp.proto";
+import "storagepb/dao.proto";
 
-option go_package = "./storagepb";
+option go_package = ".;storagepb";
 
 service Delegate {
+  // GetDelegates returns list of delegates get from Snapshot
   rpc GetDelegates(GetDelegatesRequest) returns (GetDelegatesResponse);
   rpc GetDelegateProfile(GetDelegateProfileRequest) returns (GetDelegateProfileResponse);
+
+  // GetAllDelegations returns list of delegations based on internal data grouped by dao
+  rpc GetAllDelegations(GetAllDelegationsRequest) returns (GetAllDelegationsResponse);
+  // GetAllDelegators returns list of delegators based on internal data grouped by dao
+  rpc GetAllDelegators(GetAllDelegatorsRequest) returns (GetAllDelegatorsResponse);
+  // GetDelegatesSummary returns count of delegators and delegations
+  rpc GetDelegatesSummary(GetDelegatesSummaryRequest) returns (GetDelegatesSummaryResponse);
 }
 
 message GetDelegatesRequest {
@@ -58,4 +67,65 @@ message ProfileDelegateItem {
   string ens_name = 2;
   double weight = 3;
   double delegated_power = 4;
+}
+
+message GetAllDelegationsRequest {
+  // The account address that initiates the delegation
+  string address = 1;
+}
+
+message DelegationDetails {
+  // The delegation address
+  string address = 1;
+  // Resolved ens name
+  string ens_name = 2;
+  // Percentage of delegation
+  int32 percent_of_delegators = 3;
+  // Expires at date. If 0 the expiration is not set
+  google.protobuf.Timestamp expiration = 4;
+}
+
+message DelegationSummary {
+  // Dao details
+  DaoInfo dao = 1;
+  // List of delegations
+  repeated DelegationDetails delegations = 2;
+}
+
+message GetAllDelegationsResponse {
+  // The number of total delegations in our DB
+  int32 total_delegations_count = 1;
+  // List of delegations grouped by dao and sorted by popularity index
+  repeated DelegationSummary delegations = 2;
+}
+
+message GetAllDelegatorsRequest {
+  // The account address that initiates the delegation
+  string address = 1;
+}
+
+message DelegatorSummary {
+  // Dao details
+  DaoInfo dao = 1;
+  // List of delegators
+  repeated DelegationDetails delegators = 2;
+}
+
+message GetAllDelegatorsResponse {
+  // The number of total delegators in our DB
+  int32 total_delegators_count = 1;
+  // List of delegators grouped by dao and sorted by popularity index
+  repeated DelegatorSummary delegators = 2;
+}
+
+message GetDelegatesSummaryRequest {
+  // The account address that initiates the delegation
+  string address = 1;
+}
+
+message GetDelegatesSummaryResponse {
+  // The number of total delegators in our DB
+  int32 total_delegators_count = 1;
+  // The number of total delegations in our DB
+  int32 total_delegations_count = 2;
 }

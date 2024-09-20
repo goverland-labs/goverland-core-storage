@@ -40,12 +40,12 @@ func NewConsumer(nc *nats.Conn, s *Service) (*Consumer, error) {
 func (c *Consumer) handleDelegates() events.DelegateHandler {
 	return func(payload events.DelegatePayload) error {
 		if err := c.service.handleDelegate(context.TODO(), convertToInternal(payload)); err != nil {
-			log.Error().Err(err).Msg("process delegates info")
+			log.Error().Err(err).Msg("delegates: process delegates info")
 
-			return fmt.Errorf("process delegates info: %w", err)
+			return fmt.Errorf("delegates: process delegates info: %w", err)
 		}
 
-		log.Debug().Msgf("event was processed: %d %s", payload.BlockNumber, payload.ChainID)
+		log.Debug().Msgf("delegates: event was processed: %d %s", payload.BlockNumber, payload.ChainID)
 
 		return nil
 	}
