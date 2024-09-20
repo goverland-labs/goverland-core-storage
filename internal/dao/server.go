@@ -59,7 +59,7 @@ func (s *Server) GetByID(_ context.Context, req *storagepb.DaoByIDRequest) (*sto
 	}
 
 	return &storagepb.DaoByIDResponse{
-		Dao: convertDaoToAPI(dao),
+		Dao: ConvertDaoToAPI(dao),
 	}, nil
 }
 
@@ -102,7 +102,7 @@ func (s *Server) GetByFilter(_ context.Context, req *storagepb.DaoByFilterReques
 	}
 
 	for i, info := range list.Daos {
-		res.Daos[i] = convertDaoToAPI(&info)
+		res.Daos[i] = ConvertDaoToAPI(&info)
 	}
 
 	return res, nil
@@ -135,7 +135,7 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *storagepb.TopByCat
 			Daos:       make([]*storagepb.DaoInfo, len(details.List)),
 		}
 		for i, dao := range details.List {
-			info.Daos[i] = convertDaoToAPI(&dao)
+			info.Daos[i] = ConvertDaoToAPI(&dao)
 		}
 
 		res.Categories[idx] = info
@@ -146,7 +146,7 @@ func (s *Server) GetTopByCategories(ctx context.Context, req *storagepb.TopByCat
 	return res, nil
 }
 
-func convertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
+func ConvertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
 	return &storagepb.DaoInfo{
 		Id:                 dao.ID.String(),
 		Alias:              dao.OriginalID,
