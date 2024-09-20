@@ -108,3 +108,28 @@ func convertEventToProposal(event events.ProposalPayload) Proposal {
 		Author:        event.Author,
 	}
 }
+
+type Vote struct {
+	Voter         string
+	OriginalDaoID string
+	ProposalID    string
+}
+
+func convertEventToVoteDetails(event events.VotesPayload) []Vote {
+	votes := make([]Vote, 0, len(event))
+	for _, info := range event {
+		votes = append(votes, Vote{
+			Voter:         info.Voter,
+			OriginalDaoID: info.OriginalDaoID,
+			ProposalID:    info.ProposalID,
+		})
+	}
+
+	return votes
+}
+
+type summaryByVote struct {
+	Summary
+
+	ProposalID string
+}
