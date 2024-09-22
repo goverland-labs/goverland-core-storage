@@ -16,6 +16,7 @@ type GetDelegatesRequest struct {
 
 type GetDelegatesResponse struct {
 	Delegates []Delegate
+	Total     int32
 }
 
 type Delegate struct {

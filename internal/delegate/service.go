@@ -102,6 +102,7 @@ func (s *Service) GetDelegates(ctx context.Context, request GetDelegatesRequest)
 
 	return &GetDelegatesResponse{
 		Delegates: delegates,
+		Total:     resp.GetTotal(),
 	}, nil
 }
 

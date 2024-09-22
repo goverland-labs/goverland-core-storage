@@ -68,6 +68,7 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 
 	return &storagepb.GetDelegatesResponse{
 		Delegates: delegatesResult,
+		Total:     delegatesResponse.Total,
 	}, nil
 }
 
