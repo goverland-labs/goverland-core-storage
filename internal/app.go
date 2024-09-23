@@ -20,12 +20,11 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/goverland-labs/goverland-core-storage/internal/delegate"
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
-	"github.com/goverland-labs/goverland-core-storage/internal/delegates"
+	"github.com/goverland-labs/goverland-core-storage/internal/delegate"
 	"github.com/goverland-labs/goverland-core-storage/internal/ensresolver"
 	"github.com/goverland-labs/goverland-core-storage/internal/events"
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
@@ -55,13 +54,11 @@ type Application struct {
 	voteRepo    *vote.Repo
 	voteService *vote.Service
 
+	delegateRepo    *delegate.Repo
 	delegateService *delegate.Service
 
 	ensRepo    *ensresolver.Repo
 	ensService *ensresolver.Service
-
-	delegatesRepo    *delegates.Repo
-	delegatesService *delegates.Service
 
 	eventsRepo *events.Repo
 
@@ -143,7 +140,7 @@ func (a *Application) initDB() error {
 	a.voteRepo = vote.NewRepo(a.db)
 	a.eventsRepo = events.NewRepo(a.db)
 	a.ensRepo = ensresolver.NewRepo(a.db)
-	a.delegatesRepo = delegates.NewRepo(a.db)
+	a.delegateRepo = delegate.NewRepo(a.db)
 
 	return err
 }
@@ -279,10 +276,19 @@ func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) erro
 }
 
 func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) error {
-	service := delegates.NewService(a.delegatesRepo, a.daoService, pb)
-	a.delegatesService = service
+	dsConn, err := grpc.NewClient(
+		a.cfg.InternalAPI.DatasourceSnapshotAddress,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return fmt.Errorf("create connection with datasource snapshot server: %v", err)
+	}
 
-	cs, err := delegates.NewConsumer(nc, service)
+	delegateClient := delegatepb.NewDelegateClient(dsConn)
+	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.ensService, pb)
+	a.delegateService = service
+
+	cs, err := delegate.NewConsumer(nc, service)
 	if err != nil {
 		return fmt.Errorf("delegates consumer: %w", err)
 	}
@@ -314,10 +320,6 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 		return fmt.Errorf("vote consumer: %w", err)
 	}
 	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
-
-	delegateClient := delegatepb.NewDelegateClient(dsConn)
-	delegateService := delegate.NewService(delegateClient, a.daoService, a.ensService)
-	a.delegateService = delegateService
 
 	return nil
 }
