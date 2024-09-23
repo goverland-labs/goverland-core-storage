@@ -1,4 +1,4 @@
-package delegates
+package delegate
 
 import (
 	"context"
