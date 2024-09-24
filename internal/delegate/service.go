@@ -301,7 +301,11 @@ func (s *Service) handleDelegate(_ context.Context, hr History) error {
 			return nil
 		}
 
+		addresses := make([]string, 0, len(hr.Delegations.Details)+1)
+		addresses = append(addresses, hr.AddressFrom)
+
 		for _, info := range hr.Delegations.Details {
+			addresses = append(addresses, info.Address)
 			if err = s.repo.CreateSummary(Summary{
 				AddressFrom:        strings.ToLower(hr.AddressFrom),
 				AddressTo:          strings.ToLower(info.Address),
@@ -313,6 +317,10 @@ func (s *Service) handleDelegate(_ context.Context, hr History) error {
 				return fmt.Errorf("createSummary [%s/%s/%s]: %w", hr.AddressFrom, info.Address, daoID.String(), err)
 			}
 		}
+
+		go func(list []string) {
+			s.ensResolver.AddRequests(list)
+		}(addresses)
 
 		return nil
 	}); err != nil {

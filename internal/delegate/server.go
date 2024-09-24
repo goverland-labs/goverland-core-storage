@@ -122,3 +122,7 @@ func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDeleg
 		Expiration:           expiration,
 	}, nil
 }
+
+func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDelegationsRequest) (*storagepb.GetAllDelegationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllDelegations not implemented")
+}
