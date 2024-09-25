@@ -2,6 +2,9 @@ package delegate
 
 import (
 	"context"
+	"maps"
+	"slices"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -10,17 +13,25 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
+
+	"github.com/goverland-labs/goverland-core-storage/internal/dao"
 )
+
+type DaoSearcher interface {
+	GetByFilters(filters []dao.Filter) (dao.DaoList, error)
+}
 
 type Server struct {
 	storagepb.UnimplementedDelegateServer
 
 	sp *Service
+	ds DaoSearcher
 }
 
-func NewServer(sp *Service) *Server {
+func NewServer(sp *Service, ds DaoSearcher) *Server {
 	return &Server{
 		sp: sp,
+		ds: ds,
 	}
 }
 
@@ -124,5 +135,70 @@ func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDeleg
 }
 
 func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDelegationsRequest) (*storagepb.GetAllDelegationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllDelegations not implemented")
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	// delegations [dao_id: [summary, ...]]
+	delegations, err := s.sp.getAllDelegations(ctx, req.GetAddress())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get delegations")
+	}
+
+	if len(delegations) == 0 {
+		return &storagepb.GetAllDelegationsResponse{}, nil
+	}
+
+	daoIDs := slices.Collect(maps.Keys(delegations))
+	daoList, err := s.ds.GetByFilters([]dao.Filter{
+		dao.DaoIDsFilter{DaoIDs: daoIDs},
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get dao info")
+	}
+
+	addresses := make([]string, 0, len(delegations))
+	for _, d := range delegations {
+		for _, info := range d {
+			addresses = append(addresses, info.AddressTo)
+		}
+	}
+	ensNames, err := s.sp.resolveAddressesName(addresses)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to resolve ens names")
+	}
+
+	response := &storagepb.GetAllDelegationsResponse{
+		Delegations: make([]*storagepb.DelegationSummary, 0, len(delegations)),
+	}
+
+	for _, di := range daoList.Daos {
+		list, ok := delegations[di.ID.String()]
+		if !ok {
+			log.Warn().Msgf("dao info not found: %s", di.ID.String())
+			continue
+		}
+
+		dl := make([]*storagepb.DelegationDetails, 0, len(list))
+		for _, d := range list {
+			var expires *timestamppb.Timestamp
+			if d.ExpiresAt != 0 {
+				expires = timestamppb.New(time.Unix(d.ExpiresAt, 0))
+			}
+
+			dl = append(dl, &storagepb.DelegationDetails{
+				Address:             d.AddressTo,
+				EnsName:             ensNames[d.AddressTo],
+				PercentOfDelegators: int32(d.Weight),
+				Expiration:          expires,
+			})
+		}
+
+		response.Delegations = append(response.Delegations, &storagepb.DelegationSummary{
+			Dao:         dao.ConvertDaoToAPI(&di),
+			Delegations: dl,
+		})
+	}
+
+	return response, nil
 }

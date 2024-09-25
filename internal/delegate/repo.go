@@ -167,3 +167,17 @@ func (r *Repo) FindDelegatorsByVotes(votes []Vote) ([]summaryByVote, error) {
 
 	return result, nil
 }
+
+func (r *Repo) GetByFilters(filters []Filter) ([]Summary, error) {
+	db := r.db.Model(&Summary{})
+	for _, f := range filters {
+		db = f.Apply(db)
+	}
+
+	var list []Summary
+	if err := db.Find(&list).Error; err != nil {
+		return nil, fmt.Errorf("db.Find: %w", err)
+	}
+
+	return list, nil
+}

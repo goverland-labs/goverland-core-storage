@@ -402,3 +402,22 @@ func (s *Service) handleVotesCreated(ctx context.Context, batch []Vote) error {
 
 	return nil
 }
+
+// getAllDelegations returns list of delegations grouped by dao
+func (s *Service) getAllDelegations(_ context.Context, address string) (map[string][]Summary, error) {
+	list, err := s.repo.GetByFilters([]Filter{DelegatorFilter{Address: address}})
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetByFilters: %w", err)
+	}
+
+	result := make(map[string][]Summary, len(list))
+	for _, info := range list {
+		if _, ok := result[info.DaoID]; !ok {
+			result[info.DaoID] = make([]Summary, 0, len(list))
+		}
+
+		result[info.DaoID] = append(result[info.DaoID], info)
+	}
+
+	return result, nil
+}
