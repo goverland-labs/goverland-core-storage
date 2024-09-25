@@ -1,6 +1,6 @@
 module github.com/goverland-labs/goverland-core-storage
 
-go 1.22
+go 1.23
 
 replace github.com/goverland-labs/goverland-core-storage/protocol => ./protocol
 
