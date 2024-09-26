@@ -172,6 +172,7 @@ func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDel
 		Delegations: make([]*storagepb.DelegationSummary, 0, len(delegations)),
 	}
 
+	delegationsCnt := 0
 	for _, di := range daoList.Daos {
 		list, ok := delegations[di.ID.String()]
 		if !ok {
@@ -179,6 +180,7 @@ func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDel
 			continue
 		}
 
+		delegationsCnt += len(list)
 		dl := make([]*storagepb.DelegationDetails, 0, len(list))
 		for _, d := range list {
 			var expires *timestamppb.Timestamp
@@ -199,6 +201,8 @@ func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDel
 			Delegations: dl,
 		})
 	}
+
+	response.TotalDelegationsCount = int32(delegationsCnt)
 
 	return response, nil
 }

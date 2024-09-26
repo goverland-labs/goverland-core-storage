@@ -89,6 +89,8 @@ message DelegationSummary {
 }
 
 message GetAllDelegationsResponse {
+  // The number of total delegations in out DB
+  int32 total_delegations_count = 1;
   // List of delegations grouped by dao and sorted by popularity index
-  repeated DelegationSummary delegations = 1;
+  repeated DelegationSummary delegations = 2;
 }
