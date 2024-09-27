@@ -65,6 +65,10 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 		filters = append(filters, QueryFilter{Query: req.GetQuery()})
 	}
 
+	if req.GetDaoId() != "" {
+		filters = append(filters, DaoIDFilter{DaoID: req.GetDaoId()})
+	}
+
 	list, err := s.sp.GetByFilters(filters, limit, offset, req.GetOrderByVoter())
 	if err != nil {
 		log.Error().Err(err).Msgf("get votes by filter: %+v", req)
