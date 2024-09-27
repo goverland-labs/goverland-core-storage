@@ -80,6 +80,7 @@ message ProposalByFilterRequest {
   optional string order = 6;
   optional bool top = 7;
   repeated string proposal_ids = 8;
+  optional bool only_active = 9;
 }
 
 message ProposalByFilterResponse {
