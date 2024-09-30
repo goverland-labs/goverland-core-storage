@@ -62,7 +62,6 @@ type DaoList struct {
 	TotalCount int64
 }
 
-// todo: add order by
 func (r *Repo) GetByFilters(filters []Filter, count bool) (DaoList, error) {
 	db := r.db.Model(&Dao{})
 	for _, f := range filters {
@@ -141,11 +140,17 @@ where daos.id = ?
 }
 
 func (r *Repo) UpdateActiveVotes(id uuid.UUID) error {
+	var (
+		dummy = Dao{}
+		_     = dummy.ActiveVotes
+		_     = dummy.ActiveProposalsIDs
+	)
+
 	return r.db.Exec(`
 update daos
-set active_votes = cnt.active_votes
+set active_votes = cnt.active_votes, active_proposals_ids = cnt.list
 from (
-	select count(*) as active_votes
+	select count(*) as active_votes, json_agg(id) list
 	from proposals
 	where dao_id = ? and state = 'active' and spam is not true
 ) cnt
