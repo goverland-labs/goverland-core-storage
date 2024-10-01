@@ -150,7 +150,7 @@ func (r *Repo) UpdateActiveVotes(id uuid.UUID) error {
 update daos
 set active_votes = cnt.active_votes, active_proposals_ids = cnt.list
 from (
-	select count(*) as active_votes, json_agg(id) list
+	select count(*) as active_votes, coalesce(json_agg(id), '[]') list
 	from proposals
 	where dao_id = ? and state = 'active' and spam is not true
 ) cnt
@@ -161,9 +161,12 @@ where daos.id = ?
 func (r *Repo) UpdateActiveVotesAll() error {
 	return r.db.Exec(`
 update daos
-set active_votes = cnt.active_votes
+set active_votes = cnt.active_votes, active_proposals_ids = cnt.list
 from (
-	select dao_id, count(id) filter (where state = 'active' and spam is not true) as active_votes
+	select
+          dao_id,
+          count(id) filter (where state = 'active' and spam is not true) as active_votes,
+          coalesce(json_agg(id) filter (where state = 'active' and spam is not true), '[]')  as list
 	from proposals
 	group by dao_id
 ) cnt
