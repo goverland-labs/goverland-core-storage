@@ -81,6 +81,10 @@ func (s *Server) GetByFilter(_ context.Context, req *storagepb.ProposalByFilterR
 			filters = append(filters, DaoIDsFilter{DaoIDs: daos})
 		}
 
+		if req.GetOnlyActive() {
+			filters = append(filters, ActiveFilter{})
+		}
+
 		if req.GetTitle() != "" {
 			filters = append(filters,
 				TitleFilter{Title: req.GetTitle()},

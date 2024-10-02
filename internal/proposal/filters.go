@@ -117,3 +117,15 @@ func (f SkipCanceled) Apply(db *gorm.DB) *gorm.DB {
 
 	return db.Where(`state != 'canceled'`)
 }
+
+type ActiveFilter struct {
+}
+
+func (f ActiveFilter) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy Proposal
+		_     = dummy.State
+	)
+
+	return db.Where(`state = 'active'`)
+}

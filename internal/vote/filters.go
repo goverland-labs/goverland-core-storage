@@ -1,8 +1,9 @@
 package vote
 
 import (
-	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 	"gorm.io/gorm"
+
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 )
 
 var (
@@ -59,4 +60,12 @@ type QueryFilter struct {
 
 func (f QueryFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("voter = ? or ens_name = ?", f.Query, f.Query)
+}
+
+type DaoIDFilter struct {
+	DaoID string
+}
+
+func (f DaoIDFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("dao_id = ?", f.DaoID)
 }
