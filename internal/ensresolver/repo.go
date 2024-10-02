@@ -28,7 +28,8 @@ type EnsName struct {
 
 func (r *Repo) BatchCreate(data []EnsName) error {
 	return r.db.Model(&EnsName{}).Clauses(clause.OnConflict{
-		DoNothing: true,
+		Columns:   []clause.Column{{Name: "name"}},
+		DoUpdates: clause.AssignmentColumns([]string{"address"}),
 	}).CreateInBatches(data, defaultBatchSize).Error
 }
 
