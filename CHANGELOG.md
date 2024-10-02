@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.6] - 2024-10-02
+
+### Added
+- Added vote now logic
+- Added filter dao in votes
+- Make unique name in ens storage 
+
 ## [0.2.5] - 2024-09-22
 
 ### Added
