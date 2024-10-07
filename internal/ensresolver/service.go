@@ -102,17 +102,17 @@ func (s *Service) processAddresses(list []string) {
 		})
 	}
 
-	if err := s.repo.BatchCreate(result); err != nil {
-		log.Error().Err(err).Msg("ens batch create in db")
+	created := s.repo.BatchCreate(result)
 
+	log.Info().Msgf("processed %d items, created %d items", len(list), len(created))
+
+	if len(created) == 0 {
 		return
 	}
 
 	if err := s.publisher.PublishJSON(ctx, coreevents.SubjectEnsResolverResolved, convertToCoreEvent(result)); err != nil {
 		log.Error().Err(err).Msgf("publish ens names event")
 	}
-
-	log.Info().Msgf("processed %d items", len(list))
 }
 
 func convertToCoreEvent(list []EnsName) coreevents.EnsNamesPayload {

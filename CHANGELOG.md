@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed ens names batch creating
+
 ## [0.2.6] - 2024-10-02
 
 ### Added
