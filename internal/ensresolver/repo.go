@@ -8,10 +8,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-const (
-	defaultBatchSize = 100
-)
-
 type Repo struct {
 	db *gorm.DB
 }
