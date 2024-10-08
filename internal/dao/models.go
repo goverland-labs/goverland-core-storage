@@ -107,8 +107,11 @@ type Dao struct {
 	ActivitySince   int
 	VotersCount     int
 	PopularityIndex float64
-	ActiveVotes     int
-	Verified        bool
+	// ActiveVotes the number of active proposals
+	ActiveVotes int
+	// ActiveProposalsIDs the list of active proposals identifiers
+	ActiveProposalsIDs []string `gorm:"serializer:json"`
+	Verified           bool
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
