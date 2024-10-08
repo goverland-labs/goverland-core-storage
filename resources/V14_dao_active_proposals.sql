@@ -5,10 +5,8 @@ update daos
 set active_votes = cnt.active_votes, active_proposals_ids = cnt.list
 from (select
           dao_id,
-          count(id) as active_votes,
-          json_agg(id) list
+          count(id) filter (where state = 'active' and spam is not true) as active_votes,
+          coalesce(json_agg(id) filter (where state = 'active' and spam is not true), '[]')  as list
       from proposals
-      where state = 'active' and spam is not true
-      group by dao_id
-      having count(id) > 0) cnt
+      group by dao_id) cnt
 where daos.id = cnt.dao_id;
