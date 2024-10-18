@@ -19,16 +19,26 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Delegate_GetDelegates_FullMethodName       = "/storagepb.Delegate/GetDelegates"
-	Delegate_GetDelegateProfile_FullMethodName = "/storagepb.Delegate/GetDelegateProfile"
+	Delegate_GetDelegates_FullMethodName        = "/storagepb.Delegate/GetDelegates"
+	Delegate_GetDelegateProfile_FullMethodName  = "/storagepb.Delegate/GetDelegateProfile"
+	Delegate_GetAllDelegations_FullMethodName   = "/storagepb.Delegate/GetAllDelegations"
+	Delegate_GetAllDelegators_FullMethodName    = "/storagepb.Delegate/GetAllDelegators"
+	Delegate_GetDelegatesSummary_FullMethodName = "/storagepb.Delegate/GetDelegatesSummary"
 )
 
 // DelegateClient is the client API for Delegate service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DelegateClient interface {
+	// GetDelegates returns list of delegates get from Snapshot
 	GetDelegates(ctx context.Context, in *GetDelegatesRequest, opts ...grpc.CallOption) (*GetDelegatesResponse, error)
 	GetDelegateProfile(ctx context.Context, in *GetDelegateProfileRequest, opts ...grpc.CallOption) (*GetDelegateProfileResponse, error)
+	// GetAllDelegations returns list of delegations based on internal data grouped by dao
+	GetAllDelegations(ctx context.Context, in *GetAllDelegationsRequest, opts ...grpc.CallOption) (*GetAllDelegationsResponse, error)
+	// GetAllDelegators returns list of delegators based on internal data grouped by dao
+	GetAllDelegators(ctx context.Context, in *GetAllDelegatorsRequest, opts ...grpc.CallOption) (*GetAllDelegatorsResponse, error)
+	// GetDelegatesSummary returns count of delegators and delegations
+	GetDelegatesSummary(ctx context.Context, in *GetDelegatesSummaryRequest, opts ...grpc.CallOption) (*GetDelegatesSummaryResponse, error)
 }
 
 type delegateClient struct {
@@ -59,12 +69,49 @@ func (c *delegateClient) GetDelegateProfile(ctx context.Context, in *GetDelegate
 	return out, nil
 }
 
+func (c *delegateClient) GetAllDelegations(ctx context.Context, in *GetAllDelegationsRequest, opts ...grpc.CallOption) (*GetAllDelegationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAllDelegationsResponse)
+	err := c.cc.Invoke(ctx, Delegate_GetAllDelegations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *delegateClient) GetAllDelegators(ctx context.Context, in *GetAllDelegatorsRequest, opts ...grpc.CallOption) (*GetAllDelegatorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAllDelegatorsResponse)
+	err := c.cc.Invoke(ctx, Delegate_GetAllDelegators_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *delegateClient) GetDelegatesSummary(ctx context.Context, in *GetDelegatesSummaryRequest, opts ...grpc.CallOption) (*GetDelegatesSummaryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDelegatesSummaryResponse)
+	err := c.cc.Invoke(ctx, Delegate_GetDelegatesSummary_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DelegateServer is the server API for Delegate service.
 // All implementations must embed UnimplementedDelegateServer
 // for forward compatibility.
 type DelegateServer interface {
+	// GetDelegates returns list of delegates get from Snapshot
 	GetDelegates(context.Context, *GetDelegatesRequest) (*GetDelegatesResponse, error)
 	GetDelegateProfile(context.Context, *GetDelegateProfileRequest) (*GetDelegateProfileResponse, error)
+	// GetAllDelegations returns list of delegations based on internal data grouped by dao
+	GetAllDelegations(context.Context, *GetAllDelegationsRequest) (*GetAllDelegationsResponse, error)
+	// GetAllDelegators returns list of delegators based on internal data grouped by dao
+	GetAllDelegators(context.Context, *GetAllDelegatorsRequest) (*GetAllDelegatorsResponse, error)
+	// GetDelegatesSummary returns count of delegators and delegations
+	GetDelegatesSummary(context.Context, *GetDelegatesSummaryRequest) (*GetDelegatesSummaryResponse, error)
 	mustEmbedUnimplementedDelegateServer()
 }
 
@@ -80,6 +127,15 @@ func (UnimplementedDelegateServer) GetDelegates(context.Context, *GetDelegatesRe
 }
 func (UnimplementedDelegateServer) GetDelegateProfile(context.Context, *GetDelegateProfileRequest) (*GetDelegateProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateProfile not implemented")
+}
+func (UnimplementedDelegateServer) GetAllDelegations(context.Context, *GetAllDelegationsRequest) (*GetAllDelegationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllDelegations not implemented")
+}
+func (UnimplementedDelegateServer) GetAllDelegators(context.Context, *GetAllDelegatorsRequest) (*GetAllDelegatorsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllDelegators not implemented")
+}
+func (UnimplementedDelegateServer) GetDelegatesSummary(context.Context, *GetDelegatesSummaryRequest) (*GetDelegatesSummaryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegatesSummary not implemented")
 }
 func (UnimplementedDelegateServer) mustEmbedUnimplementedDelegateServer() {}
 func (UnimplementedDelegateServer) testEmbeddedByValue()                  {}
@@ -138,6 +194,60 @@ func _Delegate_GetDelegateProfile_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Delegate_GetAllDelegations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllDelegationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetAllDelegations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetAllDelegations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetAllDelegations(ctx, req.(*GetAllDelegationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Delegate_GetAllDelegators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllDelegatorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetAllDelegators(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetAllDelegators_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetAllDelegators(ctx, req.(*GetAllDelegatorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Delegate_GetDelegatesSummary_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDelegatesSummaryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetDelegatesSummary(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetDelegatesSummary_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetDelegatesSummary(ctx, req.(*GetDelegatesSummaryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Delegate_ServiceDesc is the grpc.ServiceDesc for Delegate service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +262,18 @@ var Delegate_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDelegateProfile",
 			Handler:    _Delegate_GetDelegateProfile_Handler,
+		},
+		{
+			MethodName: "GetAllDelegations",
+			Handler:    _Delegate_GetAllDelegations_Handler,
+		},
+		{
+			MethodName: "GetAllDelegators",
+			Handler:    _Delegate_GetAllDelegators_Handler,
+		},
+		{
+			MethodName: "GetDelegatesSummary",
+			Handler:    _Delegate_GetDelegatesSummary_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
