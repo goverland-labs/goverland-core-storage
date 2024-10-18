@@ -440,3 +440,23 @@ func (s *Service) getAllDelegators(_ context.Context, address string) (map[strin
 
 	return result, nil
 }
+
+// getAllDelegators returns count of delegators based on address
+func (s *Service) getDelegatorsCnt(_ context.Context, address string) (int32, error) {
+	cnt, err := s.repo.GetCnt([]Filter{DelegationFilter{Address: address}})
+	if err != nil {
+		return 0, fmt.Errorf("repo.GetByFilters: %w", err)
+	}
+
+	return int32(cnt), nil
+}
+
+// getAllDelegators returns count of delegations based on address
+func (s *Service) getDelegationsCnt(_ context.Context, address string) (int32, error) {
+	cnt, err := s.repo.GetCnt([]Filter{DelegatorFilter{Address: address}})
+	if err != nil {
+		return 0, fmt.Errorf("repo.GetByFilters: %w", err)
+	}
+
+	return int32(cnt), nil
+}

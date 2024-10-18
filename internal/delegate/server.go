@@ -215,7 +215,7 @@ func (s *Server) GetAllDelegators(ctx context.Context, req *storagepb.GetAllDele
 	// delegators [dao_id: [summary, ...]]
 	delegators, err := s.sp.getAllDelegators(ctx, req.GetAddress())
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to get delegations")
+		return nil, status.Error(codes.Internal, "failed to get delegators")
 	}
 
 	if len(delegators) == 0 {
@@ -278,4 +278,25 @@ func (s *Server) GetAllDelegators(ctx context.Context, req *storagepb.GetAllDele
 	response.TotalDelegatorsCount = int32(delegatorsCnt)
 
 	return response, nil
+}
+
+func (s *Server) GetDelegatesSummary(ctx context.Context, req *storagepb.GetDelegatesSummaryRequest) (*storagepb.GetDelegatesSummaryResponse, error) {
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	delegatorsCnt, err := s.sp.getDelegatorsCnt(ctx, req.GetAddress())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get delegators")
+	}
+
+	delegationsCnt, err := s.sp.getDelegationsCnt(ctx, req.GetAddress())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get delegators")
+	}
+
+	return &storagepb.GetDelegatesSummaryResponse{
+		TotalDelegatorsCount:  delegatorsCnt,
+		TotalDelegationsCount: delegationsCnt,
+	}, nil
 }
