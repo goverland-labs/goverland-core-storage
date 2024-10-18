@@ -1,4 +1,4 @@
-package delegates
+package delegate
 
 import (
 	"context"
@@ -65,6 +65,20 @@ func (c *Consumer) handleProposalCreated() events.ProposalHandler {
 	}
 }
 
+func (c *Consumer) handleVotesCreated() events.VotesHandler {
+	return func(payload events.VotesPayload) error {
+		if err := c.service.handleVotesCreated(context.TODO(), convertEventToVoteDetails(payload)); err != nil {
+			log.Error().Err(err).Msg("delegates: process votes created")
+
+			return fmt.Errorf("delegates: process votes created: %w", err)
+		}
+
+		log.Debug().Msgf("delegates: votes created event pack was processed: %d", len(payload))
+
+		return nil
+	}
+}
+
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
 	de, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateUpsert, c.handleDelegates(), client.WithMaxAckPending(maxPendingAckPerConsumer))
@@ -75,7 +89,11 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectProposalCreated, err)
 	}
-	c.consumers = append(c.consumers, de, pr)
+	vc, err := client.NewConsumer(ctx, c.conn, group, events.SubjectVoteCreated, c.handleVotesCreated(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectVoteCreated, err)
+	}
+	c.consumers = append(c.consumers, de, pr, vc)
 
 	log.Info().Msg("delegates consumers is started")
 

@@ -1,7 +1,8 @@
-package delegates
+package delegate
 
 import (
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -114,4 +115,55 @@ func (r *Repo) FindDelegator(daoID, author string) (*Summary, error) {
 	}
 
 	return &si, nil
+}
+
+func (r *Repo) FindDelegatorsByVotes(votes []Vote) ([]summaryByVote, error) {
+	placeholders := make([]string, 0, len(votes))
+	values := make([]any, 0, len(votes)*3)
+	for _, vote := range votes {
+		placeholders = append(placeholders, "(?, ?, ?)")
+		values = append(values, vote.OriginalDaoID, vote.ProposalID, strings.ToLower(vote.Voter))
+	}
+
+	rows, err := r.db.
+		Raw(fmt.Sprintf(`
+				select 
+				    delegates_summary.address_to  delegator,
+					vote_details.voter_address as initiator,
+					dao_ids.internal_id           internal_dao_id,
+					vote_details.proposal_id,
+					delegates_summary.expires_at
+				from (values %s) 
+				    as vote_details (original_dao_id, proposal_id, voter_address)
+				inner join dao_ids 
+				    on dao_ids.original_id = vote_details.original_dao_id
+				inner join delegates_summary 
+				    on uuid(delegates_summary.dao_id) = dao_ids.internal_id
+					and lower(delegates_summary.address_to) = vote_details.voter_address
+		  `, strings.Join(placeholders, ",")),
+			values...,
+		).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+
+	result := make([]summaryByVote, 0, len(votes))
+	defer rows.Close()
+	for rows.Next() {
+		si := summaryByVote{}
+		if err = rows.Scan(
+			&si.AddressFrom,
+			&si.AddressTo,
+			&si.DaoID,
+			&si.ProposalID,
+			&si.ExpiresAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		result = append(result, si)
+	}
+
+	return result, nil
 }
