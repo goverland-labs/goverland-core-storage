@@ -183,7 +183,7 @@ func (r *Repo) GetByFilters(filters []Filter) ([]Summary, error) {
 }
 
 func (r *Repo) GetCnt(filters []Filter) (int64, error) {
-	db := r.db.Model(&Summary{}).Joins("INNER JOIN daos ON daos.id::text = delegates_summary.dao_id")
+	db := r.db.Model(&Summary{})
 	for _, f := range filters {
 		db = f.Apply(db)
 	}
