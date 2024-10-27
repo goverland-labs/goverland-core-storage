@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -33,6 +34,7 @@ import (
 	"github.com/goverland-labs/goverland-core-storage/pkg/grpcsrv"
 	"github.com/goverland-labs/goverland-core-storage/pkg/health"
 	"github.com/goverland-labs/goverland-core-storage/pkg/prometheus"
+	zerionsdk "github.com/goverland-labs/goverland-core-storage/pkg/sdk/zerion"
 )
 
 type Application struct {
@@ -63,6 +65,8 @@ type Application struct {
 	eventsRepo *events.Repo
 
 	statsService *stats.Service
+
+	zerionClient *zerionsdk.Client
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -161,6 +165,8 @@ func (a *Application) initServices() error {
 		return err
 	}
 
+	a.initZerionAPI()
+
 	err = a.initEnsResolver(pb)
 	if err != nil {
 		return fmt.Errorf("init dao: %w", err)
@@ -237,6 +243,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	pcw := dao.NewPopularCategoryWorker(service)
 	avw := dao.NewActiveVotesWorker(service)
 	rw := dao.NewRecommendationWorker(service)
+	tpw := dao.NewTokenPriceWorker(service, a.zerionClient)
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-process-worker", cw.ProcessNew))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-outdated-worker", cw.RemoveOutdated))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-new-voters-worker", mc.ProcessNew))
@@ -244,6 +251,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.manager.AddWorker(process.NewCallbackWorker("dao-active-votes-worker", avw.Process))
 	a.manager.AddWorker(process.NewCallbackWorker("top-dao-cache-worker", topDAOCache.Start))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-recommendations", rw.Process))
+	a.manager.AddWorker(process.NewCallbackWorker("token-price", tpw.Process))
 
 	return nil
 }
@@ -374,4 +382,9 @@ func (a *Application) registerShutdown() {
 	}(a.manager)
 
 	a.manager.AwaitAll()
+}
+
+func (a *Application) initZerionAPI() {
+	zc := zerionsdk.NewClient(a.cfg.Zerion.BaseURL, a.cfg.Zerion.Key, http.DefaultClient)
+	a.zerionClient = zc
 }

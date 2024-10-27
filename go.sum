@@ -50,8 +50,8 @@ github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.6.2 h1:MlshV
 github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.6.2/go.mod h1:YEfWXRljVwjMnbPbolcatOwY6+QtjcKy1Tc4oLWCPA0=
 github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0 h1:Gc0aRk6jL9zJV2Ce5h+bsIl49OJHn3m27IPVeYOJTrE=
 github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0/go.mod h1:jyJGoBmFVY0o6b/3PNy5+bHtKqff6m/kw0eq4g0knBc=
-github.com/goverland-labs/goverland-platform-events v0.3.6 h1:vpGehpJYNfKsNvufNySNiH5bSi18YNd/SFzmjRnGEi4=
-github.com/goverland-labs/goverland-platform-events v0.3.6/go.mod h1:0/131HTR3cue1cDBVIoJ/iwgA+8f5MDQC8mUiqnouzE=
+github.com/goverland-labs/goverland-platform-events v0.3.7 h1:CZJ1TGwayrc2cx05TOWLuvqmCtYul5MRNJUzf16cPuQ=
+github.com/goverland-labs/goverland-platform-events v0.3.7/go.mod h1:0/131HTR3cue1cDBVIoJ/iwgA+8f5MDQC8mUiqnouzE=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 h1:UH//fgunKIs4JdUbpDl1VZCDaL56wXCB/5+wF6uHfaI=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0/go.mod h1:g5qyo/la0ALbONm6Vbp88Yd8NsDy6rZz+RcrMPxvld8=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 h1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=
@@ -155,6 +155,8 @@ golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPh
 golang.org/x/crypto v0.23.0 h1:dIJU/v2J8Mdglj/8rJ6UUOM3Zc9zLZxVZwwxMooUSAI=
 golang.org/x/crypto v0.23.0/go.mod h1:CKFgDieR+mRhux2Lsu27y0fO304Db0wZe70UKqHu0v8=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
+golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa h1:FRnLl4eNAQl8hwxVVC17teOw8kdjVDVAiFMtgUdTSRQ=
+golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa/go.mod h1:zk2irFbV9DP96SEBUUAy67IdHUaZuSnrz1n472HUCLE=
 golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
 golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
 golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=
