@@ -7,4 +7,5 @@ type App struct {
 	Nats        Nats
 	DB          DB
 	InternalAPI InternalAPI
+	Zerion      Zerion
 }

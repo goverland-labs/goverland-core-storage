@@ -14,7 +14,7 @@ require (
 	github.com/goverland-labs/goverland-core-storage/protocol v0.0.0
 	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.6.2
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
-	github.com/goverland-labs/goverland-platform-events v0.3.6
+	github.com/goverland-labs/goverland-platform-events v0.3.7
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/lib/pq v1.10.9
@@ -25,6 +25,7 @@ require (
 	github.com/s-larionov/process-manager v0.0.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
 	golang.org/x/sync v0.7.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.1

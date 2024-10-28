@@ -112,6 +112,7 @@ type Dao struct {
 	// ActiveProposalsIDs the list of active proposals identifiers
 	ActiveProposalsIDs []string `gorm:"serializer:json"`
 	Verified           bool
+	FungibleId         string
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
