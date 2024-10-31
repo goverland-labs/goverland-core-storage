@@ -408,17 +408,18 @@ func (s *Service) handleVotesCreated(ctx context.Context, batch []Vote) error {
 	return nil
 }
 
-// getAllDelegations returns list of delegations grouped by dao
-func (s *Service) getAllDelegations(_ context.Context, address string) (map[string][]Summary, error) {
-	list, err := s.repo.GetByFilters([]Filter{DelegatorFilter{Address: address}})
+// getTopDelegates returns list of delegations grouped by dao
+func (s *Service) getTopDelegates(_ context.Context, address string) (map[string][]Summary, error) {
+	limitPerDao := 5
+	list, err := s.repo.GetTopDelegatesByAddress(address, limitPerDao)
 	if err != nil {
-		return nil, fmt.Errorf("repo.GetByFilters: %w", err)
+		return nil, fmt.Errorf("repo.GetTopDelegatesByAddress: %w", err)
 	}
 
 	result := make(map[string][]Summary, len(list))
 	for _, info := range list {
 		if _, ok := result[info.DaoID]; !ok {
-			result[info.DaoID] = make([]Summary, 0, len(list))
+			result[info.DaoID] = make([]Summary, 0, limitPerDao)
 		}
 
 		result[info.DaoID] = append(result[info.DaoID], info)
@@ -427,17 +428,18 @@ func (s *Service) getAllDelegations(_ context.Context, address string) (map[stri
 	return result, nil
 }
 
-// getAllDelegators returns list of delegators grouped by dao
-func (s *Service) getAllDelegators(_ context.Context, address string) (map[string][]Summary, error) {
-	list, err := s.repo.GetByFilters([]Filter{DelegationFilter{Address: address}})
+// getTopDelegators returns list of first 5 delegators grouped by dao
+func (s *Service) getTopDelegators(_ context.Context, address string) (map[string][]Summary, error) {
+	limitPerDao := 5
+	list, err := s.repo.GetTopDelegatorsByAddress(address, limitPerDao)
 	if err != nil {
-		return nil, fmt.Errorf("repo.GetByFilters: %w", err)
+		return nil, fmt.Errorf("repo.GetTopDelegatorsByAddress: %w", err)
 	}
 
 	result := make(map[string][]Summary, len(list))
 	for _, info := range list {
 		if _, ok := result[info.DaoID]; !ok {
-			result[info.DaoID] = make([]Summary, 0, len(list))
+			result[info.DaoID] = make([]Summary, 0, limitPerDao)
 		}
 
 		result[info.DaoID] = append(result[info.DaoID], info)
@@ -446,9 +448,9 @@ func (s *Service) getAllDelegators(_ context.Context, address string) (map[strin
 	return result, nil
 }
 
-// getAllDelegators returns count of delegators based on address
+// getDelegatorsCnt returns count of delegators based on address
 func (s *Service) getDelegatorsCnt(_ context.Context, address string) (int32, error) {
-	cnt, err := s.repo.GetCnt([]Filter{DelegationFilter{Address: address}})
+	cnt, err := s.repo.GetCnt(DelegateFilter{Address: address})
 	if err != nil {
 		return 0, fmt.Errorf("repo.GetByFilters: %w", err)
 	}
@@ -456,12 +458,20 @@ func (s *Service) getDelegatorsCnt(_ context.Context, address string) (int32, er
 	return int32(cnt), nil
 }
 
-// getAllDelegators returns count of delegations based on address
-func (s *Service) getDelegationsCnt(_ context.Context, address string) (int32, error) {
-	cnt, err := s.repo.GetCnt([]Filter{DelegatorFilter{Address: address}})
+// getDelegatesCnt returns count of delegations based on address
+func (s *Service) getDelegatesCnt(_ context.Context, address string) (int32, error) {
+	cnt, err := s.repo.GetCnt(DelegatorFilter{Address: address})
 	if err != nil {
 		return 0, fmt.Errorf("repo.GetByFilters: %w", err)
 	}
 
 	return int32(cnt), nil
+}
+
+func (s *Service) GetByFilters(filters ...Filter) ([]Summary, error) {
+	return s.repo.GetByFilters(filters...)
+}
+
+func (s *Service) GetCntByFilters(filters ...Filter) (int64, error) {
+	return s.repo.GetCnt(filters...)
 }

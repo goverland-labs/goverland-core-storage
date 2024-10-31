@@ -88,6 +88,9 @@ type Summary struct {
 	LastBlockTimestamp int
 	ExpiresAt          int64
 	CreatedAt          time.Time
+
+	// virtual property
+	MaxCnt int `gorm:"-"`
 }
 
 func (Summary) TableName() string {

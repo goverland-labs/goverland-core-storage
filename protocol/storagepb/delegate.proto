@@ -12,12 +12,16 @@ service Delegate {
   rpc GetDelegates(GetDelegatesRequest) returns (GetDelegatesResponse);
   rpc GetDelegateProfile(GetDelegateProfileRequest) returns (GetDelegateProfileResponse);
 
-  // GetAllDelegations returns list of delegations based on internal data grouped by dao
-  rpc GetAllDelegations(GetAllDelegationsRequest) returns (GetAllDelegationsResponse);
-  // GetAllDelegators returns list of delegators based on internal data grouped by dao
-  rpc GetAllDelegators(GetAllDelegatorsRequest) returns (GetAllDelegatorsResponse);
+  // GetTopDelegates returns list of first 5 addresses of delegations based on internal data grouped by dao
+  rpc GetTopDelegates(GetTopDelegatesRequest) returns (GetTopDelegatesResponse);
+  // GetTopDelegators returns list of first 5 addresses of delegators based on internal data grouped by dao
+  rpc GetTopDelegators(GetTopDelegatorsRequest) returns (GetTopDelegatorsResponse);
   // GetDelegatesSummary returns count of delegators and delegations
-  rpc GetDelegatesSummary(GetDelegatesSummaryRequest) returns (GetDelegatesSummaryResponse);
+  rpc GetDelegationSummary(GetDelegationSummaryRequest) returns (GetDelegationSummaryResponse);
+  // GetDelegatesByDao returns list of delegations based on internal data filtered by params
+  rpc GetDelegatesByDao(GetDelegatesByDaoRequest) returns (GetDelegatesByDaoResponse);
+  // GetDelegatorsByDao returns list of delegations based on internal data filtered by params
+  rpc GetDelegatorsByDao(GetDelegatorsByDaoRequest) returns (GetDelegatorsByDaoResponse);
 }
 
 message GetDelegatesRequest {
@@ -69,7 +73,7 @@ message ProfileDelegateItem {
   double delegated_power = 4;
 }
 
-message GetAllDelegationsRequest {
+message GetTopDelegatesRequest {
   // The account address that initiates the delegation
   string address = 1;
 }
@@ -85,21 +89,23 @@ message DelegationDetails {
   google.protobuf.Timestamp expiration = 4;
 }
 
-message DelegationSummary {
+message DelegatesSummary {
   // Dao details
   DaoInfo dao = 1;
-  // List of delegations
-  repeated DelegationDetails delegations = 2;
+  // List of delegates
+  repeated DelegationDetails delegates = 2;
+  // number of delegations in this DAO
+  int32 total_count = 3;
 }
 
-message GetAllDelegationsResponse {
+message GetTopDelegatesResponse {
   // The number of total delegations in our DB
-  int32 total_delegations_count = 1;
-  // List of delegations grouped by dao and sorted by popularity index
-  repeated DelegationSummary delegations = 2;
+  int32 total_delegates_count = 1;
+  // List of delegates grouped by dao and sorted by popularity index
+  repeated DelegatesSummary list = 2;
 }
 
-message GetAllDelegatorsRequest {
+message GetTopDelegatorsRequest {
   // The account address that initiates the delegation
   string address = 1;
 }
@@ -109,23 +115,55 @@ message DelegatorSummary {
   DaoInfo dao = 1;
   // List of delegators
   repeated DelegationDetails delegators = 2;
+  // number of delegators in this DAO
+  int32 total_count = 3;
 }
 
-message GetAllDelegatorsResponse {
+message GetTopDelegatorsResponse {
   // The number of total delegators in our DB
   int32 total_delegators_count = 1;
   // List of delegators grouped by dao and sorted by popularity index
-  repeated DelegatorSummary delegators = 2;
+  repeated DelegatorSummary list = 2;
 }
 
-message GetDelegatesSummaryRequest {
+message GetDelegationSummaryRequest {
   // The account address that initiates the delegation
   string address = 1;
 }
 
-message GetDelegatesSummaryResponse {
+message GetDelegationSummaryResponse {
   // The number of total delegators in our DB
   int32 total_delegators_count = 1;
-  // The number of total delegations in our DB
-  int32 total_delegations_count = 2;
+  // The number of total delegates in our DB
+  int32 total_delegates_count = 2;
+}
+
+message GetDelegatesByDaoRequest {
+  string dao_id = 1;
+  // The account address that initiates the delegation
+  string address = 2;
+  uint32 limit = 3;
+  optional uint32 offset = 4;
+}
+
+message GetDelegatesByDaoResponse {
+  // List of delegates
+  repeated DelegationDetails delegates = 1;
+  // number of delegations in this DAO
+  int32 total_count = 2;
+}
+
+message GetDelegatorsByDaoRequest {
+  string dao_id = 1;
+  // The account address that initiates the delegation
+  string address = 2;
+  uint32 limit = 3;
+  optional uint32 offset = 4;
+}
+
+message GetDelegatorsByDaoResponse {
+  // List of delegators
+  repeated DelegationDetails delegators = 1;
+  // number of delegators in this DAO
+  int32 total_count = 2;
 }

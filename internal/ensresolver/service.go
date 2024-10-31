@@ -141,6 +141,10 @@ func (s *Service) AddRequests(list []string) {
 }
 
 func (s *Service) GetByAddresses(addresses []string) ([]EnsName, error) {
+	if len(addresses) == 0 {
+		return nil, nil
+	}
+
 	return s.repo.GetByAddresses(addresses)
 }
 

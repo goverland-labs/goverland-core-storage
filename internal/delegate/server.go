@@ -134,19 +134,19 @@ func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDeleg
 	}, nil
 }
 
-func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDelegationsRequest) (*storagepb.GetAllDelegationsResponse, error) {
+func (s *Server) GetTopDelegates(ctx context.Context, req *storagepb.GetTopDelegatesRequest) (*storagepb.GetTopDelegatesResponse, error) {
 	if req.GetAddress() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid address")
 	}
 
 	// delegations [dao_id: [summary, ...]]
-	delegations, err := s.sp.getAllDelegations(ctx, req.GetAddress())
+	delegations, err := s.sp.getTopDelegates(ctx, req.GetAddress())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get delegations")
 	}
 
 	if len(delegations) == 0 {
-		return &storagepb.GetAllDelegationsResponse{}, nil
+		return &storagepb.GetTopDelegatesResponse{}, nil
 	}
 
 	daoIDs := slices.Collect(maps.Keys(delegations))
@@ -168,8 +168,8 @@ func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDel
 		return nil, status.Error(codes.Internal, "failed to resolve ens names")
 	}
 
-	response := &storagepb.GetAllDelegationsResponse{
-		Delegations: make([]*storagepb.DelegationSummary, 0, len(delegations)),
+	response := &storagepb.GetTopDelegatesResponse{
+		List: make([]*storagepb.DelegatesSummary, 0, len(delegations)),
 	}
 
 	delegationsCnt := 0
@@ -181,6 +181,7 @@ func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDel
 		}
 
 		delegationsCnt += len(list)
+		var delegatesInDao int32 = 0
 		dl := make([]*storagepb.DelegationDetails, 0, len(list))
 		for _, d := range list {
 			var expires *timestamppb.Timestamp
@@ -195,31 +196,35 @@ func (s *Server) GetAllDelegations(ctx context.Context, req *storagepb.GetAllDel
 				Expiration:          expires,
 			})
 		}
+		if len(list) > 0 {
+			delegatesInDao += int32(list[0].MaxCnt)
+		}
 
-		response.Delegations = append(response.Delegations, &storagepb.DelegationSummary{
-			Dao:         dao.ConvertDaoToAPI(&di),
-			Delegations: dl,
+		response.List = append(response.List, &storagepb.DelegatesSummary{
+			Dao:        dao.ConvertDaoToAPI(&di),
+			Delegates:  dl,
+			TotalCount: delegatesInDao,
 		})
 	}
 
-	response.TotalDelegationsCount = int32(delegationsCnt)
+	response.TotalDelegatesCount = int32(delegationsCnt)
 
 	return response, nil
 }
 
-func (s *Server) GetAllDelegators(ctx context.Context, req *storagepb.GetAllDelegatorsRequest) (*storagepb.GetAllDelegatorsResponse, error) {
+func (s *Server) GetTopDelegators(ctx context.Context, req *storagepb.GetTopDelegatorsRequest) (*storagepb.GetTopDelegatorsResponse, error) {
 	if req.GetAddress() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid address")
 	}
 
 	// delegators [dao_id: [summary, ...]]
-	delegators, err := s.sp.getAllDelegators(ctx, req.GetAddress())
+	delegators, err := s.sp.getTopDelegators(ctx, req.GetAddress())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get delegators")
 	}
 
 	if len(delegators) == 0 {
-		return &storagepb.GetAllDelegatorsResponse{}, nil
+		return &storagepb.GetTopDelegatorsResponse{}, nil
 	}
 
 	daoIDs := slices.Collect(maps.Keys(delegators))
@@ -241,8 +246,8 @@ func (s *Server) GetAllDelegators(ctx context.Context, req *storagepb.GetAllDele
 		return nil, status.Error(codes.Internal, "failed to resolve ens names")
 	}
 
-	response := &storagepb.GetAllDelegatorsResponse{
-		Delegators: make([]*storagepb.DelegatorSummary, 0, len(delegators)),
+	response := &storagepb.GetTopDelegatorsResponse{
+		List: make([]*storagepb.DelegatorSummary, 0, len(delegators)),
 	}
 
 	delegatorsCnt := 0
@@ -254,6 +259,7 @@ func (s *Server) GetAllDelegators(ctx context.Context, req *storagepb.GetAllDele
 		}
 
 		delegatorsCnt += len(list)
+		var delegatorsInDao int32 = 0
 		dl := make([]*storagepb.DelegationDetails, 0, len(list))
 		for _, d := range list {
 			var expires *timestamppb.Timestamp
@@ -268,10 +274,14 @@ func (s *Server) GetAllDelegators(ctx context.Context, req *storagepb.GetAllDele
 				Expiration:          expires,
 			})
 		}
+		if len(list) > 0 {
+			delegatorsInDao = int32(list[0].MaxCnt)
+		}
 
-		response.Delegators = append(response.Delegators, &storagepb.DelegatorSummary{
+		response.List = append(response.List, &storagepb.DelegatorSummary{
 			Dao:        dao.ConvertDaoToAPI(&di),
 			Delegators: dl,
+			TotalCount: delegatorsInDao,
 		})
 	}
 
@@ -280,7 +290,7 @@ func (s *Server) GetAllDelegators(ctx context.Context, req *storagepb.GetAllDele
 	return response, nil
 }
 
-func (s *Server) GetDelegatesSummary(ctx context.Context, req *storagepb.GetDelegatesSummaryRequest) (*storagepb.GetDelegatesSummaryResponse, error) {
+func (s *Server) GetDelegationSummary(ctx context.Context, req *storagepb.GetDelegationSummaryRequest) (*storagepb.GetDelegationSummaryResponse, error) {
 	if req.GetAddress() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid address")
 	}
@@ -290,13 +300,135 @@ func (s *Server) GetDelegatesSummary(ctx context.Context, req *storagepb.GetDele
 		return nil, status.Error(codes.Internal, "failed to get delegators")
 	}
 
-	delegationsCnt, err := s.sp.getDelegationsCnt(ctx, req.GetAddress())
+	delegationsCnt, err := s.sp.getDelegatesCnt(ctx, req.GetAddress())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get delegators")
 	}
 
-	return &storagepb.GetDelegatesSummaryResponse{
-		TotalDelegatorsCount:  delegatorsCnt,
-		TotalDelegationsCount: delegationsCnt,
+	return &storagepb.GetDelegationSummaryResponse{
+		TotalDelegatorsCount: delegatorsCnt,
+		TotalDelegatesCount:  delegationsCnt,
+	}, nil
+}
+
+func (s *Server) GetDelegatesByDao(_ context.Context, req *storagepb.GetDelegatesByDaoRequest) (*storagepb.GetDelegatesByDaoResponse, error) {
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	filters := []Filter{
+		DelegatorFilter{Address: req.GetAddress()},
+		DaoFilter{ID: req.GetDaoId()},
+	}
+
+	cnt, err := s.sp.GetCntByFilters(filters...)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get cnt by filters")
+	}
+
+	if cnt == 0 {
+		return &storagepb.GetDelegatesByDaoResponse{}, nil
+	}
+
+	filters = append(filters,
+		PageFilter{
+			Limit:  int(req.GetLimit()),
+			Offset: int(req.GetOffset()),
+		},
+		OrderByAddressToFilter{},
+	)
+	list, err := s.sp.GetByFilters(filters...)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get list by filters")
+	}
+
+	addresses := make([]string, 0, len(list))
+	for _, d := range list {
+		addresses = append(addresses, d.AddressTo)
+	}
+	ensNames, err := s.sp.resolveAddressesName(addresses)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to resolve ens names")
+	}
+
+	converted := make([]*storagepb.DelegationDetails, 0, len(list))
+	for _, d := range list {
+		var expires *timestamppb.Timestamp
+		if d.ExpiresAt != 0 {
+			expires = timestamppb.New(time.Unix(d.ExpiresAt, 0))
+		}
+
+		converted = append(converted, &storagepb.DelegationDetails{
+			Address:             d.AddressTo,
+			EnsName:             ensNames[d.AddressTo],
+			PercentOfDelegators: int32(d.Weight),
+			Expiration:          expires,
+		})
+	}
+
+	return &storagepb.GetDelegatesByDaoResponse{
+		Delegates:  converted,
+		TotalCount: int32(cnt),
+	}, nil
+}
+
+func (s *Server) GetDelegatorsByDao(_ context.Context, req *storagepb.GetDelegatorsByDaoRequest) (*storagepb.GetDelegatorsByDaoResponse, error) {
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	filters := []Filter{
+		DelegateFilter{Address: req.GetAddress()},
+		DaoFilter{ID: req.GetDaoId()},
+	}
+
+	cnt, err := s.sp.GetCntByFilters(filters...)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get cnt by filters")
+	}
+
+	if cnt == 0 {
+		return &storagepb.GetDelegatorsByDaoResponse{}, nil
+	}
+
+	filters = append(filters,
+		PageFilter{
+			Limit:  int(req.GetLimit()),
+			Offset: int(req.GetOffset()),
+		},
+		OrderByAddressToFilter{},
+	)
+	list, err := s.sp.GetByFilters(filters...)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get list by filters")
+	}
+
+	addresses := make([]string, 0, len(list))
+	for _, d := range list {
+		addresses = append(addresses, d.AddressFrom)
+	}
+	ensNames, err := s.sp.resolveAddressesName(addresses)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to resolve ens names")
+	}
+
+	converted := make([]*storagepb.DelegationDetails, 0, len(list))
+	for _, d := range list {
+		var expires *timestamppb.Timestamp
+		if d.ExpiresAt != 0 {
+			expires = timestamppb.New(time.Unix(d.ExpiresAt, 0))
+		}
+
+		converted = append(converted, &storagepb.DelegationDetails{
+			Address:             d.AddressFrom,
+			EnsName:             ensNames[d.AddressFrom],
+			PercentOfDelegators: int32(d.Weight),
+			Expiration:          expires,
+		})
+	}
+
+	return &storagepb.GetDelegatorsByDaoResponse{
+		Delegators: converted,
+		TotalCount: int32(cnt),
 	}, nil
 }
