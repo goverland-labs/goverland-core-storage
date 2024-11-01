@@ -93,7 +93,7 @@ message DelegatesSummary {
   // Dao details
   DaoInfo dao = 1;
   // List of delegates
-  repeated DelegationDetails delegates = 2;
+  repeated DelegationDetails list = 2;
   // number of delegations in this DAO
   int32 total_count = 3;
 }
@@ -114,7 +114,7 @@ message DelegatorSummary {
   // Dao details
   DaoInfo dao = 1;
   // List of delegators
-  repeated DelegationDetails delegators = 2;
+  repeated DelegationDetails list = 2;
   // number of delegators in this DAO
   int32 total_count = 3;
 }
@@ -148,7 +148,7 @@ message GetDelegatesByDaoRequest {
 
 message GetDelegatesByDaoResponse {
   // List of delegates
-  repeated DelegationDetails delegates = 1;
+  repeated DelegationDetails list = 1;
   // number of delegations in this DAO
   int32 total_count = 2;
 }
@@ -163,7 +163,7 @@ message GetDelegatorsByDaoRequest {
 
 message GetDelegatorsByDaoResponse {
   // List of delegators
-  repeated DelegationDetails delegators = 1;
+  repeated DelegationDetails list = 1;
   // number of delegators in this DAO
   int32 total_count = 2;
 }

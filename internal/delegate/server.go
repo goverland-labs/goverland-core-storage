@@ -202,7 +202,7 @@ func (s *Server) GetTopDelegates(ctx context.Context, req *storagepb.GetTopDeleg
 
 		response.List = append(response.List, &storagepb.DelegatesSummary{
 			Dao:        dao.ConvertDaoToAPI(&di),
-			Delegates:  dl,
+			List:       dl,
 			TotalCount: delegatesInDao,
 		})
 	}
@@ -280,7 +280,7 @@ func (s *Server) GetTopDelegators(ctx context.Context, req *storagepb.GetTopDele
 
 		response.List = append(response.List, &storagepb.DelegatorSummary{
 			Dao:        dao.ConvertDaoToAPI(&di),
-			Delegators: dl,
+			List:       dl,
 			TotalCount: delegatorsInDao,
 		})
 	}
@@ -367,7 +367,7 @@ func (s *Server) GetDelegatesByDao(_ context.Context, req *storagepb.GetDelegate
 	}
 
 	return &storagepb.GetDelegatesByDaoResponse{
-		Delegates:  converted,
+		List:       converted,
 		TotalCount: int32(cnt),
 	}, nil
 }
@@ -428,7 +428,7 @@ func (s *Server) GetDelegatorsByDao(_ context.Context, req *storagepb.GetDelegat
 	}
 
 	return &storagepb.GetDelegatorsByDaoResponse{
-		Delegators: converted,
+		List:       converted,
 		TotalCount: int32(cnt),
 	}, nil
 }
