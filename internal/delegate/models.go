@@ -43,10 +43,21 @@ func convertToInternal(payload events.DelegatePayload) History {
 	pl, _ := json.Marshal(payload.Delegations)
 
 	delegations := make([]DelegationDetails, 0, len(payload.Delegations.Details))
+
+	totalWeight := 0
+	for _, d := range payload.Delegations.Details {
+		totalWeight += d.Weight
+	}
+
+	normalizeMultiplier := 1
+	if totalWeight <= 100 {
+		normalizeMultiplier = 100
+	}
+
 	for _, d := range payload.Delegations.Details {
 		delegations = append(delegations, DelegationDetails{
 			Address: d.Address,
-			Weight:  d.Weight,
+			Weight:  d.Weight * normalizeMultiplier,
 		})
 	}
 
@@ -77,6 +88,9 @@ type Summary struct {
 	LastBlockTimestamp int
 	ExpiresAt          int64
 	CreatedAt          time.Time
+
+	// virtual property
+	MaxCnt int `gorm:"-"`
 }
 
 func (Summary) TableName() string {

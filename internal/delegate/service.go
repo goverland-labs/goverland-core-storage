@@ -248,7 +248,12 @@ func (s *Service) resolveAddressesName(addresses []string) (map[string]string, e
 
 	res := make(map[string]string, len(ensNames))
 	for _, n := range ensNames {
-		res[n.Address] = n.Name
+		// todo: use lowercase in all places
+		for _, addr := range addresses {
+			if strings.EqualFold(addr, n.Address) {
+				res[addr] = n.Name
+			}
+		}
 	}
 
 	return res, nil
@@ -280,7 +285,7 @@ func (s *Service) handleDelegate(_ context.Context, hr History) error {
 
 		// skip this block due to already processed
 		if bts != 0 && bts >= hr.BlockTimestamp {
-			log.Warn().Msgf("skip processing block %d from %s due to invalid timestamp", hr.BlockNumber, hr.ChainID)
+			log.Warn().Msgf("delegates: skip processing block %d from %s due to invalid timestamp", hr.BlockNumber, hr.ChainID)
 
 			return nil
 		}
@@ -301,8 +306,12 @@ func (s *Service) handleDelegate(_ context.Context, hr History) error {
 			return nil
 		}
 
+		addresses := make([]string, 0, len(hr.Delegations.Details)+1)
+		addresses = append(addresses, hr.AddressFrom)
+
 		for _, info := range hr.Delegations.Details {
-			if err = s.repo.CreateSummary(Summary{
+			addresses = append(addresses, info.Address)
+			if err = s.repo.CreateSummary(tx, Summary{
 				AddressFrom:        strings.ToLower(hr.AddressFrom),
 				AddressTo:          strings.ToLower(info.Address),
 				DaoID:              daoID.String(),
@@ -313,6 +322,10 @@ func (s *Service) handleDelegate(_ context.Context, hr History) error {
 				return fmt.Errorf("createSummary [%s/%s/%s]: %w", hr.AddressFrom, info.Address, daoID.String(), err)
 			}
 		}
+
+		go func(list []string) {
+			s.ensResolver.AddRequests(list)
+		}(addresses)
 
 		return nil
 	}); err != nil {
@@ -393,4 +406,72 @@ func (s *Service) handleVotesCreated(ctx context.Context, batch []Vote) error {
 	}
 
 	return nil
+}
+
+// getTopDelegates returns list of delegations grouped by dao
+func (s *Service) getTopDelegates(_ context.Context, address string) (map[string][]Summary, error) {
+	limitPerDao := 5
+	list, err := s.repo.GetTopDelegatesByAddress(address, limitPerDao)
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetTopDelegatesByAddress: %w", err)
+	}
+
+	result := make(map[string][]Summary, len(list))
+	for _, info := range list {
+		if _, ok := result[info.DaoID]; !ok {
+			result[info.DaoID] = make([]Summary, 0, limitPerDao)
+		}
+
+		result[info.DaoID] = append(result[info.DaoID], info)
+	}
+
+	return result, nil
+}
+
+// getTopDelegators returns list of first 5 delegators grouped by dao
+func (s *Service) getTopDelegators(_ context.Context, address string) (map[string][]Summary, error) {
+	limitPerDao := 5
+	list, err := s.repo.GetTopDelegatorsByAddress(address, limitPerDao)
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetTopDelegatorsByAddress: %w", err)
+	}
+
+	result := make(map[string][]Summary, len(list))
+	for _, info := range list {
+		if _, ok := result[info.DaoID]; !ok {
+			result[info.DaoID] = make([]Summary, 0, limitPerDao)
+		}
+
+		result[info.DaoID] = append(result[info.DaoID], info)
+	}
+
+	return result, nil
+}
+
+// getDelegatorsCnt returns count of delegators based on address
+func (s *Service) getDelegatorsCnt(_ context.Context, address string) (int32, error) {
+	cnt, err := s.repo.GetCnt(DelegateFilter{Address: address})
+	if err != nil {
+		return 0, fmt.Errorf("repo.GetByFilters: %w", err)
+	}
+
+	return int32(cnt), nil
+}
+
+// getDelegatesCnt returns count of delegations based on address
+func (s *Service) getDelegatesCnt(_ context.Context, address string) (int32, error) {
+	cnt, err := s.repo.GetCnt(DelegatorFilter{Address: address})
+	if err != nil {
+		return 0, fmt.Errorf("repo.GetByFilters: %w", err)
+	}
+
+	return int32(cnt), nil
+}
+
+func (s *Service) GetByFilters(filters ...Filter) ([]Summary, error) {
+	return s.repo.GetByFilters(filters...)
+}
+
+func (s *Service) GetCntByFilters(filters ...Filter) (int64, error) {
+	return s.repo.GetCnt(filters...)
 }

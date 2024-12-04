@@ -21,8 +21,8 @@ func (r *Repo) CreateHistory(tx *gorm.DB, dd History) error {
 }
 
 // CreateSummary creates one summary info
-func (r *Repo) CreateSummary(sm Summary) error {
-	return r.db.Create(&sm).Error
+func (r *Repo) CreateSummary(tx *gorm.DB, sm Summary) error {
+	return tx.Create(&sm).Error
 }
 
 func (r *Repo) CallInTx(cb func(tx *gorm.DB) error) error {
@@ -166,4 +166,130 @@ func (r *Repo) FindDelegatorsByVotes(votes []Vote) ([]summaryByVote, error) {
 	}
 
 	return result, nil
+}
+
+// fixme: check it
+func (r *Repo) GetTopDelegatorsByAddress(address string, limit int) ([]Summary, error) {
+	rows, err := r.db.
+		Raw(`
+				SELECT
+					dao_id,
+					address_from,             
+					weight,
+					expires_at,
+					max_cnt
+				FROM (SELECT 
+				          	dao_id,
+							address_from,             
+							weight,
+             				expires_at,
+							ROW_NUMBER() OVER (PARTITION BY dao_id) row_number,
+             				count(*) over (partition by dao_id) max_cnt
+					 FROM delegates_summary
+					 WHERE lower(address_to) = lower(?) ) dataset
+				WHERE dataset.row_number <= ?
+		  `,
+			address,
+			limit,
+		).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+
+	result := make([]Summary, 0, limit*10)
+	defer rows.Close()
+	for rows.Next() {
+		si := Summary{AddressTo: address}
+		if err = rows.Scan(
+			&si.DaoID,
+			&si.AddressFrom,
+			&si.Weight,
+			&si.ExpiresAt,
+			&si.MaxCnt,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		result = append(result, si)
+	}
+
+	return result, nil
+}
+
+// fixme: check it
+func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, error) {
+	rows, err := r.db.
+		Raw(`
+				SELECT 		
+					dao_id,
+					address_to,             
+					weight,
+					expires_at,
+					max_cnt
+				FROM (SELECT 
+				          	dao_id,
+							address_to,             
+							weight,
+             				expires_at,
+							ROW_NUMBER() OVER (PARTITION BY dao_id) row_number,
+             				count(*) over (partition by dao_id) max_cnt
+					 FROM delegates_summary
+					 WHERE lower(address_from) = lower(?) ) dataset
+				WHERE dataset.row_number <= ?
+		  `,
+			address,
+			limit,
+		).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+
+	result := make([]Summary, 0, limit*10)
+	defer rows.Close()
+	for rows.Next() {
+		si := Summary{AddressFrom: address}
+		if err = rows.Scan(
+			&si.DaoID,
+			&si.AddressTo,
+			&si.Weight,
+			&si.ExpiresAt,
+			&si.MaxCnt,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		result = append(result, si)
+	}
+
+	return result, nil
+}
+
+func (r *Repo) GetByFilters(filters ...Filter) ([]Summary, error) {
+	db := r.db.Model(&Summary{})
+	for _, f := range filters {
+		db = f.Apply(db)
+	}
+
+	var list []Summary
+	if err := db.Find(&list).Error; err != nil {
+		return nil, fmt.Errorf("db.Find: %w", err)
+	}
+
+	return list, nil
+}
+
+func (r *Repo) GetCnt(filters ...Filter) (int64, error) {
+	db := r.db.Model(&Summary{})
+	for _, f := range filters {
+		db = f.Apply(db)
+	}
+
+	var cnt int64
+	if err := db.Count(&cnt).Error; err != nil {
+		return cnt, fmt.Errorf("db.Count: %w", err)
+	}
+
+	return cnt, nil
 }

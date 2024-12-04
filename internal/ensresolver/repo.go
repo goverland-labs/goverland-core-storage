@@ -1,6 +1,7 @@
 package ensresolver
 
 import (
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -50,7 +51,12 @@ func (r *Repo) BatchCreate(data []EnsName) []EnsName {
 }
 
 func (r *Repo) GetByAddresses(addresses []string) ([]EnsName, error) {
-	db := r.db.Model(&EnsName{}).Where("address IN ?", addresses)
+	args := make([]string, 0, len(addresses))
+	for _, addr := range addresses {
+		args = append(args, strings.ToLower(addr))
+	}
+
+	db := r.db.Model(&EnsName{}).Where("lower(address) IN ?", args)
 	var list []EnsName
 	err := db.Find(&list).Error
 

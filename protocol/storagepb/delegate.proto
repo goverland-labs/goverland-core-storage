@@ -3,12 +3,25 @@ syntax = "proto3";
 package storagepb;
 
 import "google/protobuf/timestamp.proto";
+import "storagepb/dao.proto";
 
-option go_package = "./storagepb";
+option go_package = ".;storagepb";
 
 service Delegate {
+  // GetDelegates returns list of delegates get from Snapshot
   rpc GetDelegates(GetDelegatesRequest) returns (GetDelegatesResponse);
   rpc GetDelegateProfile(GetDelegateProfileRequest) returns (GetDelegateProfileResponse);
+
+  // GetTopDelegates returns list of first 5 addresses of delegations based on internal data grouped by dao
+  rpc GetTopDelegates(GetTopDelegatesRequest) returns (GetTopDelegatesResponse);
+  // GetTopDelegators returns list of first 5 addresses of delegators based on internal data grouped by dao
+  rpc GetTopDelegators(GetTopDelegatorsRequest) returns (GetTopDelegatorsResponse);
+  // GetDelegatesSummary returns count of delegators and delegations
+  rpc GetDelegationSummary(GetDelegationSummaryRequest) returns (GetDelegationSummaryResponse);
+  // GetDelegatesByDao returns list of delegations based on internal data filtered by params
+  rpc GetDelegatesByDao(GetDelegatesByDaoRequest) returns (GetDelegatesByDaoResponse);
+  // GetDelegatorsByDao returns list of delegations based on internal data filtered by params
+  rpc GetDelegatorsByDao(GetDelegatorsByDaoRequest) returns (GetDelegatorsByDaoResponse);
 }
 
 message GetDelegatesRequest {
@@ -58,4 +71,99 @@ message ProfileDelegateItem {
   string ens_name = 2;
   double weight = 3;
   double delegated_power = 4;
+}
+
+message GetTopDelegatesRequest {
+  // The account address that initiates the delegation
+  string address = 1;
+}
+
+message DelegationDetails {
+  // The delegation address
+  string address = 1;
+  // Resolved ens name
+  string ens_name = 2;
+  // Percentage of delegation
+  int32 percent_of_delegators = 3;
+  // Expires at date. If 0 the expiration is not set
+  google.protobuf.Timestamp expiration = 4;
+}
+
+message DelegatesSummary {
+  // Dao details
+  DaoInfo dao = 1;
+  // List of delegates
+  repeated DelegationDetails list = 2;
+  // number of delegations in this DAO
+  int32 total_count = 3;
+}
+
+message GetTopDelegatesResponse {
+  // The number of total delegations in our DB
+  int32 total_delegates_count = 1;
+  // List of delegates grouped by dao and sorted by popularity index
+  repeated DelegatesSummary list = 2;
+}
+
+message GetTopDelegatorsRequest {
+  // The account address that initiates the delegation
+  string address = 1;
+}
+
+message DelegatorSummary {
+  // Dao details
+  DaoInfo dao = 1;
+  // List of delegators
+  repeated DelegationDetails list = 2;
+  // number of delegators in this DAO
+  int32 total_count = 3;
+}
+
+message GetTopDelegatorsResponse {
+  // The number of total delegators in our DB
+  int32 total_delegators_count = 1;
+  // List of delegators grouped by dao and sorted by popularity index
+  repeated DelegatorSummary list = 2;
+}
+
+message GetDelegationSummaryRequest {
+  // The account address that initiates the delegation
+  string address = 1;
+}
+
+message GetDelegationSummaryResponse {
+  // The number of total delegators in our DB
+  int32 total_delegators_count = 1;
+  // The number of total delegates in our DB
+  int32 total_delegates_count = 2;
+}
+
+message GetDelegatesByDaoRequest {
+  string dao_id = 1;
+  // The account address that initiates the delegation
+  string address = 2;
+  uint32 limit = 3;
+  optional uint32 offset = 4;
+}
+
+message GetDelegatesByDaoResponse {
+  // List of delegates
+  repeated DelegationDetails list = 1;
+  // number of delegations in this DAO
+  int32 total_count = 2;
+}
+
+message GetDelegatorsByDaoRequest {
+  string dao_id = 1;
+  // The account address that initiates the delegation
+  string address = 2;
+  uint32 limit = 3;
+  optional uint32 offset = 4;
+}
+
+message GetDelegatorsByDaoResponse {
+  // List of delegators
+  repeated DelegationDetails list = 1;
+  // number of delegators in this DAO
+  int32 total_count = 2;
 }

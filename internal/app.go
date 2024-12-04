@@ -353,7 +353,7 @@ func (a *Application) initAPI() error {
 	storagepb.RegisterVoteServer(srv, vote.NewServer(a.voteService))
 	storagepb.RegisterEnsServer(srv, ensresolver.NewServer(a.ensService))
 	storagepb.RegisterStatsServer(srv, stats.NewServer(a.statsService))
-	storagepb.RegisterDelegateServer(srv, delegate.NewServer(a.delegateService))
+	storagepb.RegisterDelegateServer(srv, delegate.NewServer(a.delegateService, a.daoService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 
