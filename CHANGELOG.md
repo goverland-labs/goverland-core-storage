@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] - 2024-12-04
+
 ### Added
 - Implement getting delegations by address
 - Implement getting delegators by address
