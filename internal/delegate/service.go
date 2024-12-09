@@ -259,7 +259,7 @@ func (s *Service) resolveAddressesName(addresses []string) (map[string]string, e
 	return res, nil
 }
 
-func (s *Service) handleDelegate(_ context.Context, hr History) error {
+func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 	if err := s.repo.CallInTx(func(tx *gorm.DB) error {
 		if hr.OriginalSpaceID == "" {
 			log.Warn().Msgf("skip processing block %d from %s cause dao id is empty", hr.BlockNumber, hr.ChainID)
@@ -320,6 +320,18 @@ func (s *Service) handleDelegate(_ context.Context, hr History) error {
 				ExpiresAt:          int64(hr.Delegations.Expiration),
 			}); err != nil {
 				return fmt.Errorf("createSummary [%s/%s/%s]: %w", hr.AddressFrom, info.Address, daoID.String(), err)
+			}
+		}
+
+		for _, info := range hr.Delegations.Details {
+			event := events.DelegatePayload{
+				Initiator: strings.ToLower(hr.AddressFrom),
+				Delegator: strings.ToLower(info.Address),
+				DaoID:     daoID,
+			}
+
+			if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateCreated, event); err != nil {
+				log.Warn().Err(err).Msgf("failed to publish delegate payload")
 			}
 		}
 
