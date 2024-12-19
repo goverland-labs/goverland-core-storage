@@ -111,6 +111,12 @@ func (s *Server) Validate(ctx context.Context, req *storagepb.ValidateRequest) (
 		Ok:              validateResp.OK,
 		VotingPower:     validateResp.VotingPower,
 		ValidationError: validationError,
+		VoteStatus: &storagepb.VoteStatus{
+			Voted: validateResp.VoteStatus.Voted,
+			Choice: &protoany.Any{
+				Value: validateResp.VoteStatus.Choice,
+			},
+		},
 	}, nil
 }
 

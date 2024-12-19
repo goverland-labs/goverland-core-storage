@@ -12,6 +12,12 @@ type ValidateResponse struct {
 
 	VotingPower     float64
 	ValidationError *ValidationError
+	VoteStatus      VoteStatus
+}
+
+type VoteStatus struct {
+	Voted  bool
+	Choice json.RawMessage
 }
 
 type ValidationError struct {

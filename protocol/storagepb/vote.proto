@@ -56,6 +56,12 @@ message ValidateResponse {
 
   double voting_power = 2;
   optional ValidationError validation_error = 3;
+  VoteStatus vote_status = 4;
+}
+
+message VoteStatus {
+  bool voted = 1;
+  google.protobuf.Any choice = 2;
 }
 
 message ValidationError {

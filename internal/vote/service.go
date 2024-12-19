@@ -126,10 +126,27 @@ func (s *Service) Validate(ctx context.Context, req ValidateRequest) (ValidateRe
 		}
 	}
 
+	voted, err := s.repo.GetByFilters([]Filter{
+		VoterFilter{Voter: req.Voter},
+		ProposalIDsFilter{ProposalIDs: []string{req.Proposal}},
+	}, 1, 0, "")
+	if err != nil {
+		return ValidateResponse{}, fmt.Errorf("get by filters: %w", err)
+	}
+
+	var votedStatus VoteStatus
+	if len(voted.Votes) > 0 {
+		votedStatus = VoteStatus{
+			Voted:  true,
+			Choice: voted.Votes[0].Choice,
+		}
+	}
+
 	return ValidateResponse{
 		OK:              resp.GetOk(),
 		VotingPower:     resp.GetVotingPower(),
 		ValidationError: validationError,
+		VoteStatus:      votedStatus,
 	}, nil
 }
 
