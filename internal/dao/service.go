@@ -238,9 +238,7 @@ func (s *Service) getFungibleId(strategies Strategies) string {
 			return ""
 		} else if l != nil && len(l.List) == 1 {
 			data := l.List[0]
-			if &data.Attributes != nil && &data.Attributes.MarketData != nil && &data.Attributes.MarketData.Price != nil {
-				return data.ID
-			}
+			return data.ID
 		}
 	}
 
