@@ -16,6 +16,7 @@ import (
 	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
 
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
+	"github.com/goverland-labs/goverland-core-storage/pkg/sdk/zerion"
 )
 
 const (
@@ -75,19 +76,21 @@ type Service struct {
 	idProvider DaoIDProvider
 	proposals  ProposalProvider
 
-	topDAOCache *TopDAOCache
+	topDAOCache  *TopDAOCache
+	zerionClient *zerion.Client
 }
 
-func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache) (*Service, error) {
+func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, zerionClient *zerion.Client) (*Service, error) {
 	return &Service{
-		repo:        r,
-		uniqueRepo:  ur,
-		events:      p,
-		idProvider:  ip,
-		proposals:   pp,
-		daoIds:      make(map[string]uuid.UUID),
-		daoMu:       sync.RWMutex{},
-		topDAOCache: topDAOCache,
+		repo:         r,
+		uniqueRepo:   ur,
+		events:       p,
+		idProvider:   ip,
+		proposals:    pp,
+		daoIds:       make(map[string]uuid.UUID),
+		daoMu:        sync.RWMutex{},
+		topDAOCache:  topDAOCache,
+		zerionClient: zerionClient,
 	}, nil
 }
 
@@ -128,6 +131,11 @@ func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
 }
 
 func (s *Service) processNew(ctx context.Context, dao Dao) error {
+	if dao.Verified {
+		if fi := s.getFungibleId(dao.Strategies); fi != "" {
+			dao.FungibleId = fi
+		}
+	}
 	if err := s.repo.Create(dao); err != nil {
 		return fmt.Errorf("can't create dao: %w", err)
 	}
@@ -154,7 +162,15 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 
 func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	equal := compare(new, existed)
+	fi := ""
+	if new.Verified && existed.FungibleId == "" {
+		fi = s.getFungibleId(new.Strategies)
+		existed.FungibleId = fi
+	}
 	if equal {
+		if fi != "" {
+			_ = s.repo.Update(existed)
+		}
 		return nil
 	}
 
@@ -162,6 +178,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	new.ActivitySince = existed.ActivitySince
 	new.PopularityIndex = existed.PopularityIndex
 	new.Categories = enrichWithSystemCategories(new.Categories, existed.Categories)
+	new.FungibleId = existed.FungibleId
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
@@ -200,11 +217,42 @@ func enrichWithSystemCategories(list, existed []string) []string {
 	return list
 }
 
+func (s *Service) getFungibleId(strategies Strategies) string {
+	address := ""
+	for _, strategy := range strategies {
+		if strategy.Name == "erc20-balance-of" {
+			adr := strategy.Params["address"].(string)
+			if adr != "" {
+				if address != "" {
+					return ""
+				} else {
+					address = adr
+				}
+			}
+		}
+	}
+	if address != "" {
+		l, err := s.zerionClient.GetFungibleList("", address)
+		if err != nil {
+			log.Error().Err(err).Msg("zerion client error")
+			return ""
+		} else if l != nil && len(l.List) == 1 {
+			data := l.List[0]
+			if &data.Attributes != nil && &data.Attributes.MarketData != nil && &data.Attributes.MarketData.Price != nil {
+				return data.ID
+			}
+		}
+	}
+
+	return ""
+}
+
 func compare(d1, d2 Dao) bool {
 	d1.CreatedAt = d2.CreatedAt
 	d1.UpdatedAt = d2.UpdatedAt
 	d1.ActivitySince = d2.ActivitySince
 	d1.PopularityIndex = d2.PopularityIndex
+	d1.FungibleId = d2.FungibleId
 
 	return reflect.DeepEqual(d1, d2)
 }

@@ -24,14 +24,15 @@ func NewClient(apiURL, authKey string, client *http.Client) *Client {
 	}
 }
 
-func (c *Client) GetTokenPrices(ids string) (*FungibleList, error) {
+func (c *Client) GetFungibleList(ids string, address string) (*FungibleList, error) {
 	req, err := c.buildRequest(
 		http.MethodGet,
 		"fungibles/",
 		"fungibles-list",
 		map[string]string{
-			"currency":             "usd",
-			"filter[fungible_ids]": ids,
+			"currency":                       "usd",
+			"filter[fungible_ids]":           ids,
+			"filter[implementation_address]": address,
 		},
 	)
 	log.Info().Msgf("request %v", req)
@@ -70,7 +71,9 @@ func (c *Client) buildRequest(method, subURL, alias string, params map[string]st
 
 	q := req.URL.Query()
 	for k, v := range params {
-		q.Add(k, v)
+		if v != "" {
+			q.Add(k, v)
+		}
 	}
 	req.URL.RawQuery = q.Encode()
 

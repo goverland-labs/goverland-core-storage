@@ -43,14 +43,24 @@ func (w *TokenPriceWorker) Process(ctx context.Context) error {
 			}
 		}
 		if len(fm) > 0 {
-			l, err := w.zerionClient.GetTokenPrices(strings.Join(maps.Keys(fm), ","))
-			if err != nil {
-				log.Error().Err(err).Msg("zerion client error")
+			const MAX_IDS_BY_REQUEST = 100
+			fids := maps.Keys(fm)
+			idsCount := len(fids)
+			for idsCount > 0 {
+				ids := fids
+				if idsCount > MAX_IDS_BY_REQUEST {
+					ids = fids[:MAX_IDS_BY_REQUEST]
+					fids = fids[MAX_IDS_BY_REQUEST:]
+				}
+				idsCount = idsCount - MAX_IDS_BY_REQUEST
+				l, err := w.zerionClient.GetFungibleList(strings.Join(ids, ","), "")
+				if err != nil {
+					log.Error().Err(err).Msg("zerion client error")
+				}
+				if err := w.service.events.PublishJSON(ctx, coreevents.DaoTokenPriceUpdated, convertToCorePaylod(l.List, fm)); err != nil {
+					log.Error().Err(err).Msgf("publish token prices event")
+				}
 			}
-			if err := w.service.events.PublishJSON(ctx, coreevents.DaoTokenPriceUpdated, convertToCorePaylod(l.List, fm)); err != nil {
-				log.Error().Err(err).Msgf("publish token prices event")
-			}
-
 		}
 		select {
 		case <-ctx.Done():

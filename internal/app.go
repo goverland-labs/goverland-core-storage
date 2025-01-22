@@ -223,7 +223,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 
 	topDAOCache := dao.NewTopDAOCache(a.daoRepo)
 
-	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache)
+	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache, a.zerionClient)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}

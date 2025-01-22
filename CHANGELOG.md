@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.3] - 2025-01-23
+
+### Added
+- Logic to check if verified dao has fungible id in zerion
+
 ## [0.4.2] - 2024-12-24
 
 ### Added
