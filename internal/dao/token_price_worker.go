@@ -14,6 +14,7 @@ import (
 
 const (
 	tokenPriceCheckDelay = 24 * time.Hour
+	MAX_IDS_BY_REQUEST   = 100
 )
 
 type TokenPriceWorker struct {
@@ -43,7 +44,6 @@ func (w *TokenPriceWorker) Process(ctx context.Context) error {
 			}
 		}
 		if len(fm) > 0 {
-			const MAX_IDS_BY_REQUEST = 100
 			fids := maps.Keys(fm)
 			idsCount := len(fids)
 			for idsCount > 0 {

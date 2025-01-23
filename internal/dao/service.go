@@ -220,26 +220,31 @@ func enrichWithSystemCategories(list, existed []string) []string {
 func (s *Service) getFungibleId(strategies Strategies) string {
 	address := ""
 	for _, strategy := range strategies {
-		if strategy.Name == "erc20-balance-of" {
-			adr := strategy.Params["address"].(string)
-			if adr != "" {
-				if address != "" {
-					return ""
-				} else {
-					address = adr
-				}
-			}
+		if strategy.Name != "erc20-balance-of" {
+			continue
 		}
-	}
-	if address != "" {
-		l, err := s.zerionClient.GetFungibleList("", address)
-		if err != nil {
-			log.Error().Err(err).Msg("zerion client error")
+		adr := strategy.Params["address"].(string)
+		if adr == "" {
+			continue
+		}
+		if address != "" && address != adr {
 			return ""
-		} else if l != nil && len(l.List) == 1 {
-			data := l.List[0]
-			return data.ID
 		}
+		address = adr
+	}
+
+	if address == "" {
+		return ""
+	}
+
+	l, err := s.zerionClient.GetFungibleList("", address)
+	if err != nil {
+		log.Error().Err(err).Msg("zerion client error")
+		return ""
+	}
+	if l != nil && len(l.List) == 1 {
+		data := l.List[0]
+		return data.ID
 	}
 
 	return ""
