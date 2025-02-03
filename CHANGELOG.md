@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.4] - 2025-02-03
+
+### Added
+- Logic to get token info and token chart from zerion
+
 ## [0.4.3] - 2025-01-23
 
 ### Added

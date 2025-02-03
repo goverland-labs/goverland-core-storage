@@ -69,6 +69,9 @@ func (p *Point) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &v); err != nil {
 		return fmt.Errorf("failed to parse data: %w", err)
 	}
+	if len(v) != 2 {
+		return fmt.Errorf("incorrect elements in point object %v", v)
+	}
 	p.Time = time.Unix(int64(v[0].(float64)), 0)
 	p.Price = v[1].(float64)
 	return nil

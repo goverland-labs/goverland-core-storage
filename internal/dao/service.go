@@ -571,7 +571,6 @@ func (s *Service) GetTokenInfo(id uuid.UUID) (*zerion.FungibleData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token info: %w", err)
 	}
-	log.Info().Msgf("data: %v", data)
 
 	return data, nil
 }
