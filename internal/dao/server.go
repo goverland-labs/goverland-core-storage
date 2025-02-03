@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-
 	"github.com/google/uuid"
+	"github.com/goverland-labs/goverland-core-storage/pkg/sdk/zerion"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -181,6 +181,7 @@ func ConvertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
 		Verified:           dao.Verified,
 		PopularityIndex:    dao.PopularityIndex,
 		ActiveProposalsIds: dao.ActiveProposalsIDs,
+		TokenExist:         dao.FungibleId != "",
 		// TODO: parentID
 	}
 }
@@ -247,4 +248,62 @@ func (s *Server) GetRecommendationsList(
 	}
 
 	return resp, nil
+}
+
+func (s *Server) GetTokenInfo(_ context.Context, req *storagepb.TokenInfoRequest) (*storagepb.TokenInfoResponse, error) {
+	id, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
+	}
+
+	data, err := s.sp.GetTokenInfo(id)
+	if err != nil {
+		log.Error().Err(err).Msgf("get token info: %+v", req)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &storagepb.TokenInfoResponse{
+		Name:                  data.Attributes.Name,
+		Symbol:                data.Attributes.Symbol,
+		TotalSupply:           data.Attributes.MarketData.TotalSupply,
+		CirculatingSupply:     data.Attributes.MarketData.CirculatingSupply,
+		MarketCap:             data.Attributes.MarketData.MarketCap,
+		FullyDilutedValuation: data.Attributes.MarketData.FullyDilutedValuation,
+		Price:                 data.Attributes.MarketData.Price,
+	}, nil
+}
+
+func (s *Server) GetTokenChart(_ context.Context, req *storagepb.TokenChartRequest) (*storagepb.TokenChartResponse, error) {
+	id, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
+	}
+	data, err := s.sp.GetTokenChart(id, req.GetPeriod())
+	if err != nil {
+		log.Error().Err(err).Msgf("get token chart: %+v", req)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return convertChartToAPI(data), nil
+}
+
+func convertChartToAPI(data *zerion.ChartData) *storagepb.TokenChartResponse {
+	var pc float64
+	if data.ChartAttributes.Stats.First != 0 {
+		pc = (data.ChartAttributes.Stats.Last - data.ChartAttributes.Stats.First) / data.ChartAttributes.Stats.First
+	} else {
+		pc = 0
+	}
+
+	points := make([]*storagepb.Point, len(data.ChartAttributes.Points))
+	for i, info := range data.ChartAttributes.Points {
+		points[i] = &storagepb.Point{
+			Time:  timestamppb.New(info.Time),
+			Price: info.Price,
+		}
+	}
+
+	return &storagepb.TokenChartResponse{
+		Price:        data.ChartAttributes.Stats.Last,
+		PriceChanges: pc,
+		Points:       points,
+	}
 }

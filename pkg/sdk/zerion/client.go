@@ -25,7 +25,7 @@ func NewClient(apiURL, authKey string, client *http.Client) *Client {
 }
 
 func (c *Client) GetFungibleList(ids string, address string) (*FungibleList, error) {
-	req, err := c.buildRequest(
+	resp, err := c.getResponse(
 		http.MethodGet,
 		"fungibles/",
 		"fungibles-list",
@@ -35,31 +35,61 @@ func (c *Client) GetFungibleList(ids string, address string) (*FungibleList, err
 			"filter[implementation_address]": address,
 		},
 	)
-	log.Info().Msgf("request %v", req)
 	if err != nil {
-		return nil, fmt.Errorf("build request: %w", err)
-	}
-
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("request do: %w", err)
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("read body: %w", err)
+		return nil, fmt.Errorf("get response: %w", err)
 	}
 
 	var list FungibleList
-	if err = json.Unmarshal(body, &list); err != nil {
+	if err = json.Unmarshal(resp, &list); err != nil {
 		return nil, fmt.Errorf("unmarshal body: %w", err)
 	}
 
 	return &list, nil
 }
 
-func (c *Client) buildRequest(method, subURL, alias string, params map[string]string) (*http.Request, error) {
+func (c *Client) GetFungibleData(id string) (*FungibleData, error) {
+	resp, err := c.getResponse(
+		http.MethodGet,
+		fmt.Sprintf("fungibles/%s/", id),
+		"fungible-data",
+		map[string]string{
+			"currency": "usd",
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get response: %w", err)
+	}
+
+	var fungible Fungible
+	if err = json.Unmarshal(resp, &fungible); err != nil {
+		return nil, fmt.Errorf("unmarshal body: %w", err)
+	}
+
+	return &fungible.FungibleData, nil
+}
+
+func (c *Client) GetFungibleChart(id string, period string) (*ChartData, error) {
+	resp, err := c.getResponse(
+		http.MethodGet,
+		fmt.Sprintf("fungibles/%s/charts/%s/", id, period),
+		"fungible-chart",
+		map[string]string{
+			"currency": "usd",
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get response: %w", err)
+	}
+
+	var chart Chart
+	if err = json.Unmarshal(resp, &chart); err != nil {
+		return nil, fmt.Errorf("unmarshal body: %w", err)
+	}
+
+	return &chart.ChartData, nil
+}
+
+func (c *Client) getResponse(method, subURL, alias string, params map[string]string) ([]byte, error) {
 	req, err := http.NewRequest(
 		method,
 		fmt.Sprintf("%s/%s", c.apiURL, subURL),
@@ -79,7 +109,22 @@ func (c *Client) buildRequest(method, subURL, alias string, params map[string]st
 
 	req.Header.Add("alias", alias)
 
-	return c.withAuth(req), nil
+	request := c.withAuth(req)
+
+	log.Info().Msgf("request %v", request)
+
+	resp, err := c.client.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("request do: %w", err)
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read body: %w", err)
+	}
+
+	return body, err
 }
 
 func (c *Client) withAuth(req *http.Request) *http.Request {

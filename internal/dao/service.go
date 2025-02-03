@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"reflect"
 	"slices"
 	"sync"
@@ -553,4 +555,40 @@ func (s *Service) syncRecommendations(_ context.Context) error {
 	s.recommendationsMu.Unlock()
 
 	return nil
+}
+
+func (s *Service) GetTokenInfo(id uuid.UUID) (*zerion.FungibleData, error) {
+	dao, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get dao: %w", err)
+	}
+
+	if dao.FungibleId == "" {
+		return nil, status.Error(codes.Internal, "can't receive the information from Zerion")
+	}
+
+	data, err := s.zerionClient.GetFungibleData(dao.FungibleId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token info: %w", err)
+	}
+
+	return data, nil
+}
+
+func (s *Service) GetTokenChart(id uuid.UUID, period string) (*zerion.ChartData, error) {
+	dao, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get dao: %w", err)
+	}
+
+	if dao.FungibleId == "" {
+		return nil, status.Error(codes.Internal, "can't receive the information from Zerion")
+	}
+
+	data, err := s.zerionClient.GetFungibleChart(dao.FungibleId, period)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token chart: %w", err)
+	}
+
+	return data, nil
 }
