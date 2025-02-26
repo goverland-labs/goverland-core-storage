@@ -14,7 +14,7 @@ require (
 	github.com/goverland-labs/goverland-core-storage/protocol v0.0.0
 	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.6.2
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
-	github.com/goverland-labs/goverland-platform-events v0.3.8
+	github.com/goverland-labs/goverland-platform-events v0.3.9-0.20250226183937-0b7a5bc62c3e
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/lib/pq v1.10.9
@@ -34,6 +34,7 @@ require (
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -57,7 +58,7 @@ require (
 	github.com/smartystreets/goconvey v1.8.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
