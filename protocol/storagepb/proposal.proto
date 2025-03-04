@@ -47,6 +47,7 @@ message ProposalInfo {
   uint64 votes = 28;
   repeated ProposalTimelineItem timeline = 29;
   string ens_name = 30;
+  bool spam = 31;
 }
 
 message ProposalTimelineItem {
