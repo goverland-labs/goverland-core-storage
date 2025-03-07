@@ -3,8 +3,10 @@ package vote
 import (
 	"errors"
 	"fmt"
-	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 	"strings"
+	"time"
+
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -109,6 +111,19 @@ func (r *Repo) GetByFilters(filters []Filter, limit int, offset int, firstVoter 
 		TotalCount: totals.Votes,
 		TotalVp:    totals.Vp,
 	}, nil
+}
+
+func (r *Repo) GetLastItems(lastUpdatedAt time.Time, limit int) ([]Vote, error) {
+	var list []Vote
+
+	err := r.db.
+		Where("updated_at > ?", lastUpdatedAt).
+		Order("updated_at asc").
+		Limit(limit).
+		Find(&list).
+		Error
+
+	return list, err
 }
 
 func (r *Repo) UpdateVotes(list []ResolvedAddress) error {

@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
 
 package storagepb;
 
@@ -12,6 +13,7 @@ service Vote {
   rpc Prepare(PrepareRequest) returns (PrepareResponse);
   rpc Vote(VoteRequest) returns (VoteResponse);
   rpc GetDaosVotedIn(DaosVotedInRequest) returns (DaosVotedInResponse);
+  rpc VotesSubscribe(VotesSubscribeRequest) returns (stream VoteInfo);
 }
 
 message VotesFilterRequest {
@@ -105,4 +107,8 @@ message DaosVotedInRequest {
 message DaosVotedInResponse {
   repeated string dao_ids = 1;
   uint64 total_count = 2;
+}
+
+message VotesSubscribeRequest {
+  optional google.protobuf.Timestamp last_updated_at = 3;
 }

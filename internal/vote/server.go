@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"google.golang.org/grpc"
 	"gorm.io/gorm"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
@@ -189,6 +190,25 @@ func (s *Server) GetDaosVotedIn(_ context.Context, req *storagepb.DaosVotedInReq
 		DaoIds:     daos,
 		TotalCount: uint64(len(daos)),
 	}, nil
+}
+
+func (s *Server) VotesSubscribe(req *storagepb.VotesSubscribeRequest, stream grpc.ServerStreamingServer[storagepb.VoteInfo]) error {
+	ctx := stream.Context()
+
+	log.Info().Msg("votes subscribe start")
+
+	err := s.sp.Watch(ctx, req.LastUpdatedAt.AsTime(), func(info *Vote) error {
+		return stream.Send(convertVoteToAPI(info))
+	})
+	if err != nil {
+		log.Error().
+			Time("last_updated_at", req.LastUpdatedAt.AsTime()).
+			Err(err).Msg("error watch votes events")
+
+		return status.Error(codes.Internal, "internal error")
+	}
+
+	return nil
 }
 
 func convertVoteToAPI(info *Vote) *storagepb.VoteInfo {

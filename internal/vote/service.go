@@ -11,6 +11,13 @@ import (
 	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/votingpb"
 	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
 	"github.com/rs/zerolog/log"
+
+	"github.com/goverland-labs/goverland-core-storage/internal/pubsub"
+)
+
+const (
+	forcedFetchTime = 5 * time.Minute
+	voteItemsLimit  = 1000
 )
 
 type Publisher interface {
@@ -20,6 +27,7 @@ type Publisher interface {
 type DataProvider interface {
 	BatchCreate(data []Vote) error
 	GetByFilters(filters []Filter, limit int, offset int, firstVoter string) (List, error)
+	GetLastItems(lastUpdatedAt time.Time, limit int) ([]Vote, error)
 	UpdateVotes(list []ResolvedAddress) error
 	GetUnique(string, int64) ([]string, error)
 	GetByVoter(string) ([]string, error)
@@ -34,6 +42,8 @@ type EnsResolver interface {
 }
 
 type Service struct {
+	notifier *pubsub.PubSub[string]
+
 	repo        DataProvider
 	dao         DaoProvider
 	events      Publisher
@@ -42,6 +52,7 @@ type Service struct {
 }
 
 func NewService(
+	notifier *pubsub.PubSub[string],
 	r DataProvider,
 	dp DaoProvider,
 	p Publisher,
@@ -49,6 +60,7 @@ func NewService(
 	dsClient votingpb.VotingClient,
 ) (*Service, error) {
 	return &Service{
+		notifier:    notifier,
 		repo:        r,
 		dao:         dp,
 		events:      p,
@@ -216,6 +228,54 @@ func (s *Service) HandleResolvedAddresses(list []ResolvedAddress) error {
 	}
 
 	return nil
+}
+
+func (s *Service) Watch(
+	ctx context.Context,
+	lastUpdatedAt time.Time,
+	handler func(info *Vote) error,
+) error {
+	notificationsCh := s.notifier.Subscribe()
+	defer func() {
+		s.notifier.Unsubscribe(notificationsCh)
+	}()
+
+	for {
+		voteItems, err := s.repo.GetLastItems(lastUpdatedAt, voteItemsLimit)
+		if err != nil {
+			return fmt.Errorf("fail to fetch last votes: %v", err)
+		}
+
+		log.Info().
+			Int("count", len(voteItems)).
+			Msg("fetched votes")
+
+		for _, voteItem := range voteItems {
+			err := handler(&voteItem)
+			if err != nil {
+				return fmt.Errorf("fail to handle votes in subscription: %v", err)
+			}
+
+			lastUpdatedAt = voteItem.UpdatedAt
+		}
+
+		log.Info().
+			Str("value", lastUpdatedAt.String()).
+			Msg("change lastUpdatedAt")
+
+		if len(voteItems) == voteItemsLimit {
+			continue
+		}
+
+		select {
+		case <-ctx.Done():
+			log.Info().Msg("ctx is done, finished subscription")
+			return nil
+
+		case <-notificationsCh:
+		case <-time.After(forcedFetchTime):
+		}
+	}
 }
 
 func (s *Service) GetDaosVotedIn(voter string) ([]string, error) {
