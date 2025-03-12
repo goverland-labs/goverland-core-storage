@@ -3,6 +3,7 @@ package vote
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
@@ -59,7 +60,7 @@ func (s *Server) GetVotes(_ context.Context, req *storagepb.VotesFilterRequest) 
 	}
 
 	if req.GetVoter() != "" {
-		filters = append(filters, VoterFilter{Voter: req.GetVoter()})
+		filters = append(filters, VoterFilter{Voter: strings.ToLower(req.GetVoter())})
 	}
 
 	if req.GetQuery() != "" {
