@@ -26,7 +26,7 @@ type NameFilter struct {
 }
 
 func (f NameFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("lower(name) like ?", fmt.Sprintf("%s%%", f.Name))
+	return db.Where("to_tsvector('english', name) @@ plainto_tsquery('english', ?)", f.Name)
 }
 
 type CategoryFilter struct {
