@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Update fulltext DAO search by name
+
 ## [0.4.4] - 2025-02-03
 
 ### Added
