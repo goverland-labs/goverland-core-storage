@@ -8,7 +8,7 @@ import (
 
 func TestPubSub(t *testing.T) {
 	convey.Convey("Subject: pubsub", t, func() {
-		ps := NewPubSub(1)
+		ps := NewPubSub[string](1)
 
 		convey.Convey("Subscribe/unsubscribe for one subscription", func() {
 			subCh := ps.Subscribe()
