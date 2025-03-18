@@ -161,6 +161,7 @@ func convertProposalToAPI(info *Proposal) *storagepb.ProposalInfo {
 		ScoresUpdated: uint64(info.ScoresUpdated),
 		Votes:         uint64(info.Votes),
 		Timeline:      convertTimelineToAPI(info.Timeline),
+		Spam:          info.Spam,
 	}
 }
 

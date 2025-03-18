@@ -118,6 +118,7 @@ type Dao struct {
 func convertToCoreEvent(dao Dao) events.DaoPayload {
 	return events.DaoPayload{
 		ID:             dao.ID,
+		CreatedAt:      dao.CreatedAt,
 		Alias:          dao.OriginalID,
 		Name:           dao.Name,
 		Private:        dao.Private,
@@ -144,6 +145,7 @@ func convertToCoreEvent(dao Dao) events.DaoPayload {
 		Template:       dao.Template,
 		ParentID:       dao.ParentID,
 		ActiveSince:    &dao.ActivitySince,
+		Verified:       dao.Verified,
 	}
 }
 

@@ -21,6 +21,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/goverland-labs/goverland-core-storage/internal/pubsub"
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
@@ -316,8 +317,9 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 	}
 
 	dsClient := votingpb.NewVotingClient(dsConn)
+	votesNotifier := pubsub.NewPubSub[string](1000) // TODO: const
 
-	service, err := vote.NewService(a.voteRepo, a.daoService, pb, a.ensService, dsClient)
+	service, err := vote.NewService(votesNotifier, a.voteRepo, a.daoService, pb, a.ensService, dsClient)
 	if err != nil {
 		return fmt.Errorf("vote service: %w", err)
 	}

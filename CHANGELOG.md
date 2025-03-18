@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Filled fields for core DAO entity
+- Added spam field to proposal info
+- Added votes subscription
+
 ## [0.4.6] - 2025-03-18
 
 ### Changed
