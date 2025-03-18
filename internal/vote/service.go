@@ -101,6 +101,8 @@ func (s *Service) HandleVotes(ctx context.Context, votes []Vote) error {
 	}
 	log.Info().Msgf("Gy80sHESRX: create votes in DB: %f", time.Since(now).Seconds())
 
+	s.notifier.PublishNoWait("")
+
 	now = time.Now()
 	if err := s.events.PublishJSON(ctx, coreevents.SubjectVoteCreated, convertToCoreEvent(votes)); err != nil {
 		log.Error().Err(err).Msgf("publish votes event")
