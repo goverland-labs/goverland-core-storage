@@ -14,7 +14,7 @@ import (
 
 const (
 	tokenPriceCheckDelay = 24 * time.Hour
-	MAX_IDS_BY_REQUEST   = 100
+	MAX_IDS_BY_REQUEST   = 25
 )
 
 type TokenPriceWorker struct {
