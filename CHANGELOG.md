@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.6] - 2025-03-18
+
+### Changed
+- Limit for zerion request
+
 ## [0.4.5] - 2025-03-17
 
 ### Changed
