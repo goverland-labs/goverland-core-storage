@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	protoany "github.com/golang/protobuf/ptypes/any"
@@ -141,7 +142,7 @@ func (s *Service) Validate(ctx context.Context, req ValidateRequest) (ValidateRe
 	}
 
 	voted, err := s.repo.GetByFilters([]Filter{
-		VoterFilter{Voter: req.Voter},
+		VoterFilter{Voter: strings.ToLower(req.Voter)},
 		ProposalIDsFilter{ProposalIDs: []string{req.Proposal}},
 	}, 1, 0, "")
 	if err != nil {
