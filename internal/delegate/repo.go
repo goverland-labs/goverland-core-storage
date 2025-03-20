@@ -3,6 +3,7 @@ package delegate
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -295,7 +296,7 @@ func (r *Repo) GetCnt(filters ...Filter) (int64, error) {
 }
 
 func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error) {
-	// todo: think about limiting this query, for now it's around 100 rows
+	daysWindow := 5
 	rows, err := r.db.
 		Raw(`
 			select address_from
@@ -304,12 +305,13 @@ func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error)
 			     , expires_at
 			     , last_block_timestamp
 			from delegates_summary
-			where expires_at > 0
-			  -- 2030/01/01 00:00:00
-			  and expires_at < 1893488400
+			where expires_at > ?
+			  and expires_at < ?
 			limit ?
 			offset ?
 		  `,
+		  	time.Now().AddDate(0, 0, -daysWindow).Unix(),
+		  	time.Now().AddDate(0, 0, daysWindow).Unix(),
 			limit,
 			offset,
 		).
