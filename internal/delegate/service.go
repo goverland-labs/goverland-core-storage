@@ -31,6 +31,11 @@ type Publisher interface {
 	PublishJSON(ctx context.Context, subject string, obj any) error
 }
 
+type EventRegistered interface {
+	EventExist(_ context.Context, id, t, event string) (bool, error)
+	RegisterEvent(_ context.Context, id, t, event string) error
+}
+
 type EnsResolver interface {
 	GetByNames(names []string) ([]ensresolver.EnsName, error)
 	GetByAddresses(addresses []string) ([]ensresolver.EnsName, error)
@@ -42,15 +47,17 @@ type Service struct {
 	daoProvider    DaoProvider
 	ensResolver    EnsResolver
 	publisher      Publisher
+	er             EventRegistered
 	repo           *Repo
 }
 
-func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvider, ensResolver EnsResolver, ep Publisher) *Service {
+func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvider, ensResolver EnsResolver, ep Publisher, er EventRegistered) *Service {
 	return &Service{
 		delegateClient: dc,
 		daoProvider:    daoProvider,
 		ensResolver:    ensResolver,
 		publisher:      ep,
+		er:             er,
 		repo:           repo,
 	}
 }

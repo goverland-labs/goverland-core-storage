@@ -3,6 +3,7 @@ package delegate
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -292,4 +293,49 @@ func (r *Repo) GetCnt(filters ...Filter) (int64, error) {
 	}
 
 	return cnt, nil
+}
+
+func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error) {
+	daysWindow := 5
+	rows, err := r.db.
+		Raw(`
+			select address_from
+			     , address_to
+			     , dao_id
+			     , expires_at
+			     , last_block_timestamp
+			from delegates_summary
+			where expires_at > ?
+			  and expires_at < ?
+			limit ?
+			offset ?
+		  `,
+		  	time.Now().AddDate(0, 0, -daysWindow).Unix(),
+		  	time.Now().AddDate(0, 0, daysWindow).Unix(),
+			limit,
+			offset,
+		).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+
+	result := make([]Summary, 0, limit)
+	defer rows.Close()
+	for rows.Next() {
+		si := Summary{}
+		if err = rows.Scan(
+			&si.AddressFrom,
+			&si.AddressTo,
+			&si.DaoID,
+			&si.ExpiresAt,
+			&si.LastBlockTimestamp,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		result = append(result, si)
+	}
+
+	return result, nil
 }

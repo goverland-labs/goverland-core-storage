@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Processing delegates expiration events
+
 ## [0.4.7] - 2025-03-18
 
 ### Added
