@@ -126,3 +126,10 @@ type OrderByPopularityIndexFilter struct {
 func (f OrderByPopularityIndexFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("popularity_index desc")
 }
+
+type FungibleIdFilter struct {
+}
+
+func (f FungibleIdFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("fungible_id is not null and fungible_id!=''")
+}

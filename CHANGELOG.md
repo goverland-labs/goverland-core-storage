@@ -7,6 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Retrieve and save token symbol from zerion
+
+### Changed
+- Get zerion info for all new daos
+- Collect token price 12 times per day
+- Add erc20-votes strategy to get fungible info
+
 ## [0.4.7] - 2025-03-18
 
 ### Added
