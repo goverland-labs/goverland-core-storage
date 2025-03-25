@@ -21,8 +21,9 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/goverland-labs/goverland-core-storage/internal/pubsub"
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
+
+	"github.com/goverland-labs/goverland-core-storage/internal/pubsub"
 
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
@@ -63,7 +64,8 @@ type Application struct {
 	ensRepo    *ensresolver.Repo
 	ensService *ensresolver.Service
 
-	eventsRepo *events.Repo
+	eventsRepo    *events.Repo
+	eventsService *events.Service
 
 	statsService *stats.Service
 
@@ -263,6 +265,8 @@ func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) erro
 		return fmt.Errorf("new events service: %w", err)
 	}
 
+	a.eventsService = erService
+
 	service, err := proposal.NewService(a.proposalRepo, pb, erService, a.daoService, a.ensService)
 	if err != nil {
 		return fmt.Errorf("proposal service: %w", err)
@@ -294,7 +298,7 @@ func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) err
 	}
 
 	delegateClient := delegatepb.NewDelegateClient(dsConn)
-	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.ensService, pb)
+	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.ensService, pb, a.eventsService)
 	a.delegateService = service
 
 	cs, err := delegate.NewConsumer(nc, service)
@@ -302,7 +306,10 @@ func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) err
 		return fmt.Errorf("delegates consumer: %w", err)
 	}
 
+	ltw := delegate.NewLifeTimeWorker(service)
+
 	a.manager.AddWorker(process.NewCallbackWorker("delegates-consumer", cs.Start))
+	a.manager.AddWorker(process.NewCallbackWorker("delegates-life-time-worker", ltw.Start))
 
 	return nil
 }

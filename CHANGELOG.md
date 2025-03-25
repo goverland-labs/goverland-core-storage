@@ -8,6 +8,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- Processing delegates expiration events
+
+### Added
 - Retrieve and save token symbol from zerion
 
 ### Changed

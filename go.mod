@@ -11,7 +11,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	github.com/goverland-labs/goverland-core-storage/protocol v0.0.0
+	github.com/goverland-labs/goverland-core-storage/protocol v0.4.5-0.20250307083516-f7ff5d31f0e8
 	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.6.2
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
 	github.com/goverland-labs/goverland-platform-events v0.3.10
