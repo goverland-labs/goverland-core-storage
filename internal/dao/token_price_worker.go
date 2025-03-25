@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	tokenPriceCheckDelay = 24 * time.Hour
+	tokenPriceCheckDelay = 2 * time.Hour
 	MAX_IDS_BY_REQUEST   = 25
 )
 
@@ -31,7 +31,7 @@ func NewTokenPriceWorker(s *Service, z *zerion.Client) *TokenPriceWorker {
 
 func (w *TokenPriceWorker) Process(ctx context.Context) error {
 	for {
-		filters := []Filter{VerifiedFilter{}}
+		filters := []Filter{FungibleIdFilter{}}
 
 		list, err := w.service.GetByFilters(filters)
 		if err != nil {
@@ -39,9 +39,7 @@ func (w *TokenPriceWorker) Process(ctx context.Context) error {
 		}
 		fm := make(map[string]uuid.UUID)
 		for _, d := range list.Daos {
-			if d.FungibleId != "" {
-				fm[d.FungibleId] = d.ID
-			}
+			fm[d.FungibleId] = d.ID
 		}
 		if len(fm) > 0 {
 			fids := maps.Keys(fm)

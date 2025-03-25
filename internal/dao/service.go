@@ -133,10 +133,9 @@ func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
 }
 
 func (s *Service) processNew(ctx context.Context, dao Dao) error {
-	if dao.Verified {
-		if fi := s.getFungibleId(dao.Strategies); fi != "" {
-			dao.FungibleId = fi
-		}
+	if fi, ts := s.getFungibleId(dao.Strategies); fi != "" {
+		dao.FungibleId = fi
+		dao.TokenSymbol = ts
 	}
 	if err := s.repo.Create(dao); err != nil {
 		return fmt.Errorf("can't create dao: %w", err)
@@ -165,9 +164,11 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	equal := compare(new, existed)
 	fi := ""
+	ts := ""
 	if new.Verified && existed.FungibleId == "" {
-		fi = s.getFungibleId(new.Strategies)
+		fi, ts = s.getFungibleId(new.Strategies)
 		existed.FungibleId = fi
+		existed.TokenSymbol = ts
 	}
 	if equal {
 		if fi != "" {
@@ -181,6 +182,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	new.PopularityIndex = existed.PopularityIndex
 	new.Categories = enrichWithSystemCategories(new.Categories, existed.Categories)
 	new.FungibleId = existed.FungibleId
+	new.TokenSymbol = existed.TokenSymbol
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
@@ -219,10 +221,10 @@ func enrichWithSystemCategories(list, existed []string) []string {
 	return list
 }
 
-func (s *Service) getFungibleId(strategies Strategies) string {
+func (s *Service) getFungibleId(strategies Strategies) (string, string) {
 	address := ""
 	for _, strategy := range strategies {
-		if strategy.Name != "erc20-balance-of" {
+		if strategy.Name != "erc20-balance-of" && strategy.Name != "erc20-votes" {
 			continue
 		}
 		adr := strategy.Params["address"].(string)
@@ -230,26 +232,26 @@ func (s *Service) getFungibleId(strategies Strategies) string {
 			continue
 		}
 		if address != "" && address != adr {
-			return ""
+			return "", ""
 		}
 		address = adr
 	}
 
 	if address == "" {
-		return ""
+		return "", ""
 	}
 
 	l, err := s.zerionClient.GetFungibleList("", address)
 	if err != nil {
 		log.Error().Err(err).Msg("zerion client error")
-		return ""
+		return "", ""
 	}
 	if l != nil && len(l.List) == 1 {
 		data := l.List[0]
-		return data.ID
+		return data.ID, data.Attributes.Symbol
 	}
 
-	return ""
+	return "", ""
 }
 
 func compare(d1, d2 Dao) bool {
@@ -258,6 +260,7 @@ func compare(d1, d2 Dao) bool {
 	d1.ActivitySince = d2.ActivitySince
 	d1.PopularityIndex = d2.PopularityIndex
 	d1.FungibleId = d2.FungibleId
+	d1.TokenSymbol = d2.TokenSymbol
 
 	return reflect.DeepEqual(d1, d2)
 }
