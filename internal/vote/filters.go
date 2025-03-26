@@ -43,7 +43,7 @@ type VoterFilter struct {
 }
 
 func (f VoterFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("lower(voter) = ?", f.Voter)
+	return db.Where("(voter) = ?", f.Voter)
 }
 
 type ExcludeVoterFilter struct {
@@ -51,7 +51,7 @@ type ExcludeVoterFilter struct {
 }
 
 func (f ExcludeVoterFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("lower(voter) != ?", f.Voter)
+	return db.Where("(voter) != ?", f.Voter)
 }
 
 type QueryFilter struct {

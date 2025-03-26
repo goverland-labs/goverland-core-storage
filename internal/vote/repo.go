@@ -73,7 +73,7 @@ func (r *Repo) GetByFilters(filters []Filter, limit int, offset int, firstVoter 
 		for _, f := range filters {
 			db = f.Apply(db)
 		}
-		db = VoterFilter{Voter: strings.ToLower(firstVoter)}.Apply(db)
+		db = VoterFilter{Voter: firstVoter}.Apply(db)
 		var v Vote
 		request := db.First(&v)
 		if err := request.Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -83,7 +83,7 @@ func (r *Repo) GetByFilters(filters []Filter, limit int, offset int, firstVoter 
 		db = r.db.Model(&Vote{}).InnerJoins("inner join daos on daos.id = votes.dao_id")
 		prepend := false
 		if request.RowsAffected > 0 {
-			filters = append(filters, ExcludeVoterFilter{Voter: strings.ToLower(firstVoter)})
+			filters = append(filters, ExcludeVoterFilter{Voter: firstVoter})
 			if offset == 0 {
 				limit = limit - 1
 				prepend = true
