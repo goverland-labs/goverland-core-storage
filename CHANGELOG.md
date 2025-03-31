@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Rollback getting voters from case insensitive idx
+- Speed up proposals and DAO searches 
 
 ## [0.4.9] - 2025-03-26
 

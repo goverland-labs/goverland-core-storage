@@ -49,7 +49,20 @@ type TitleFilter struct {
 }
 
 func (f TitleFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("title like ?", fmt.Sprintf("%%%s%%", f.Title))
+	return db.Where("to_tsvector('english', title) @@ to_tsquery('english', ?)", splitForFTSearch(f.Title))
+}
+
+func splitForFTSearch(in string) string {
+	postfix := ":*"
+	separator := " & "
+
+	parts := strings.Split(in, " ")
+
+	for i := range parts {
+		parts[i] += postfix
+	}
+
+	return strings.Join(parts, separator)
 }
 
 type Direction string
