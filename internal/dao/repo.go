@@ -154,6 +154,9 @@ WITH cnt AS (SELECT dao_id,
              FROM proposals
              WHERE spam IS NOT true
                AND state != 'canceled'
+			   AND dao_id in (
+					select distinct dao_id from proposals where updated_at >= now() - INTERVAL '1 days'
+				)
              group by dao_id)
 update daos set proposals_count = cnt.proposals_count
 from cnt
@@ -188,7 +191,9 @@ WITH cnt AS (
 		   count(id) FILTER (WHERE state = 'active' AND spam IS NOT true)                    AS active_votes,
 		   coalesce(json_agg(id) FILTER (WHERE state = 'active' AND spam IS NOT true), '[]') AS list
 	FROM proposals
-    WHERE updated_at >= now() - INTERVAL '1 days'
+	WHERE dao_id in (
+		select distinct dao_id from proposals where updated_at >= now() - INTERVAL '1 days'
+	)
 	GROUP BY dao_id
 )
 UPDATE daos
