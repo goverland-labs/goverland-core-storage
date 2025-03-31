@@ -543,7 +543,7 @@ func (s *Service) processActiveVotes(_ context.Context) error {
 func (s *Service) processProposalsCnt(_ context.Context) error {
 	err := s.repo.UpdateProposalCntAll()
 	if err != nil {
-		return fmt.Errorf("UpdateActiveVotesAll: %w", err)
+		return fmt.Errorf("UpdateProposalCntAll: %w", err)
 	}
 
 	return nil

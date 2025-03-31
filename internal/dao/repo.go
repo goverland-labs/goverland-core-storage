@@ -184,12 +184,12 @@ where daos.id = ?
 func (r *Repo) UpdateActiveVotesAll() error {
 	return r.db.Exec(`
 WITH cnt AS (
-    SELECT
-        dao_id,
-        count(id) FILTER (WHERE state = 'active' AND spam IS NOT true) AS active_votes,
-        coalesce(json_agg(id) FILTER (WHERE state = 'active' AND spam IS NOT true), '[]') AS list
-    FROM proposals
-    GROUP BY dao_id
+	SELECT dao_id,
+		   count(id) FILTER (WHERE state = 'active' AND spam IS NOT true)                    AS active_votes,
+		   coalesce(json_agg(id) FILTER (WHERE state = 'active' AND spam IS NOT true), '[]') AS list
+	FROM proposals
+    WHERE updated_at >= now() - INTERVAL '1 days'
+	GROUP BY dao_id
 )
 UPDATE daos
 SET active_votes = cnt.active_votes, 
