@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,7 +27,20 @@ type NameFilter struct {
 }
 
 func (f NameFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("to_tsvector('english', name) @@ plainto_tsquery('english', ?)", f.Name)
+	return db.Where("to_tsvector('english', name) @@ to_tsquery('english', ?)", splitForFTSearch(f.Name))
+}
+
+func splitForFTSearch(in string) string {
+	postfix := ":*"
+	separator := " & "
+
+	parts := strings.Split(in, " ")
+
+	for i := range parts {
+		parts[i] += postfix
+	}
+
+	return strings.Join(parts, separator)
 }
 
 type CategoryFilter struct {
