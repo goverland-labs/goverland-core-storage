@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Fix proposals cnt calculation
+
 ## [0.4.10] - 2025-03-31
 
 ### Changed

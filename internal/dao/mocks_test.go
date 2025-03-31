@@ -180,6 +180,20 @@ func (mr *MockDataProviderMockRecorder) UpdateProposalCnt(arg0 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProposalCnt", reflect.TypeOf((*MockDataProvider)(nil).UpdateProposalCnt), arg0)
 }
 
+// UpdateProposalCntAll mocks base method.
+func (m *MockDataProvider) UpdateProposalCntAll() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProposalCntAll")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProposalCntAll indicates an expected call of UpdateProposalCntAll.
+func (mr *MockDataProviderMockRecorder) UpdateProposalCntAll() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProposalCntAll", reflect.TypeOf((*MockDataProvider)(nil).UpdateProposalCntAll))
+}
+
 // MockPublisher is a mock of Publisher interface.
 type MockPublisher struct {
 	ctrl     *gomock.Controller
