@@ -128,15 +128,41 @@ func (r *Repo) UpdateProposalCnt(id uuid.UUID) error {
 	)
 
 	return r.db.Exec(`
-update daos
-set proposals_count = cnt.proposals_count
-from (
-	select count(*) as proposals_count
-	from proposals
-	where dao_id = ? and spam is not true and state != 'canceled'
-) cnt
-where daos.id = ?
+WITH cnt AS (
+    SELECT count(*) AS proposals_count
+    FROM proposals
+    WHERE dao_id = ? 
+      AND spam IS NOT true 
+      AND state != 'canceled'
+)
+UPDATE daos
+SET proposals_count = cnt.proposals_count
+FROM cnt
+WHERE daos.id = ?
 `, id, id).Error
+}
+
+func (r *Repo) UpdateProposalCntAll() error {
+	var (
+		dummy = Dao{}
+		_     = dummy.ProposalsCount
+	)
+
+	return r.db.Exec(`
+WITH cnt AS (SELECT dao_id,
+                    count(*) AS proposals_count
+             FROM proposals
+             WHERE spam IS NOT true
+               AND state != 'canceled'
+			   AND dao_id in (
+					select distinct dao_id from proposals where updated_at >= now() - INTERVAL '1 days'
+				)
+             group by dao_id)
+update daos set proposals_count = cnt.proposals_count
+from cnt
+where cnt.proposals_count != daos.proposals_count
+  and daos.id = cnt.dao_id
+`).Error
 }
 
 func (r *Repo) UpdateActiveVotes(id uuid.UUID) error {
@@ -160,17 +186,21 @@ where daos.id = ?
 
 func (r *Repo) UpdateActiveVotesAll() error {
 	return r.db.Exec(`
-update daos
-set active_votes = cnt.active_votes, active_proposals_ids = cnt.list
-from (
-	select
-          dao_id,
-          count(id) filter (where state = 'active' and spam is not true) as active_votes,
-          coalesce(json_agg(id) filter (where state = 'active' and spam is not true), '[]')  as list
-	from proposals
-	group by dao_id
-) cnt
-where daos.id = cnt.dao_id
+WITH cnt AS (
+	SELECT dao_id,
+		   count(id) FILTER (WHERE state = 'active' AND spam IS NOT true)                    AS active_votes,
+		   coalesce(json_agg(id) FILTER (WHERE state = 'active' AND spam IS NOT true), '[]') AS list
+	FROM proposals
+	WHERE dao_id in (
+		select distinct dao_id from proposals where updated_at >= now() - INTERVAL '1 days'
+	)
+	GROUP BY dao_id
+)
+UPDATE daos
+SET active_votes = cnt.active_votes, 
+    active_proposals_ids = cnt.list
+FROM cnt
+WHERE daos.id = cnt.dao_id
 `).Error
 }
 

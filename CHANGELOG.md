@@ -10,7 +10,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.4.11] - 2025-04-01
 
 ### Added
+
 - Populate token price for dao
+- Fix proposals cnt calculation
 
 ## [0.4.10] - 2025-03-31
 
