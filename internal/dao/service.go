@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"reflect"
 	"slices"
 	"sync"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -45,6 +46,7 @@ type DataProvider interface {
 	UpdateProposalCnt(id uuid.UUID) error
 	UpdateActiveVotes(id uuid.UUID) error
 	UpdateActiveVotesAll() error
+	UpdateProposalCntAll() error
 	GetByFilters(filters []Filter, count bool) (DaoList, error)
 	GetCategories() ([]string, error)
 	GetRecommended() ([]Recommendation, error)
@@ -533,6 +535,15 @@ func (s *Service) processActiveVotes(_ context.Context) error {
 	err := s.repo.UpdateActiveVotesAll()
 	if err != nil {
 		return fmt.Errorf("UpdateActiveVotesAll: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) processProposalsCnt(_ context.Context) error {
+	err := s.repo.UpdateProposalCntAll()
+	if err != nil {
+		return fmt.Errorf("UpdateProposalCntAll: %w", err)
 	}
 
 	return nil
