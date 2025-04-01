@@ -286,12 +286,12 @@ func (s *Server) GetTokenChart(_ context.Context, req *storagepb.TokenChartReque
 	return convertChartToAPI(data), nil
 }
 
-func (s *Server) PopulateTokenPrices(_ context.Context, req *storagepb.TokenPricesRequest) (*storagepb.TokenPricesResponse, error) {
+func (s *Server) PopulateTokenPrices(ctx context.Context, req *storagepb.TokenPricesRequest) (*storagepb.TokenPricesResponse, error) {
 	id, err := uuid.Parse(req.GetDaoId())
 	if err != nil {
 		return &storagepb.TokenPricesResponse{Status: false}, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
-	ok, err := s.sp.PopulateTokenPrices(id)
+	ok, err := s.sp.PopulateTokenPrices(ctx, id)
 	if err != nil {
 		log.Error().Err(err).Msgf("populate token prices: %+v", req)
 		return &storagepb.TokenPricesResponse{Status: false}, status.Error(codes.Internal, "internal error")
