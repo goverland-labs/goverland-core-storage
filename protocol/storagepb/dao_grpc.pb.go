@@ -25,6 +25,7 @@ const (
 	Dao_GetRecommendationsList_FullMethodName = "/storagepb.Dao/GetRecommendationsList"
 	Dao_GetTokenInfo_FullMethodName           = "/storagepb.Dao/GetTokenInfo"
 	Dao_GetTokenChart_FullMethodName          = "/storagepb.Dao/GetTokenChart"
+	Dao_PopulateTokenPrices_FullMethodName    = "/storagepb.Dao/PopulateTokenPrices"
 )
 
 // DaoClient is the client API for Dao service.
@@ -37,6 +38,7 @@ type DaoClient interface {
 	GetRecommendationsList(ctx context.Context, in *GetRecommendationsListRequest, opts ...grpc.CallOption) (*GetRecommendationsListResponse, error)
 	GetTokenInfo(ctx context.Context, in *TokenInfoRequest, opts ...grpc.CallOption) (*TokenInfoResponse, error)
 	GetTokenChart(ctx context.Context, in *TokenChartRequest, opts ...grpc.CallOption) (*TokenChartResponse, error)
+	PopulateTokenPrices(ctx context.Context, in *TokenPricesRequest, opts ...grpc.CallOption) (*TokenPricesResponse, error)
 }
 
 type daoClient struct {
@@ -101,6 +103,15 @@ func (c *daoClient) GetTokenChart(ctx context.Context, in *TokenChartRequest, op
 	return out, nil
 }
 
+func (c *daoClient) PopulateTokenPrices(ctx context.Context, in *TokenPricesRequest, opts ...grpc.CallOption) (*TokenPricesResponse, error) {
+	out := new(TokenPricesResponse)
+	err := c.cc.Invoke(ctx, Dao_PopulateTokenPrices_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DaoServer is the server API for Dao service.
 // All implementations must embed UnimplementedDaoServer
 // for forward compatibility
@@ -111,6 +122,7 @@ type DaoServer interface {
 	GetRecommendationsList(context.Context, *GetRecommendationsListRequest) (*GetRecommendationsListResponse, error)
 	GetTokenInfo(context.Context, *TokenInfoRequest) (*TokenInfoResponse, error)
 	GetTokenChart(context.Context, *TokenChartRequest) (*TokenChartResponse, error)
+	PopulateTokenPrices(context.Context, *TokenPricesRequest) (*TokenPricesResponse, error)
 	mustEmbedUnimplementedDaoServer()
 }
 
@@ -135,6 +147,9 @@ func (UnimplementedDaoServer) GetTokenInfo(context.Context, *TokenInfoRequest) (
 }
 func (UnimplementedDaoServer) GetTokenChart(context.Context, *TokenChartRequest) (*TokenChartResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTokenChart not implemented")
+}
+func (UnimplementedDaoServer) PopulateTokenPrices(context.Context, *TokenPricesRequest) (*TokenPricesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PopulateTokenPrices not implemented")
 }
 func (UnimplementedDaoServer) mustEmbedUnimplementedDaoServer() {}
 
@@ -257,6 +272,24 @@ func _Dao_GetTokenChart_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dao_PopulateTokenPrices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenPricesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaoServer).PopulateTokenPrices(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Dao_PopulateTokenPrices_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaoServer).PopulateTokenPrices(ctx, req.(*TokenPricesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Dao_ServiceDesc is the grpc.ServiceDesc for Dao service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -287,6 +320,10 @@ var Dao_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTokenChart",
 			Handler:    _Dao_GetTokenChart_Handler,
+		},
+		{
+			MethodName: "PopulateTokenPrices",
+			Handler:    _Dao_PopulateTokenPrices_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

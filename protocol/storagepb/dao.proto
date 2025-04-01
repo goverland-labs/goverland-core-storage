@@ -14,6 +14,7 @@ service Dao {
   rpc GetRecommendationsList(GetRecommendationsListRequest) returns (GetRecommendationsListResponse);
   rpc GetTokenInfo(TokenInfoRequest) returns (TokenInfoResponse);
   rpc GetTokenChart(TokenChartRequest) returns (TokenChartResponse);
+  rpc PopulateTokenPrices(TokenPricesRequest) returns (TokenPricesResponse);
 }
 
 message DaoByIDRequest {
@@ -151,4 +152,12 @@ message TokenChartResponse {
 message Point {
   google.protobuf.Timestamp time = 1;
   double price = 2;
+}
+
+message TokenPricesRequest {
+  string dao_id = 1;
+}
+
+message TokenPricesResponse {
+  bool status = 1;
 }

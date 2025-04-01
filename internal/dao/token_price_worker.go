@@ -75,6 +75,7 @@ func convertToCorePaylod(list []zerion.FungibleData, fungiblesMap map[string]uui
 		if exist {
 			res = append(res, coreevents.TokenPricePayload{
 				DaoID: daoId,
+				Time:  time.Now(),
 				Price: list[i].Attributes.MarketData.Price,
 			})
 		}

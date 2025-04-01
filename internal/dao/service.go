@@ -595,3 +595,27 @@ func (s *Service) GetTokenChart(id uuid.UUID, period string) (*zerion.ChartData,
 
 	return data, nil
 }
+
+func (s *Service) PopulateTokenPrices(id uuid.UUID) (bool, error) {
+	data, err := s.GetTokenChart(id, "month")
+	if err != nil || data == nil {
+		return false, fmt.Errorf("failed to get token prices: %w", err)
+	}
+	if err := s.events.PublishJSON(context.TODO(), coreevents.DaoTokenPriceUpdated, convertToTokenPricesPayload(data.ChartAttributes.Points, id)); err != nil {
+		return false, fmt.Errorf("publish token prices event: %w", err)
+	}
+	return true, nil
+}
+
+func convertToTokenPricesPayload(list []zerion.Point, daoId uuid.UUID) coreevents.TokenPricesPayload {
+	res := make(coreevents.TokenPricesPayload, 0, len(list))
+	for _, point := range list {
+		res = append(res, coreevents.TokenPricePayload{
+			DaoID: daoId,
+			Time:  point.Time,
+			Price: point.Price,
+		})
+	}
+
+	return res
+}

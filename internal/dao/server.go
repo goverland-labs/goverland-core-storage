@@ -286,6 +286,19 @@ func (s *Server) GetTokenChart(_ context.Context, req *storagepb.TokenChartReque
 	return convertChartToAPI(data), nil
 }
 
+func (s *Server) PopulateTokenPrices(_ context.Context, req *storagepb.TokenPricesRequest) (*storagepb.TokenPricesResponse, error) {
+	id, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return &storagepb.TokenPricesResponse{Status: false}, status.Error(codes.InvalidArgument, "invalid dao ID")
+	}
+	ok, err := s.sp.PopulateTokenPrices(id)
+	if err != nil {
+		log.Error().Err(err).Msgf("populate token prices: %+v", req)
+		return &storagepb.TokenPricesResponse{Status: false}, status.Error(codes.Internal, "internal error")
+	}
+	return &storagepb.TokenPricesResponse{Status: ok}, nil
+}
+
 func convertChartToAPI(data *zerion.ChartData) *storagepb.TokenChartResponse {
 	var pc float64
 	if data.ChartAttributes.Stats.First != 0 {
