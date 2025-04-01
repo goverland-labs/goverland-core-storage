@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.12] - 2025-04-01
+
+### Added
+- Populate token price for dao
+
 ## [0.4.11] - 2025-04-01
 
 ### Added

@@ -365,7 +365,7 @@ func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, er
 func (s *Service) processNewCategory(_ context.Context) error {
 	list, err := s.repo.GetByFilters([]Filter{
 		NotCategoryFilter{Category: newDaoCategoryName},
-		ActivitySinceRangeFilter{From: time.Now().Add(-30 * 24 * time.Hour)},
+		ActivitySinceRangeFilter{From: time.Now().Add(-90 * 24 * time.Hour)},
 		PageFilter{Limit: 300},
 	}, false)
 	if err != nil {
@@ -388,7 +388,7 @@ func (s *Service) processNewCategory(_ context.Context) error {
 func (s *Service) processOutdatedNewCategory(_ context.Context) error {
 	list, err := s.repo.GetByFilters([]Filter{
 		CategoryFilter{Category: newDaoCategoryName},
-		ActivitySinceRangeFilter{To: time.Now().Add(-31 * 24 * time.Hour)},
+		ActivitySinceRangeFilter{To: time.Now().Add(-91 * 24 * time.Hour)},
 	}, false)
 	if err != nil {
 		return fmt.Errorf("get by filters: %w", err)
@@ -605,4 +605,28 @@ func (s *Service) GetTokenChart(id uuid.UUID, period string) (*zerion.ChartData,
 	}
 
 	return data, nil
+}
+
+func (s *Service) PopulateTokenPrices(ctx context.Context, id uuid.UUID) (bool, error) {
+	data, err := s.GetTokenChart(id, "month")
+	if err != nil || data == nil {
+		return false, fmt.Errorf("failed to get token prices: %w", err)
+	}
+	if err := s.events.PublishJSON(ctx, coreevents.DaoTokenPriceUpdated, convertToTokenPricesPayload(data.ChartAttributes.Points, id)); err != nil {
+		return false, fmt.Errorf("publish token prices event: %w", err)
+	}
+	return true, nil
+}
+
+func convertToTokenPricesPayload(list []zerion.Point, daoId uuid.UUID) coreevents.TokenPricesPayload {
+	res := make(coreevents.TokenPricesPayload, 0, len(list))
+	for _, point := range list {
+		res = append(res, coreevents.TokenPricePayload{
+			DaoID: daoId,
+			Time:  point.Time,
+			Price: point.Price,
+		})
+	}
+
+	return res
 }
