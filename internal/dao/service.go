@@ -363,7 +363,7 @@ func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, er
 func (s *Service) processNewCategory(_ context.Context) error {
 	list, err := s.repo.GetByFilters([]Filter{
 		NotCategoryFilter{Category: newDaoCategoryName},
-		ActivitySinceRangeFilter{From: time.Now().Add(-30 * 24 * time.Hour)},
+		ActivitySinceRangeFilter{From: time.Now().Add(-90 * 24 * time.Hour)},
 		PageFilter{Limit: 300},
 	}, false)
 	if err != nil {
@@ -386,7 +386,7 @@ func (s *Service) processNewCategory(_ context.Context) error {
 func (s *Service) processOutdatedNewCategory(_ context.Context) error {
 	list, err := s.repo.GetByFilters([]Filter{
 		CategoryFilter{Category: newDaoCategoryName},
-		ActivitySinceRangeFilter{To: time.Now().Add(-31 * 24 * time.Hour)},
+		ActivitySinceRangeFilter{To: time.Now().Add(-91 * 24 * time.Hour)},
 	}, false)
 	if err != nil {
 		return fmt.Errorf("get by filters: %w", err)
