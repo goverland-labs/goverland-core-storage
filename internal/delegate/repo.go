@@ -361,7 +361,10 @@ func (r *Repo) GetVotersByAddresses(daoID, prID string, addresses []string) ([]s
 	err := r.db.
 		Raw(
 			`
-		select array_agg(distinct lower(voter))
+		select COALESCE(
+                array_agg(DISTINCT lower(voter)),
+                ARRAY[]::text[]
+            ) as voters
 		from votes
 		where dao_id = ?
 		  and proposal_id = ?
