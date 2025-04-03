@@ -3,6 +3,7 @@ package delegate
 import (
 	"context"
 	"fmt"
+	"time"
 
 	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 	client "github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
@@ -79,6 +80,20 @@ func (c *Consumer) handleVotesCreated() events.VotesHandler {
 	}
 }
 
+func (c *Consumer) handleVotesFetched() events.ProposalHandler {
+	return func(payload events.ProposalPayload) error {
+		if err := c.service.handleVotesFetched(context.TODO(), payload.ID); err != nil {
+			log.Error().Err(err).Msg("delegates: process votes fetched")
+
+			return fmt.Errorf("delegates: process votes fetched: %w", err)
+		}
+
+		log.Debug().Msgf("delegates: votes fetched event was processed: %s", payload.ID)
+
+		return nil
+	}
+}
+
 func (c *Consumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName(groupName)
 	de, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateUpsert, c.handleDelegates(), client.WithMaxAckPending(maxPendingAckPerConsumer))
@@ -93,9 +108,14 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectVoteCreated, err)
 	}
-	c.consumers = append(c.consumers, de, pr, vc)
+	vfc, err := client.NewConsumer(ctx, c.conn, group, events.SubjectProposalVotesFetched, c.handleVotesFetched(), client.WithAckWait(time.Minute*5), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectProposalVotesFetched, err)
+	}
 
-	log.Info().Msg("delegates consumers is started")
+	c.consumers = append(c.consumers, de, pr, vc, vfc)
+
+	log.Info().Msg("delegates consumers are started")
 
 	// todo: handle correct stopping the consumer by context
 	<-ctx.Done()

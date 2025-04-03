@@ -118,6 +118,22 @@ func (r *Repo) FindDelegator(daoID, author string) (*Summary, error) {
 	return &si, nil
 }
 
+func (r *Repo) FindDelegates(daoID string, offset, limit int) ([]Summary, error) {
+	var list []Summary
+	if err := r.db.
+		Where(Summary{
+			DaoID: daoID,
+		}).
+		Offset(offset).
+		Limit(limit).
+		Find(&list).
+		Error; err != nil {
+		return nil, fmt.Errorf("find delegates: %w", err)
+	}
+
+	return list, nil
+}
+
 func (r *Repo) FindDelegatorsByVotes(votes []Vote) ([]summaryByVote, error) {
 	placeholders := make([]string, 0, len(votes))
 	values := make([]any, 0, len(votes)*3)
@@ -310,8 +326,8 @@ func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error)
 			limit ?
 			offset ?
 		  `,
-		  	time.Now().AddDate(0, 0, -daysWindow).Unix(),
-		  	time.Now().AddDate(0, 0, daysWindow).Unix(),
+			time.Now().AddDate(0, 0, -daysWindow).Unix(),
+			time.Now().AddDate(0, 0, daysWindow).Unix(),
 			limit,
 			offset,
 		).
@@ -338,4 +354,28 @@ func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error)
 	}
 
 	return result, nil
+}
+
+func (r *Repo) GetVotersByAddresses(daoID, prID string, addresses []string) ([]string, error) {
+	var voters []string
+	err := r.db.
+		Raw(
+			`
+		select array_agg(distinct lower(voter))
+		from votes
+		where dao_id = ?
+		  and proposal_id = ?
+		  and lower(voter) in ?
+		`,
+			daoID,
+			prID,
+			addresses).
+		Scan(&voters).
+		Error
+
+	if err != nil {
+		return nil, fmt.Errorf("db.Scan: %w", err)
+	}
+
+	return voters, nil
 }

@@ -55,14 +55,14 @@ func (s *Service) checkLifeTime(ctx context.Context) error {
 
 			// delegation expired
 			if time.Now().After(endsAt) {
-				go s.registerEventOnce(ctx, info, coreevents.SubjectDelegateDelegationExpired)
+				go s.registerEventOnce(ctx, info, coreevents.SubjectDelegateDelegationExpired, "")
 				continue
 			}
 
 			// delegation will end soon
 			if time.Since(endsAt) > endDelegationWindow &&
 				endsAt.After(time.Now()) {
-				go s.registerEventOnce(ctx, info, coreevents.SubjectDelegateDelegationExpiringSoon)
+				go s.registerEventOnce(ctx, info, coreevents.SubjectDelegateDelegationExpiringSoon, "")
 			}
 		}
 
@@ -74,8 +74,8 @@ func (s *Service) checkLifeTime(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) registerEventOnce(ctx context.Context, delegate Summary, subject string) {
-	group := fmt.Sprintf("delegation_%s_%s_%d", subject, delegate.DaoID, delegate.LastBlockTimestamp)
+func (s *Service) registerEventOnce(ctx context.Context, delegate Summary, subject string, salt string) {
+	group := fmt.Sprintf("delegation_%s_%s_%d_%s", subject, delegate.DaoID, delegate.LastBlockTimestamp, salt)
 
 	var err error
 	if ok, err := s.er.EventExist(ctx, delegate.AddressTo, group, subject); ok || err != nil {

@@ -299,7 +299,7 @@ func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) err
 	}
 
 	delegateClient := delegatepb.NewDelegateClient(dsConn)
-	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.ensService, pb, a.eventsService)
+	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.proposalService, a.ensService, pb, a.eventsService)
 	a.delegateService = service
 
 	cs, err := delegate.NewConsumer(nc, service)

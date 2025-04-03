@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
 	"github.com/goverland-labs/goverland-core-storage/internal/ensresolver"
+	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 )
 
 var errNoResolved = errors.New("no addresses resolved")
@@ -25,6 +27,10 @@ var errNoResolved = errors.New("no addresses resolved")
 type DaoProvider interface {
 	GetByID(id uuid.UUID) (*dao.Dao, error)
 	GetIDByOriginalID(string) (uuid.UUID, error)
+}
+
+type ProposalProvider interface {
+	GetByID(id string) (*proposal.Proposal, error)
 }
 
 type Publisher interface {
@@ -43,22 +49,24 @@ type EnsResolver interface {
 }
 
 type Service struct {
-	delegateClient delegatepb.DelegateClient
-	daoProvider    DaoProvider
-	ensResolver    EnsResolver
-	publisher      Publisher
-	er             EventRegistered
-	repo           *Repo
+	delegateClient   delegatepb.DelegateClient
+	daoProvider      DaoProvider
+	proposalProvider ProposalProvider
+	ensResolver      EnsResolver
+	publisher        Publisher
+	er               EventRegistered
+	repo             *Repo
 }
 
-func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvider, ensResolver EnsResolver, ep Publisher, er EventRegistered) *Service {
+func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvider, prProvider ProposalProvider, ensResolver EnsResolver, ep Publisher, er EventRegistered) *Service {
 	return &Service{
-		delegateClient: dc,
-		daoProvider:    daoProvider,
-		ensResolver:    ensResolver,
-		publisher:      ep,
-		er:             er,
-		repo:           repo,
+		delegateClient:   dc,
+		daoProvider:      daoProvider,
+		proposalProvider: prProvider,
+		ensResolver:      ensResolver,
+		publisher:        ep,
+		er:               er,
+		repo:             repo,
 	}
 }
 
@@ -422,6 +430,62 @@ func (s *Service) handleVotesCreated(ctx context.Context, batch []Vote) error {
 		if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateVotingVoted, event); err != nil {
 			log.Err(err).Msgf("publish delegate voted: %s %s", info.AddressTo, info.ProposalID)
 		}
+	}
+
+	return nil
+}
+
+func (s *Service) handleVotesFetched(ctx context.Context, prId string) error {
+	pr, err := s.proposalProvider.GetByID(prId)
+	if err != nil {
+		return fmt.Errorf("proposalProvider.GetByID: %w", err)
+	}
+
+	offset, limit := 0, 500
+	for {
+		delegates, err := s.repo.FindDelegates(pr.DaoID.String(), offset, limit)
+		if err != nil {
+			return fmt.Errorf("repo.FindDelegates: %w", err)
+		}
+
+		if len(delegates) == 0 {
+			return nil
+		}
+
+		delegators := make(map[string]Summary, len(delegates))
+		addresses := make([]string, 0, len(delegates))
+
+		for _, info := range delegates {
+			if info.SelfDelegation() || info.Expired() {
+				continue
+			}
+
+			delegators[strings.ToLower(info.AddressTo)] = info
+			addresses = append(addresses, strings.ToLower(info.AddressTo))
+		}
+
+		voters, err := s.repo.GetVotersByAddresses(pr.DaoID.String(), pr.ID, addresses)
+		if err != nil {
+			return fmt.Errorf("repo.GetVotersByAddresses: %w", err)
+		}
+
+		if len(voters) == len(addresses) {
+			return nil
+		}
+
+		for _, address := range addresses {
+			if slices.Contains(voters, address) {
+				continue
+			}
+
+			s.registerEventOnce(ctx, delegators[address], events.SubjectDelegateVotingSkipVote, prId)
+		}
+
+		if len(delegates) < limit {
+			break
+		}
+
+		offset += limit
 	}
 
 	return nil
