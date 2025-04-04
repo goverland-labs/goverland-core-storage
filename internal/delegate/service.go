@@ -524,7 +524,9 @@ func (s *Service) handleVotesFetched(ctx context.Context, prId string) error {
 				continue
 			}
 
-			s.registerEventOnce(ctx, delegators[address], events.SubjectDelegateVotingSkipVote, prId)
+			info := delegators[address]
+			info.ProposalID = prId
+			s.registerEventOnce(ctx, info, events.SubjectDelegateVotingSkipVote)
 		}
 
 		if len(delegates) < limit {

@@ -91,7 +91,8 @@ type Summary struct {
 	CreatedAt          time.Time
 
 	// virtual property
-	MaxCnt int `gorm:"-"`
+	MaxCnt     int    `gorm:"-"`
+	ProposalID string `gorm:"-"`
 }
 
 func (Summary) TableName() string {
