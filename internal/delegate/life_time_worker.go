@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	ltCheckDelay = 30 * time.Minute
-
+	ltCheckDelay        = 30 * time.Minute
 	endDelegationWindow = -6 * time.Hour
+	updateAllowedDaoTTL = 15 * time.Minute
 )
 
 type LifeTimeWorker struct {

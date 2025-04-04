@@ -311,6 +311,7 @@ func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) err
 
 	a.manager.AddWorker(process.NewCallbackWorker("delegates-consumer", cs.Start))
 	a.manager.AddWorker(process.NewCallbackWorker("delegates-life-time-worker", ltw.Start))
+	a.manager.AddWorker(process.NewCallbackWorker("delegates-allowed-daos", service.UpdateAllowedDaos))
 
 	return nil
 }

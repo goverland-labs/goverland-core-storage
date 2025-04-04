@@ -382,3 +382,20 @@ func (r *Repo) GetVotersByAddresses(daoID, prID string, addresses []string) ([]s
 
 	return voters, nil
 }
+
+func (r *Repo) AllowedDaos() ([]AllowedDao, error) {
+	var list []AllowedDao
+	request := r.db.Raw(`
+			select allowed.dao_name,
+				   allowed.created_at,
+				   daos.id
+			from delegate_allowed_daos allowed
+			inner join daos
+				on daos.original_id = allowed.dao_name	
+		`).Find(&list)
+	if err := request.Error; err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}

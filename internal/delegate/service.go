@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -56,6 +57,9 @@ type Service struct {
 	publisher        Publisher
 	er               EventRegistered
 	repo             *Repo
+
+	mu            sync.RWMutex
+	allowedDaoIDs []uuid.UUID
 }
 
 func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvider, prProvider ProposalProvider, ensResolver EnsResolver, ep Publisher, er EventRegistered) *Service {
@@ -67,7 +71,40 @@ func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvide
 		publisher:        ep,
 		er:               er,
 		repo:             repo,
+		allowedDaoIDs:    make([]uuid.UUID, 0),
 	}
+}
+
+func (s *Service) UpdateAllowedDaos(ctx context.Context) error {
+	for {
+		if err := s.updateAllowedDaos(); err != nil {
+			log.Error().Err(err).Msg("delegates lifetime check failed")
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-time.After(updateAllowedDaoTTL):
+		}
+	}
+}
+
+func (s *Service) updateAllowedDaos() error {
+	allowedDaos, err := s.repo.AllowedDaos()
+	if err != nil {
+		return fmt.Errorf("s.daoProvider.GetByID: %w", err)
+	}
+
+	allowed := make([]uuid.UUID, 0, len(allowedDaos))
+	for _, info := range allowedDaos {
+		allowed = append(allowed, info.InternalID)
+	}
+
+	s.mu.Lock()
+	s.allowedDaoIDs = allowed
+	s.mu.Unlock()
+
+	return nil
 }
 
 func (s *Service) GetDelegates(ctx context.Context, request GetDelegatesRequest) (*GetDelegatesResponse, error) {
@@ -439,6 +476,15 @@ func (s *Service) handleVotesFetched(ctx context.Context, prId string) error {
 	pr, err := s.proposalProvider.GetByID(prId)
 	if err != nil {
 		return fmt.Errorf("proposalProvider.GetByID: %w", err)
+	}
+
+	s.mu.RLock()
+	allowedDaos := make([]uuid.UUID, 0, len(s.allowedDaoIDs))
+	copy(allowedDaos, s.allowedDaoIDs)
+	s.mu.RUnlock()
+
+	if !slices.Contains(allowedDaos, pr.DaoID) {
+		return nil
 	}
 
 	offset, limit := 0, 500

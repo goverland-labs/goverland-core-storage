@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 )
 
@@ -146,4 +147,14 @@ type summaryByVote struct {
 	Summary
 
 	ProposalID string
+}
+
+type AllowedDao struct {
+	DaoName    string
+	CreatedAt  time.Time
+	InternalID uuid.UUID
+}
+
+func (a *AllowedDao) TableName() string {
+	return "delegate_allowed_daos"
 }
