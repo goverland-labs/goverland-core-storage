@@ -479,7 +479,7 @@ func (s *Service) handleVotesFetched(ctx context.Context, prId string) error {
 	}
 
 	s.mu.RLock()
-	allowedDaos := make([]uuid.UUID, 0, len(s.allowedDaoIDs))
+	allowedDaos := make([]uuid.UUID, len(s.allowedDaoIDs))
 	copy(allowedDaos, s.allowedDaoIDs)
 	s.mu.RUnlock()
 

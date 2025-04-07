@@ -388,7 +388,7 @@ func (r *Repo) AllowedDaos() ([]AllowedDao, error) {
 	request := r.db.Raw(`
 			select allowed.dao_name,
 				   allowed.created_at,
-				   daos.id
+				   daos.id as internal_id
 			from delegate_allowed_daos allowed
 			inner join daos
 				on daos.original_id = allowed.dao_name	
