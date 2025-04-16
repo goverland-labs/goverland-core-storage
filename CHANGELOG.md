@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.13] - 2025-04-16
+
 ### Added
 - Process delegate skip the vote event
 
