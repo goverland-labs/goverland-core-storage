@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	ltCheckDelay = 30 * time.Minute
-
+	ltCheckDelay        = 30 * time.Minute
 	endDelegationWindow = -6 * time.Hour
+	updateAllowedDaoTTL = 15 * time.Minute
 )
 
 type LifeTimeWorker struct {
@@ -75,7 +75,7 @@ func (s *Service) checkLifeTime(ctx context.Context) error {
 }
 
 func (s *Service) registerEventOnce(ctx context.Context, delegate Summary, subject string) {
-	group := fmt.Sprintf("delegation_%s_%s_%d", subject, delegate.DaoID, delegate.LastBlockTimestamp)
+	group := fmt.Sprintf("delegation_%s_%s_%d_%s", subject, delegate.DaoID, delegate.LastBlockTimestamp, delegate.ProposalID)
 
 	var err error
 	if ok, err := s.er.EventExist(ctx, delegate.AddressTo, group, subject); ok || err != nil {
@@ -100,9 +100,10 @@ func convertToCoreEvent(info Summary) coreevents.DelegatePayload {
 	}
 
 	return coreevents.DelegatePayload{
-		Initiator: info.AddressTo,
-		Delegator: info.AddressFrom,
-		DaoID:     uuid.MustParse(info.DaoID),
-		DueDate:   dueDate,
+		Initiator:  info.AddressTo,
+		Delegator:  info.AddressFrom,
+		DaoID:      uuid.MustParse(info.DaoID),
+		DueDate:    dueDate,
+		ProposalID: info.ProposalID,
 	}
 }

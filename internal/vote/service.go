@@ -72,7 +72,6 @@ func NewService(
 
 func (s *Service) HandleVotes(ctx context.Context, votes []Vote) error {
 	list := make(map[string]uuid.UUID)
-	now := time.Now()
 	authors := make([]string, 0, len(votes))
 	for i := range votes {
 		if !slices.Contains(authors, votes[i].Voter) {
@@ -94,21 +93,16 @@ func (s *Service) HandleVotes(ctx context.Context, votes []Vote) error {
 		list[votes[i].OriginalDaoID] = daoID
 		votes[i].DaoID = daoID
 	}
-	log.Info().Msgf("Gy80sHESRX: prepare votes: %f", time.Since(now).Seconds())
 
-	now = time.Now()
 	if err := s.repo.BatchCreate(votes); err != nil {
 		return fmt.Errorf("can't create votes: %w", err)
 	}
-	log.Info().Msgf("Gy80sHESRX: create votes in DB: %f", time.Since(now).Seconds())
 
 	s.notifier.PublishNoWait("")
 
-	now = time.Now()
 	if err := s.events.PublishJSON(ctx, coreevents.SubjectVoteCreated, convertToCoreEvent(votes)); err != nil {
 		log.Error().Err(err).Msgf("publish votes event")
 	}
-	log.Info().Msgf("Gy80sHESRX: publishing took: %f", time.Since(now).Seconds())
 
 	s.ensResolver.AddRequests(authors)
 
