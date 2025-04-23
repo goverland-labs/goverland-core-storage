@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -357,30 +358,26 @@ func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error)
 }
 
 func (r *Repo) GetVotersByAddresses(daoID, prID string, addresses []string) ([]string, error) {
-	var voters []string
+	var result struct {
+		Voters pq.StringArray `gorm:"type:text[]"`
+	}
+
 	err := r.db.
-		Raw(
-			`
-		select COALESCE(
-                array_agg(DISTINCT lower(voter)),
-                ARRAY[]::text[]
-            ) as voters
-		from votes
-		where dao_id = ?
-		  and proposal_id = ?
-		  and lower(voter) in ?
-		`,
-			daoID,
-			prID,
-			addresses).
-		Scan(&voters).
+		Raw(`
+			SELECT COALESCE(array_agg(DISTINCT lower(voter)), ARRAY[]::text[]) AS voters
+			FROM votes
+			WHERE dao_id = ?
+			  AND proposal_id = ?
+			  AND lower(voter) = ANY(?)
+		`, daoID, prID, pq.Array(addresses)).
+		Scan(&result).
 		Error
 
 	if err != nil {
 		return nil, fmt.Errorf("db.Scan: %w", err)
 	}
 
-	return voters, nil
+	return result.Voters, nil
 }
 
 func (r *Repo) AllowedDaos() ([]AllowedDao, error) {
