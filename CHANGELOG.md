@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Filter delegates summary by allowlisted dao
+
 ## [0.4.14] - 2025-04-23
 
 ### Fixed
