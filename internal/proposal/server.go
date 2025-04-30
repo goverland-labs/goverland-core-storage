@@ -39,11 +39,11 @@ func (s *Server) GetByID(_ context.Context, req *storagepb.ProposalByIDRequest) 
 
 	dao, err := s.sp.GetByID(req.GetProposalId())
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, status.Error(codes.InvalidArgument, "invalid proposal ID")
+		return nil, status.Error(codes.NotFound, "proposal not found")
 	}
 
 	if err != nil {
-		log.Error().Err(err).Msgf("get dao by id: %s", req.GetProposalId())
+		log.Error().Err(err).Msgf("get proposal by id: %s", req.GetProposalId())
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
