@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Increase limit for top delegates from 5 to 100
+- Fix status response for non existing proposal id
+
 ## [0.4.15] - 2025-04-25
 
 ### Changed
