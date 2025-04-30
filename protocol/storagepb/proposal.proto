@@ -72,6 +72,12 @@ message ProposalByIDResponse {
   ProposalInfo proposal = 1;
 }
 
+enum ProposalInfoLevel {
+  PROPOSAL_INFO_LEVEL_UNSPECIFIED = 0;
+  PROPOSAL_INFO_LEVEL_FULL = 1;
+  PROPOSAL_INFO_LEVEL_SHORT = 2;
+}
+
 message ProposalByFilterRequest {
   optional string dao = 1;
   optional string category = 2;
@@ -82,9 +88,18 @@ message ProposalByFilterRequest {
   optional bool top = 7;
   repeated string proposal_ids = 8;
   optional bool only_active = 9;
+  optional ProposalInfoLevel level = 10;
 }
 
 message ProposalByFilterResponse {
   repeated ProposalInfo proposals = 1;
   uint64 total_count = 2;
+  repeated ProposalShortInfo proposals_short = 3;
+}
+
+message ProposalShortInfo {
+  string id = 1;
+  string title = 2;
+  string state = 3;
+  uint64 created = 4;
 }

@@ -22,6 +22,55 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ProposalInfoLevel int32
+
+const (
+	ProposalInfoLevel_PROPOSAL_INFO_LEVEL_UNSPECIFIED ProposalInfoLevel = 0
+	ProposalInfoLevel_PROPOSAL_INFO_LEVEL_FULL        ProposalInfoLevel = 1
+	ProposalInfoLevel_PROPOSAL_INFO_LEVEL_SHORT       ProposalInfoLevel = 2
+)
+
+// Enum value maps for ProposalInfoLevel.
+var (
+	ProposalInfoLevel_name = map[int32]string{
+		0: "PROPOSAL_INFO_LEVEL_UNSPECIFIED",
+		1: "PROPOSAL_INFO_LEVEL_FULL",
+		2: "PROPOSAL_INFO_LEVEL_SHORT",
+	}
+	ProposalInfoLevel_value = map[string]int32{
+		"PROPOSAL_INFO_LEVEL_UNSPECIFIED": 0,
+		"PROPOSAL_INFO_LEVEL_FULL":        1,
+		"PROPOSAL_INFO_LEVEL_SHORT":       2,
+	}
+)
+
+func (x ProposalInfoLevel) Enum() *ProposalInfoLevel {
+	p := new(ProposalInfoLevel)
+	*p = x
+	return p
+}
+
+func (x ProposalInfoLevel) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ProposalInfoLevel) Descriptor() protoreflect.EnumDescriptor {
+	return file_storagepb_proposal_proto_enumTypes[0].Descriptor()
+}
+
+func (ProposalInfoLevel) Type() protoreflect.EnumType {
+	return &file_storagepb_proposal_proto_enumTypes[0]
+}
+
+func (x ProposalInfoLevel) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ProposalInfoLevel.Descriptor instead.
+func (ProposalInfoLevel) EnumDescriptor() ([]byte, []int) {
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{0}
+}
+
 type ProposalTimelineItem_TimelineAction int32
 
 const (
@@ -76,11 +125,11 @@ func (x ProposalTimelineItem_TimelineAction) String() string {
 }
 
 func (ProposalTimelineItem_TimelineAction) Descriptor() protoreflect.EnumDescriptor {
-	return file_storagepb_proposal_proto_enumTypes[0].Descriptor()
+	return file_storagepb_proposal_proto_enumTypes[1].Descriptor()
 }
 
 func (ProposalTimelineItem_TimelineAction) Type() protoreflect.EnumType {
-	return &file_storagepb_proposal_proto_enumTypes[0]
+	return &file_storagepb_proposal_proto_enumTypes[1]
 }
 
 func (x ProposalTimelineItem_TimelineAction) Number() protoreflect.EnumNumber {
@@ -527,6 +576,7 @@ type ProposalByFilterRequest struct {
 	Top           *bool                  `protobuf:"varint,7,opt,name=top,proto3,oneof" json:"top,omitempty"`
 	ProposalIds   []string               `protobuf:"bytes,8,rep,name=proposal_ids,json=proposalIds,proto3" json:"proposal_ids,omitempty"`
 	OnlyActive    *bool                  `protobuf:"varint,9,opt,name=only_active,json=onlyActive,proto3,oneof" json:"only_active,omitempty"`
+	Level         *ProposalInfoLevel     `protobuf:"varint,10,opt,name=level,proto3,enum=storagepb.ProposalInfoLevel,oneof" json:"level,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -624,12 +674,20 @@ func (x *ProposalByFilterRequest) GetOnlyActive() bool {
 	return false
 }
 
+func (x *ProposalByFilterRequest) GetLevel() ProposalInfoLevel {
+	if x != nil && x.Level != nil {
+		return *x.Level
+	}
+	return ProposalInfoLevel_PROPOSAL_INFO_LEVEL_UNSPECIFIED
+}
+
 type ProposalByFilterResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Proposals     []*ProposalInfo        `protobuf:"bytes,1,rep,name=proposals,proto3" json:"proposals,omitempty"`
-	TotalCount    uint64                 `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Proposals      []*ProposalInfo        `protobuf:"bytes,1,rep,name=proposals,proto3" json:"proposals,omitempty"`
+	TotalCount     uint64                 `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	ProposalsShort []*ProposalShortInfo   `protobuf:"bytes,3,rep,name=proposals_short,json=proposalsShort,proto3" json:"proposals_short,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ProposalByFilterResponse) Reset() {
@@ -672,6 +730,81 @@ func (x *ProposalByFilterResponse) GetProposals() []*ProposalInfo {
 func (x *ProposalByFilterResponse) GetTotalCount() uint64 {
 	if x != nil {
 		return x.TotalCount
+	}
+	return 0
+}
+
+func (x *ProposalByFilterResponse) GetProposalsShort() []*ProposalShortInfo {
+	if x != nil {
+		return x.ProposalsShort
+	}
+	return nil
+}
+
+type ProposalShortInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	State         string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
+	Created       uint64                 `protobuf:"varint,4,opt,name=created,proto3" json:"created,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProposalShortInfo) Reset() {
+	*x = ProposalShortInfo{}
+	mi := &file_storagepb_proposal_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProposalShortInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProposalShortInfo) ProtoMessage() {}
+
+func (x *ProposalShortInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_proposal_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProposalShortInfo.ProtoReflect.Descriptor instead.
+func (*ProposalShortInfo) Descriptor() ([]byte, []int) {
+	return file_storagepb_proposal_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ProposalShortInfo) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ProposalShortInfo) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ProposalShortInfo) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *ProposalShortInfo) GetCreated() uint64 {
+	if x != nil {
+		return x.Created
 	}
 	return 0
 }
@@ -741,7 +874,7 @@ const file_storagepb_proposal_proto_rawDesc = "" +
 	"\x13ProposalVotingEnded\x10\b\x12\x1a\n" +
 	"\x16ProposalVotingEndsSoon\x10\t\"K\n" +
 	"\x14ProposalByIDResponse\x123\n" +
-	"\bproposal\x18\x01 \x01(\v2\x17.storagepb.ProposalInfoR\bproposal\"\xf5\x02\n" +
+	"\bproposal\x18\x01 \x01(\v2\x17.storagepb.ProposalInfoR\bproposal\"\xb8\x03\n" +
 	"\x17ProposalByFilterRequest\x12\x15\n" +
 	"\x03dao\x18\x01 \x01(\tH\x00R\x03dao\x88\x01\x01\x12\x1f\n" +
 	"\bcategory\x18\x02 \x01(\tH\x01R\bcategory\x88\x01\x01\x12\x19\n" +
@@ -752,7 +885,9 @@ const file_storagepb_proposal_proto_rawDesc = "" +
 	"\x03top\x18\a \x01(\bH\x06R\x03top\x88\x01\x01\x12!\n" +
 	"\fproposal_ids\x18\b \x03(\tR\vproposalIds\x12$\n" +
 	"\vonly_active\x18\t \x01(\bH\aR\n" +
-	"onlyActive\x88\x01\x01B\x06\n" +
+	"onlyActive\x88\x01\x01\x127\n" +
+	"\x05level\x18\n" +
+	" \x01(\x0e2\x1c.storagepb.ProposalInfoLevelH\bR\x05level\x88\x01\x01B\x06\n" +
 	"\x04_daoB\v\n" +
 	"\t_categoryB\b\n" +
 	"\x06_limitB\t\n" +
@@ -760,11 +895,22 @@ const file_storagepb_proposal_proto_rawDesc = "" +
 	"\x06_titleB\b\n" +
 	"\x06_orderB\x06\n" +
 	"\x04_topB\x0e\n" +
-	"\f_only_active\"r\n" +
+	"\f_only_activeB\b\n" +
+	"\x06_level\"\xb9\x01\n" +
 	"\x18ProposalByFilterResponse\x125\n" +
 	"\tproposals\x18\x01 \x03(\v2\x17.storagepb.ProposalInfoR\tproposals\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x04R\n" +
-	"totalCount2\xae\x01\n" +
+	"totalCount\x12E\n" +
+	"\x0fproposals_short\x18\x03 \x03(\v2\x1c.storagepb.ProposalShortInfoR\x0eproposalsShort\"i\n" +
+	"\x11ProposalShortInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x14\n" +
+	"\x05state\x18\x03 \x01(\tR\x05state\x12\x18\n" +
+	"\acreated\x18\x04 \x01(\x04R\acreated*u\n" +
+	"\x11ProposalInfoLevel\x12#\n" +
+	"\x1fPROPOSAL_INFO_LEVEL_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18PROPOSAL_INFO_LEVEL_FULL\x10\x01\x12\x1d\n" +
+	"\x19PROPOSAL_INFO_LEVEL_SHORT\x10\x022\xae\x01\n" +
 	"\bProposal\x12J\n" +
 	"\aGetByID\x12\x1e.storagepb.ProposalByIDRequest\x1a\x1f.storagepb.ProposalByIDResponse\x12V\n" +
 	"\vGetByFilter\x12\".storagepb.ProposalByFilterRequest\x1a#.storagepb.ProposalByFilterResponseB\rZ\v.;storagepbb\x06proto3"
@@ -781,37 +927,41 @@ func file_storagepb_proposal_proto_rawDescGZIP() []byte {
 	return file_storagepb_proposal_proto_rawDescData
 }
 
-var file_storagepb_proposal_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_storagepb_proposal_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_storagepb_proposal_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_storagepb_proposal_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_storagepb_proposal_proto_goTypes = []any{
-	(ProposalTimelineItem_TimelineAction)(0), // 0: storagepb.ProposalTimelineItem.TimelineAction
-	(*ProposalByIDRequest)(nil),              // 1: storagepb.ProposalByIDRequest
-	(*ProposalInfo)(nil),                     // 2: storagepb.ProposalInfo
-	(*ProposalTimelineItem)(nil),             // 3: storagepb.ProposalTimelineItem
-	(*ProposalByIDResponse)(nil),             // 4: storagepb.ProposalByIDResponse
-	(*ProposalByFilterRequest)(nil),          // 5: storagepb.ProposalByFilterRequest
-	(*ProposalByFilterResponse)(nil),         // 6: storagepb.ProposalByFilterResponse
-	(*timestamppb.Timestamp)(nil),            // 7: google.protobuf.Timestamp
-	(*Strategy)(nil),                         // 8: storagepb.Strategy
+	(ProposalInfoLevel)(0),                   // 0: storagepb.ProposalInfoLevel
+	(ProposalTimelineItem_TimelineAction)(0), // 1: storagepb.ProposalTimelineItem.TimelineAction
+	(*ProposalByIDRequest)(nil),              // 2: storagepb.ProposalByIDRequest
+	(*ProposalInfo)(nil),                     // 3: storagepb.ProposalInfo
+	(*ProposalTimelineItem)(nil),             // 4: storagepb.ProposalTimelineItem
+	(*ProposalByIDResponse)(nil),             // 5: storagepb.ProposalByIDResponse
+	(*ProposalByFilterRequest)(nil),          // 6: storagepb.ProposalByFilterRequest
+	(*ProposalByFilterResponse)(nil),         // 7: storagepb.ProposalByFilterResponse
+	(*ProposalShortInfo)(nil),                // 8: storagepb.ProposalShortInfo
+	(*timestamppb.Timestamp)(nil),            // 9: google.protobuf.Timestamp
+	(*Strategy)(nil),                         // 10: storagepb.Strategy
 }
 var file_storagepb_proposal_proto_depIdxs = []int32{
-	7,  // 0: storagepb.ProposalInfo.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 1: storagepb.ProposalInfo.updated_at:type_name -> google.protobuf.Timestamp
-	8,  // 2: storagepb.ProposalInfo.strategies:type_name -> storagepb.Strategy
-	3,  // 3: storagepb.ProposalInfo.timeline:type_name -> storagepb.ProposalTimelineItem
-	7,  // 4: storagepb.ProposalTimelineItem.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 5: storagepb.ProposalTimelineItem.action:type_name -> storagepb.ProposalTimelineItem.TimelineAction
-	2,  // 6: storagepb.ProposalByIDResponse.proposal:type_name -> storagepb.ProposalInfo
-	2,  // 7: storagepb.ProposalByFilterResponse.proposals:type_name -> storagepb.ProposalInfo
-	1,  // 8: storagepb.Proposal.GetByID:input_type -> storagepb.ProposalByIDRequest
-	5,  // 9: storagepb.Proposal.GetByFilter:input_type -> storagepb.ProposalByFilterRequest
-	4,  // 10: storagepb.Proposal.GetByID:output_type -> storagepb.ProposalByIDResponse
-	6,  // 11: storagepb.Proposal.GetByFilter:output_type -> storagepb.ProposalByFilterResponse
-	10, // [10:12] is the sub-list for method output_type
-	8,  // [8:10] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	9,  // 0: storagepb.ProposalInfo.created_at:type_name -> google.protobuf.Timestamp
+	9,  // 1: storagepb.ProposalInfo.updated_at:type_name -> google.protobuf.Timestamp
+	10, // 2: storagepb.ProposalInfo.strategies:type_name -> storagepb.Strategy
+	4,  // 3: storagepb.ProposalInfo.timeline:type_name -> storagepb.ProposalTimelineItem
+	9,  // 4: storagepb.ProposalTimelineItem.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 5: storagepb.ProposalTimelineItem.action:type_name -> storagepb.ProposalTimelineItem.TimelineAction
+	3,  // 6: storagepb.ProposalByIDResponse.proposal:type_name -> storagepb.ProposalInfo
+	0,  // 7: storagepb.ProposalByFilterRequest.level:type_name -> storagepb.ProposalInfoLevel
+	3,  // 8: storagepb.ProposalByFilterResponse.proposals:type_name -> storagepb.ProposalInfo
+	8,  // 9: storagepb.ProposalByFilterResponse.proposals_short:type_name -> storagepb.ProposalShortInfo
+	2,  // 10: storagepb.Proposal.GetByID:input_type -> storagepb.ProposalByIDRequest
+	6,  // 11: storagepb.Proposal.GetByFilter:input_type -> storagepb.ProposalByFilterRequest
+	5,  // 12: storagepb.Proposal.GetByID:output_type -> storagepb.ProposalByIDResponse
+	7,  // 13: storagepb.Proposal.GetByFilter:output_type -> storagepb.ProposalByFilterResponse
+	12, // [12:14] is the sub-list for method output_type
+	10, // [10:12] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_storagepb_proposal_proto_init() }
@@ -826,8 +976,8 @@ func file_storagepb_proposal_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_storagepb_proposal_proto_rawDesc), len(file_storagepb_proposal_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   6,
+			NumEnums:      2,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
