@@ -136,7 +136,8 @@ message TokenInfoResponse {
     double market_cap = 5;
     double fully_diluted_valuation = 6;
     double price = 7;
-    repeated TokenChainInfo chains = 8;
+    string fungible_id = 8;
+    repeated TokenChainInfo chains = 9;
 }
 
 message TokenChainInfo {

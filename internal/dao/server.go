@@ -284,6 +284,7 @@ func (s *Server) GetTokenInfo(_ context.Context, req *storagepb.TokenInfoRequest
 		MarketCap:             data.MarketCap,
 		FullyDilutedValuation: data.FullyDilutedValuation,
 		Price:                 data.Price,
+		FungibleId:            data.FungibleID,
 		Chains:                tokenChains,
 	}, nil
 }

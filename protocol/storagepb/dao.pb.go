@@ -1087,7 +1087,8 @@ type TokenInfoResponse struct {
 	MarketCap             float64                `protobuf:"fixed64,5,opt,name=market_cap,json=marketCap,proto3" json:"market_cap,omitempty"`
 	FullyDilutedValuation float64                `protobuf:"fixed64,6,opt,name=fully_diluted_valuation,json=fullyDilutedValuation,proto3" json:"fully_diluted_valuation,omitempty"`
 	Price                 float64                `protobuf:"fixed64,7,opt,name=price,proto3" json:"price,omitempty"`
-	Chains                []*TokenChainInfo      `protobuf:"bytes,8,rep,name=chains,proto3" json:"chains,omitempty"`
+	FungibleId            string                 `protobuf:"bytes,8,opt,name=fungible_id,json=fungibleId,proto3" json:"fungible_id,omitempty"`
+	Chains                []*TokenChainInfo      `protobuf:"bytes,9,rep,name=chains,proto3" json:"chains,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -1169,6 +1170,13 @@ func (x *TokenInfoResponse) GetPrice() float64 {
 		return x.Price
 	}
 	return 0
+}
+
+func (x *TokenInfoResponse) GetFungibleId() string {
+	if x != nil {
+		return x.FungibleId
+	}
+	return ""
 }
 
 func (x *TokenInfoResponse) GetChains() []*TokenChainInfo {
@@ -1616,7 +1624,7 @@ const file_storagepb_dao_proto_rawDesc = "" +
 	"\x1eGetRecommendationsListResponse\x127\n" +
 	"\x04list\x18\x01 \x03(\v2#.storagepb.DaoRecommendationDetailsR\x04list\")\n" +
 	"\x10TokenInfoRequest\x12\x15\n" +
-	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\"\xb1\x02\n" +
+	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\"\xd2\x02\n" +
 	"\x11TokenInfoResponse\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12!\n" +
@@ -1625,8 +1633,10 @@ const file_storagepb_dao_proto_rawDesc = "" +
 	"\n" +
 	"market_cap\x18\x05 \x01(\x01R\tmarketCap\x126\n" +
 	"\x17fully_diluted_valuation\x18\x06 \x01(\x01R\x15fullyDilutedValuation\x12\x14\n" +
-	"\x05price\x18\a \x01(\x01R\x05price\x121\n" +
-	"\x06chains\x18\b \x03(\v2\x19.storagepb.TokenChainInfoR\x06chains\"\x90\x01\n" +
+	"\x05price\x18\a \x01(\x01R\x05price\x12\x1f\n" +
+	"\vfungible_id\x18\b \x01(\tR\n" +
+	"fungibleId\x121\n" +
+	"\x06chains\x18\t \x03(\v2\x19.storagepb.TokenChainInfoR\x06chains\"\x90\x01\n" +
 	"\x0eTokenChainInfo\x12\x19\n" +
 	"\bchain_id\x18\x01 \x01(\tR\achainId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
