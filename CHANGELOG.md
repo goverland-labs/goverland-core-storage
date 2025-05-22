@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Extended fungible info
+
 ## [0.4.15] - 2025-04-25
 
 ### Changed

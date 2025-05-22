@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+
 	"github.com/google/uuid"
-	"github.com/goverland-labs/goverland-core-storage/pkg/sdk/zerion"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
+
+	"github.com/goverland-labs/goverland-core-storage/pkg/sdk/zerion"
 
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 )
@@ -262,14 +264,27 @@ func (s *Server) GetTokenInfo(_ context.Context, req *storagepb.TokenInfoRequest
 		log.Error().Err(err).Msgf("get token info: %+v", req)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	tokenChains := make([]*storagepb.TokenChainInfo, 0, len(data.Chains))
+	for _, info := range data.Chains {
+		tokenChains = append(tokenChains, &storagepb.TokenChainInfo{
+			ChainId:  info.ChainID,
+			Name:     info.Name,
+			Decimals: uint32(info.Decimals),
+			IconUrl:  info.IconURL,
+			Address:  info.Address,
+		})
+	}
+
 	return &storagepb.TokenInfoResponse{
-		Name:                  data.Attributes.Name,
-		Symbol:                data.Attributes.Symbol,
-		TotalSupply:           data.Attributes.MarketData.TotalSupply,
-		CirculatingSupply:     data.Attributes.MarketData.CirculatingSupply,
-		MarketCap:             data.Attributes.MarketData.MarketCap,
-		FullyDilutedValuation: data.Attributes.MarketData.FullyDilutedValuation,
-		Price:                 data.Attributes.MarketData.Price,
+		Name:                  data.Name,
+		Symbol:                data.Symbol,
+		TotalSupply:           data.TotalSupply,
+		CirculatingSupply:     data.CirculatingSupply,
+		MarketCap:             data.MarketCap,
+		FullyDilutedValuation: data.FullyDilutedValuation,
+		Price:                 data.Price,
+		Chains:                tokenChains,
 	}, nil
 }
 

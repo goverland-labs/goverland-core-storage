@@ -235,6 +235,9 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 		return fmt.Errorf("PrefillDaoIDs: %w", err)
 	}
 
+	fungibleChainRepo := dao.NewFungibleChainRepo(a.db)
+	fungibleChainWorker := dao.NewFungibleChainWorker(a.zerionClient, service, fungibleChainRepo)
+
 	cs, err := dao.NewConsumer(nc, service)
 	if err != nil {
 		return fmt.Errorf("dao consumer: %w", err)
@@ -256,6 +259,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.manager.AddWorker(process.NewCallbackWorker("top-dao-cache-worker", topDAOCache.Start))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-recommendations", rw.Process))
 	a.manager.AddWorker(process.NewCallbackWorker("token-price", tpw.Process))
+	a.manager.AddWorker(process.NewCallbackWorker("fungible-chain-worker", fungibleChainWorker.Start))
 
 	return nil
 }
