@@ -186,7 +186,6 @@ func (r *Repo) FindDelegatorsByVotes(votes []Vote) ([]summaryByVote, error) {
 	return result, nil
 }
 
-// fixme: check it
 func (r *Repo) GetTopDelegatorsByAddress(address string, limit int) ([]Summary, error) {
 	rows, err := r.db.
 		Raw(`
@@ -235,7 +234,6 @@ func (r *Repo) GetTopDelegatorsByAddress(address string, limit int) ([]Summary, 
 	return result, nil
 }
 
-// fixme: check it
 func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, error) {
 	rows, err := r.db.
 		Raw(`

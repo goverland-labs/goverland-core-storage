@@ -142,3 +142,18 @@ func (f ActiveFilter) Apply(db *gorm.DB) *gorm.DB {
 
 	return db.Where(`state = 'active'`)
 }
+
+type ShortInfoFilter struct {
+}
+
+func (f ShortInfoFilter) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy Proposal
+		_     = dummy.ID
+		_     = dummy.Title
+		_     = dummy.Created
+		_     = dummy.State
+	)
+
+	return db.Select("proposals.id", "proposals.title", "proposals.created", "proposals.state")
+}

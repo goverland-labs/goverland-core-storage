@@ -541,7 +541,7 @@ func (s *Service) handleVotesFetched(ctx context.Context, prId string) error {
 
 // getTopDelegates returns list of delegations grouped by dao
 func (s *Service) getTopDelegates(_ context.Context, address string) (map[string][]Summary, error) {
-	limitPerDao := 5
+	limitPerDao := 100
 	list, err := s.repo.GetTopDelegatesByAddress(address, limitPerDao)
 	if err != nil {
 		return nil, fmt.Errorf("repo.GetTopDelegatesByAddress: %w", err)

@@ -39,11 +39,11 @@ func (s *Server) GetByID(_ context.Context, req *storagepb.ProposalByIDRequest) 
 
 	dao, err := s.sp.GetByID(req.GetProposalId())
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, status.Error(codes.InvalidArgument, "invalid proposal ID")
+		return nil, status.Error(codes.NotFound, "proposal not found")
 	}
 
 	if err != nil {
-		log.Error().Err(err).Msgf("get dao by id: %s", req.GetProposalId())
+		log.Error().Err(err).Msgf("get proposal by id: %s", req.GetProposalId())
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -64,6 +64,10 @@ func (s *Server) GetByFilter(_ context.Context, req *storagepb.ProposalByFilterR
 		SkipCanceled{},
 		SkipSpamFilter{},
 		PageFilter{Limit: limit, Offset: offset},
+	}
+
+	if req.GetLevel() == storagepb.ProposalInfoLevel_PROPOSAL_INFO_LEVEL_SHORT {
+		filters = append(filters, ShortInfoFilter{})
 	}
 
 	var list ProposalList
@@ -118,12 +122,18 @@ func (s *Server) GetByFilter(_ context.Context, req *storagepb.ProposalByFilterR
 	}
 
 	res := &storagepb.ProposalByFilterResponse{
-		Proposals:  make([]*storagepb.ProposalInfo, len(list.Proposals)),
-		TotalCount: uint64(list.TotalCount),
+		Proposals:      make([]*storagepb.ProposalInfo, 0, len(list.Proposals)),
+		ProposalsShort: make([]*storagepb.ProposalShortInfo, 0, len(list.Proposals)),
+		TotalCount:     uint64(list.TotalCount),
 	}
 
-	for i, info := range list.Proposals {
-		res.Proposals[i] = convertProposalToAPI(&info)
+	for _, info := range list.Proposals {
+		switch req.GetLevel() {
+		case storagepb.ProposalInfoLevel_PROPOSAL_INFO_LEVEL_SHORT:
+			res.ProposalsShort = append(res.ProposalsShort, convertProposalToShortAPI(&info))
+		default:
+			res.Proposals = append(res.Proposals, convertProposalToAPI(&info))
+		}
 	}
 
 	return res, nil
@@ -162,6 +172,15 @@ func convertProposalToAPI(info *Proposal) *storagepb.ProposalInfo {
 		Votes:         uint64(info.Votes),
 		Timeline:      convertTimelineToAPI(info.Timeline),
 		Spam:          info.Spam,
+	}
+}
+
+func convertProposalToShortAPI(info *Proposal) *storagepb.ProposalShortInfo {
+	return &storagepb.ProposalShortInfo{
+		Id:      info.ID,
+		Created: uint64(info.Created),
+		Title:   info.Title,
+		State:   string(info.State),
 	}
 }
 
