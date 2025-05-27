@@ -85,17 +85,18 @@ type Service struct {
 	zerionClient *zerion.Client
 }
 
-func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, zerionClient *zerion.Client) (*Service, error) {
+func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, fungibleChainRepo *FungibleChainRepo, zerionClient *zerion.Client) (*Service, error) {
 	return &Service{
-		repo:         r,
-		uniqueRepo:   ur,
-		events:       p,
-		idProvider:   ip,
-		proposals:    pp,
-		daoIds:       make(map[string]uuid.UUID),
-		daoMu:        sync.RWMutex{},
-		topDAOCache:  topDAOCache,
-		zerionClient: zerionClient,
+		repo:              r,
+		uniqueRepo:        ur,
+		events:            p,
+		idProvider:        ip,
+		proposals:         pp,
+		daoIds:            make(map[string]uuid.UUID),
+		daoMu:             sync.RWMutex{},
+		topDAOCache:       topDAOCache,
+		fungibleChainRepo: fungibleChainRepo,
+		zerionClient:      zerionClient,
 	}, nil
 }
 

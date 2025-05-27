@@ -225,8 +225,9 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.daoIDService = dao.NewDaoIDService(a.daoIDRepo)
 
 	topDAOCache := dao.NewTopDAOCache(a.daoRepo)
+	fungibleChainRepo := dao.NewFungibleChainRepo(a.db)
 
-	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache, a.zerionClient)
+	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache, fungibleChainRepo, a.zerionClient)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
@@ -235,7 +236,6 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 		return fmt.Errorf("PrefillDaoIDs: %w", err)
 	}
 
-	fungibleChainRepo := dao.NewFungibleChainRepo(a.db)
 	fungibleChainWorker := dao.NewFungibleChainWorker(a.zerionClient, service, fungibleChainRepo)
 
 	cs, err := dao.NewConsumer(nc, service)

@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,8 +13,7 @@ import (
 )
 
 const (
-	fungibleUpdateDelay = 2 * time.Hour
-	updateExpired       = 7 * 24 * time.Hour
+	fungibleUpdateDelay = time.Hour
 )
 
 type FungibleChainWorker struct {
@@ -68,33 +68,38 @@ func (c *FungibleChainWorker) process() error {
 			continue
 		}
 
-		needsUpdate, err := c.fungibleRepo.NeedsUpdate(dao.FungibleId, time.Now().Add(-updateExpired))
-		if err != nil {
-			log.Error().Err(err).Msg("check if needs update")
-			continue
-		}
-
-		if !needsUpdate {
-			continue
-		}
-
 		fData, err := c.zerionClient.GetFungibleData(dao.FungibleId)
 		if err != nil {
 			log.Error().Err(err).Msg("get fungible data")
 			continue
 		}
 
-		chainItems := fData.Attributes.Implementations
-		chainItems = c.filterByDaoStrategies(chainItems, dao.Strategies)
+		allDaoChains := map[string]struct{}{}
+		for _, strategy := range dao.Strategies {
+			allDaoChains[strategy.Network] = struct{}{}
+		}
 
-		for _, chainItem := range chainItems {
+		for _, chainItem := range fData.Attributes.Implementations {
 			chainExInfo, ok := chainsMap[chainItem.ChainID]
 			if !ok {
 				log.Error().Msgf("chain %s not found in chains map", chainItem.ChainID)
 				continue
 			}
 
-			err := c.fungibleRepo.Save(FungibleChain{
+			cutHex, _ := strings.CutPrefix(strings.ToLower(chainExInfo.Attributes.ExternalID), "0x")
+			decVal, err := strconv.ParseInt(cutHex, 16, 64)
+			if err != nil {
+				log.Error().Err(err).Msgf("parse chain external id %s to decimal", chainExInfo.Attributes.ExternalID)
+				continue
+			}
+			decValStr := strconv.FormatInt(decVal, 10)
+
+			if _, ok := allDaoChains[decValStr]; !ok {
+				log.Error().Msgf("dao %s has no strategy for chain %s", dao.Name, chainItem.ChainID)
+				continue
+			}
+
+			err = c.fungibleRepo.Save(FungibleChain{
 				FungibleID: dao.FungibleId,
 				ChainID:    chainItem.ChainID,
 				ExternalID: chainExInfo.Attributes.ExternalID,
@@ -107,26 +112,9 @@ func (c *FungibleChainWorker) process() error {
 				log.Error().Err(err).Msg("save fungible chain")
 			}
 		}
+
+		time.Sleep(time.Second) // TODO: add rate limiter
 	}
 
 	return nil
-}
-
-func (c *FungibleChainWorker) filterByDaoStrategies(items []zerion.Implementations, strategies Strategies) []zerion.Implementations {
-	allChains := map[string]struct{}{}
-	for _, strategy := range strategies {
-		allChains[strings.ToLower(strategy.Network)] = struct{}{}
-	}
-
-	result := make([]zerion.Implementations, 0, len(items))
-	for _, item := range items {
-		_, ok := allChains[item.ChainID]
-		if !ok {
-			continue
-		}
-
-		result = append(result, item)
-	}
-
-	return result
 }

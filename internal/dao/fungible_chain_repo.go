@@ -18,17 +18,6 @@ func (r *FungibleChainRepo) Save(dao FungibleChain) error {
 	return r.db.Save(&dao).Error
 }
 
-func (r *FungibleChainRepo) NeedsUpdate(fungibleID string, updatedBefore time.Time) (bool, error) {
-	var count int64
-	err := r.db.Model(&FungibleChain{}).
-		Where("fungible_id = ? AND updated_at > ?", fungibleID, updatedBefore).
-		Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
-}
-
 func (r *FungibleChainRepo) GetByFungibleID(fungibleID string) ([]FungibleChain, error) {
 	var chains []FungibleChain
 	err := r.db.Where("fungible_id = ?", fungibleID).Find(&chains).Error
@@ -36,4 +25,11 @@ func (r *FungibleChainRepo) GetByFungibleID(fungibleID string) ([]FungibleChain,
 		return nil, err
 	}
 	return chains, nil
+}
+
+func (r *FungibleChainRepo) DeleteExpired(fungibleId string, expireTime time.Time) error {
+	return r.db.
+		Where("fungible_id = ? AND updated_at < ?", fungibleId, expireTime).
+		Delete(&FungibleChain{}).
+		Error
 }
