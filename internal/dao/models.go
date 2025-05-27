@@ -221,3 +221,23 @@ func convertToInternalTreasures(list []aggevents.TreasuryPayload) Treasuries {
 
 	return res
 }
+
+type TokenInfo struct {
+	Name                  string
+	Symbol                string
+	TotalSupply           float64
+	CirculatingSupply     float64
+	MarketCap             float64
+	FullyDilutedValuation float64
+	Price                 float64
+	FungibleID            string
+	Chains                []TokenChainInfo
+}
+
+type TokenChainInfo struct {
+	ChainID  string
+	Name     string
+	Decimals int
+	IconURL  string
+	Address  string
+}

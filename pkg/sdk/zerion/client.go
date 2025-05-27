@@ -3,9 +3,10 @@ package zerion
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
+
+	"github.com/rs/zerolog/log"
 )
 
 type (
@@ -45,6 +46,25 @@ func (c *Client) GetFungibleList(ids string, address string) (*FungibleList, err
 	}
 
 	return &list, nil
+}
+
+func (c *Client) GetChains() ([]ChainData, error) {
+	resp, err := c.getResponse(
+		http.MethodGet,
+		"chains",
+		"chains",
+		map[string]string{},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get response: %w", err)
+	}
+
+	var chains Chains
+	if err = json.Unmarshal(resp, &chains); err != nil {
+		return nil, fmt.Errorf("unmarshal body: %w", err)
+	}
+
+	return chains.Data, nil
 }
 
 func (c *Client) GetFungibleData(id string) (*FungibleData, error) {

@@ -74,27 +74,29 @@ type Service struct {
 	recommendations   []Recommendation
 	recommendationsMu sync.RWMutex
 
-	repo       DataProvider
-	uniqueRepo UniqueVoterProvider
-	events     Publisher
-	idProvider DaoIDProvider
-	proposals  ProposalProvider
+	repo              DataProvider
+	fungibleChainRepo *FungibleChainRepo
+	uniqueRepo        UniqueVoterProvider
+	events            Publisher
+	idProvider        DaoIDProvider
+	proposals         ProposalProvider
 
 	topDAOCache  *TopDAOCache
 	zerionClient *zerion.Client
 }
 
-func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, zerionClient *zerion.Client) (*Service, error) {
+func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, fungibleChainRepo *FungibleChainRepo, zerionClient *zerion.Client) (*Service, error) {
 	return &Service{
-		repo:         r,
-		uniqueRepo:   ur,
-		events:       p,
-		idProvider:   ip,
-		proposals:    pp,
-		daoIds:       make(map[string]uuid.UUID),
-		daoMu:        sync.RWMutex{},
-		topDAOCache:  topDAOCache,
-		zerionClient: zerionClient,
+		repo:              r,
+		uniqueRepo:        ur,
+		events:            p,
+		idProvider:        ip,
+		proposals:         pp,
+		daoIds:            make(map[string]uuid.UUID),
+		daoMu:             sync.RWMutex{},
+		topDAOCache:       topDAOCache,
+		fungibleChainRepo: fungibleChainRepo,
+		zerionClient:      zerionClient,
 	}, nil
 }
 
@@ -571,7 +573,7 @@ func (s *Service) syncRecommendations(_ context.Context) error {
 	return nil
 }
 
-func (s *Service) GetTokenInfo(id uuid.UUID) (*zerion.FungibleData, error) {
+func (s *Service) GetTokenInfo(id uuid.UUID) (*TokenInfo, error) {
 	dao, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get dao: %w", err)
@@ -586,7 +588,35 @@ func (s *Service) GetTokenInfo(id uuid.UUID) (*zerion.FungibleData, error) {
 		return nil, fmt.Errorf("failed to get token info: %w", err)
 	}
 
-	return data, nil
+	var chains []TokenChainInfo
+	if dao.FungibleId != "" {
+		fChains, err := s.fungibleChainRepo.GetByFungibleID(dao.FungibleId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get chains: %w", err)
+		}
+
+		for _, chain := range fChains {
+			chains = append(chains, TokenChainInfo{
+				ChainID:  chain.ChainID,
+				Name:     chain.ChainName,
+				Decimals: chain.Decimals,
+				IconURL:  chain.IconURL,
+				Address:  chain.Address,
+			})
+		}
+	}
+
+	return &TokenInfo{
+		Name:                  data.Attributes.Name,
+		Symbol:                data.Attributes.Symbol,
+		TotalSupply:           data.Attributes.MarketData.TotalSupply,
+		CirculatingSupply:     data.Attributes.MarketData.CirculatingSupply,
+		MarketCap:             data.Attributes.MarketData.MarketCap,
+		FullyDilutedValuation: data.Attributes.MarketData.FullyDilutedValuation,
+		Price:                 data.Attributes.MarketData.Price,
+		FungibleID:            dao.FungibleId,
+		Chains:                chains,
+	}, nil
 }
 
 func (s *Service) GetTokenChart(id uuid.UUID, period string) (*zerion.ChartData, error) {

@@ -225,8 +225,9 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.daoIDService = dao.NewDaoIDService(a.daoIDRepo)
 
 	topDAOCache := dao.NewTopDAOCache(a.daoRepo)
+	fungibleChainRepo := dao.NewFungibleChainRepo(a.db)
 
-	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache, a.zerionClient)
+	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache, fungibleChainRepo, a.zerionClient)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
@@ -234,6 +235,8 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	if err = service.PrefillDaoIDs(); err != nil {
 		return fmt.Errorf("PrefillDaoIDs: %w", err)
 	}
+
+	fungibleChainWorker := dao.NewFungibleChainWorker(a.zerionClient, service, fungibleChainRepo)
 
 	cs, err := dao.NewConsumer(nc, service)
 	if err != nil {
@@ -256,6 +259,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	a.manager.AddWorker(process.NewCallbackWorker("top-dao-cache-worker", topDAOCache.Start))
 	a.manager.AddWorker(process.NewCallbackWorker("dao-recommendations", rw.Process))
 	a.manager.AddWorker(process.NewCallbackWorker("token-price", tpw.Process))
+	a.manager.AddWorker(process.NewCallbackWorker("fungible-chain-worker", fungibleChainWorker.Start))
 
 	return nil
 }

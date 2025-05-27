@@ -16,9 +16,16 @@ type (
 	}
 
 	Attributes struct {
-		Name       string     `json:"name"`
-		Symbol     string     `json:"symbol"`
-		MarketData MarketData `json:"market_data"`
+		Name            string            `json:"name"`
+		Symbol          string            `json:"symbol"`
+		MarketData      MarketData        `json:"market_data"`
+		Implementations []Implementations `json:"implementations"`
+	}
+
+	Implementations struct {
+		ChainID  string `json:"chain_id"`
+		Address  string `json:"address"`
+		Decimals int    `json:"decimals"`
 	}
 
 	FungibleData struct {
@@ -61,6 +68,26 @@ type (
 	Point struct {
 		Time  time.Time
 		Price float64
+	}
+
+	Chains struct {
+		Data []ChainData `json:"data"`
+	}
+
+	ChainData struct {
+		ID         string          `json:"id"`
+		Type       string          `json:"type"`
+		Attributes ChainAttributes `json:"attributes"`
+	}
+
+	ChainAttributes struct {
+		ExternalID string    `json:"external_id"`
+		Name       string    `json:"name"`
+		Icon       ChainIcon `json:"icon,omitempty"`
+	}
+
+	ChainIcon struct {
+		URL string `json:"url,omitempty"`
 	}
 )
 

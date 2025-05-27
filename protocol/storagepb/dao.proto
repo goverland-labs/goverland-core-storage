@@ -8,156 +8,166 @@ import "storagepb/base.proto";
 option go_package = ".;storagepb";
 
 service Dao {
-  rpc GetByID(DaoByIDRequest) returns (DaoByIDResponse);
-  rpc GetByFilter(DaoByFilterRequest) returns (DaoByFilterResponse);
-  rpc GetTopByCategories(TopByCategoriesRequest) returns (TopByCategoriesResponse);
-  rpc GetRecommendationsList(GetRecommendationsListRequest) returns (GetRecommendationsListResponse);
-  rpc GetTokenInfo(TokenInfoRequest) returns (TokenInfoResponse);
-  rpc GetTokenChart(TokenChartRequest) returns (TokenChartResponse);
-  rpc PopulateTokenPrices(TokenPricesRequest) returns (TokenPricesResponse);
+    rpc GetByID(DaoByIDRequest) returns (DaoByIDResponse);
+    rpc GetByFilter(DaoByFilterRequest) returns (DaoByFilterResponse);
+    rpc GetTopByCategories(TopByCategoriesRequest) returns (TopByCategoriesResponse);
+    rpc GetRecommendationsList(GetRecommendationsListRequest) returns (GetRecommendationsListResponse);
+    rpc GetTokenInfo(TokenInfoRequest) returns (TokenInfoResponse);
+    rpc GetTokenChart(TokenChartRequest) returns (TokenChartResponse);
+    rpc PopulateTokenPrices(TokenPricesRequest) returns (TokenPricesResponse);
 }
 
 message DaoByIDRequest {
-  string dao_id = 1;
+    string dao_id = 1;
 }
 
 message Voting  {
-  uint64 delay = 1;
-  uint64 period = 2;
-  string type = 3;
-  float quorum = 4;
-  bool blind = 5;
-  bool  hide_abstain = 6;
-  string privacy = 7;
-  bool aliased = 8;
+    uint64 delay = 1;
+    uint64 period = 2;
+    string type = 3;
+    float quorum = 4;
+    bool blind = 5;
+    bool  hide_abstain = 6;
+    string privacy = 7;
+    bool aliased = 8;
 }
 
 message Treasury  {
-  string name = 1;
-  string address = 2;
-  string network = 3;
+    string name = 1;
+    string address = 2;
+    string network = 3;
 }
 
 message DaoInfo {
-  string id = 1;
-  google.protobuf.Timestamp created_at = 2;
-  google.protobuf.Timestamp updated_at = 3;
-  string name = 4;
-  bool private = 5;
-  string about = 6;
-  string avatar = 7;
-  string terms = 8;
-  string location = 9;
-  string website = 10;
-  string twitter = 11;
-  string github = 12;
-  string coingeko = 13;
-  string email = 14;
-  string network = 15;
-  string symbol = 16;
-  string skin = 17;
-  string domain = 18;
-  repeated Strategy strategies = 19;
-  Voting         voting = 20;
-  repeated string     categories = 21;
-  repeated Treasury treasuries = 22;
-  uint64 followers_count = 23;
-  uint64 proposals_count = 24;
-  string guidelines = 25;
-  string template = 26;
-  string parent_id = 27;
-  string alias = 28;
-  uint64 activity_since = 29;
-  uint64 voters_count = 30;
-  uint64 active_votes = 31;
-  bool verified = 32;
-  double popularity_index = 33;
-  repeated string active_proposals_ids = 34;
-  bool token_exist = 35;
-  string token_symbol = 36;
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    google.protobuf.Timestamp updated_at = 3;
+    string name = 4;
+    bool private = 5;
+    string about = 6;
+    string avatar = 7;
+    string terms = 8;
+    string location = 9;
+    string website = 10;
+    string twitter = 11;
+    string github = 12;
+    string coingeko = 13;
+    string email = 14;
+    string network = 15;
+    string symbol = 16;
+    string skin = 17;
+    string domain = 18;
+    repeated Strategy strategies = 19;
+    Voting         voting = 20;
+    repeated string     categories = 21;
+    repeated Treasury treasuries = 22;
+    uint64 followers_count = 23;
+    uint64 proposals_count = 24;
+    string guidelines = 25;
+    string template = 26;
+    string parent_id = 27;
+    string alias = 28;
+    uint64 activity_since = 29;
+    uint64 voters_count = 30;
+    uint64 active_votes = 31;
+    bool verified = 32;
+    double popularity_index = 33;
+    repeated string active_proposals_ids = 34;
+    bool token_exist = 35;
+    string token_symbol = 36;
 }
 
 message DaoByIDResponse {
-  DaoInfo dao = 1;
+    DaoInfo dao = 1;
 }
 
 message DaoByFilterRequest {
-  optional string query = 1;
-  optional string category = 2;
-  optional uint64 limit = 3;
-  optional uint64 offset = 4;
-  repeated string dao_ids = 5;
+    optional string query = 1;
+    optional string category = 2;
+    optional uint64 limit = 3;
+    optional uint64 offset = 4;
+    repeated string dao_ids = 5;
 }
 
 message DaoByFilterResponse {
-  repeated DaoInfo daos = 1;
-  uint64 total_count = 2;
+    repeated DaoInfo daos = 1;
+    uint64 total_count = 2;
 }
 
 message TopCategory {
-  string category = 1;
-  repeated DaoInfo daos = 2;
-  uint64 total_count = 3;
+    string category = 1;
+    repeated DaoInfo daos = 2;
+    uint64 total_count = 3;
 }
 
 message TopByCategoriesRequest {
-  uint64 limit = 1;
+    uint64 limit = 1;
 }
 
 message TopByCategoriesResponse {
-  repeated TopCategory categories = 1;
+    repeated TopCategory categories = 1;
 }
 
 message GetRecommendationsListRequest {
 }
 
 message DaoRecommendationDetails {
-  string original_id = 1;
-  string internal_id = 2;
-  string name = 3;
-  string symbol = 4;
-  string network_id = 5;
-  string address = 6;
+    string original_id = 1;
+    string internal_id = 2;
+    string name = 3;
+    string symbol = 4;
+    string network_id = 5;
+    string address = 6;
 }
 
 message GetRecommendationsListResponse {
-  repeated DaoRecommendationDetails list = 1;
+    repeated DaoRecommendationDetails list = 1;
 }
 
 message TokenInfoRequest {
-  string dao_id = 1;
+    string dao_id = 1;
 }
 
 message TokenInfoResponse {
-  string name = 1;
-  string symbol = 2;
-  double total_supply = 3;
-  double circulating_supply = 4;
-  double market_cap = 5;
-  double fully_diluted_valuation = 6;
-  double price = 7;
+    string name = 1;
+    string symbol = 2;
+    double total_supply = 3;
+    double circulating_supply = 4;
+    double market_cap = 5;
+    double fully_diluted_valuation = 6;
+    double price = 7;
+    string fungible_id = 8;
+    repeated TokenChainInfo chains = 9;
+}
+
+message TokenChainInfo {
+    string chain_id = 1;
+    string name = 2;
+    uint32 decimals = 3;
+    string icon_url = 4;
+    string address = 5;
 }
 
 message TokenChartRequest {
-  string dao_id = 1;
-  string period = 2;
+    string dao_id = 1;
+    string period = 2;
 }
 
 message TokenChartResponse {
-  double price = 1;
-  double price_changes = 2;
-  repeated Point points = 3;
+    double price = 1;
+    double price_changes = 2;
+    repeated Point points = 3;
 }
 
 message Point {
-  google.protobuf.Timestamp time = 1;
-  double price = 2;
+    google.protobuf.Timestamp time = 1;
+    double price = 2;
 }
 
 message TokenPricesRequest {
-  string dao_id = 1;
+    string dao_id = 1;
 }
 
 message TokenPricesResponse {
-  bool status = 1;
+    bool status = 1;
 }
