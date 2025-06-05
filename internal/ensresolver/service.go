@@ -92,8 +92,14 @@ func (s *Service) processAddresses(list []string) {
 		return
 	}
 
+	uniqueAddresses := make(map[string]struct{}, len(list))
 	result := make([]EnsName, 0, len(res.Addresses))
 	for _, address := range res.Addresses {
+		if _, ok := uniqueAddresses[address.String()]; ok {
+			continue
+		}
+
+		uniqueAddresses[address.String()] = struct{}{}
 		result = append(result, EnsName{
 			Address: address.Address,
 			Name:    address.EnsName,
