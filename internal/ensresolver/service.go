@@ -88,29 +88,30 @@ func (s *Service) processAddresses(list []string) {
 		Addresses: list,
 	})
 	if err != nil {
-		// todo: add to queue?
 		log.Error().Err(err).Msg("resolve domains")
-
 		return
 	}
 
+	uniqueAddresses := make(map[string]struct{}, len(list))
 	result := make([]EnsName, 0, len(res.Addresses))
 	for _, address := range res.Addresses {
+		if _, ok := uniqueAddresses[address.String()]; ok {
+			continue
+		}
+
+		uniqueAddresses[address.String()] = struct{}{}
 		result = append(result, EnsName{
 			Address: address.Address,
 			Name:    address.EnsName,
 		})
 	}
 
-	created := s.repo.BatchCreate(result)
-
-	log.Info().Msgf("processed %d items, created %d items", len(list), len(created))
-
-	if len(created) == 0 {
+	if err = s.repo.BatchCreate(result); err != nil {
+		log.Error().Err(err).Msg("BatchCreate ens names")
 		return
 	}
 
-	if err := s.publisher.PublishJSON(ctx, coreevents.SubjectEnsResolverResolved, convertToCoreEvent(result)); err != nil {
+	if err = s.publisher.PublishJSON(ctx, coreevents.SubjectEnsResolverResolved, convertToCoreEvent(result)); err != nil {
 		log.Error().Err(err).Msgf("publish ens names event")
 	}
 }

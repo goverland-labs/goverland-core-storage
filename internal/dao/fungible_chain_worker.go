@@ -94,8 +94,8 @@ func (c *FungibleChainWorker) process() error {
 			}
 			decValStr := strconv.FormatInt(decVal, 10)
 
-			if _, ok := allDaoChains[decValStr]; !ok {
-				log.Error().Msgf("dao %s has no strategy for chain %s", dao.Name, chainItem.ChainID)
+			if _, ok = allDaoChains[decValStr]; !ok {
+				log.Warn().Msgf("dao %s has no strategy for chain %s", dao.Name, chainItem.ChainID)
 				continue
 			}
 

@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -24,30 +23,17 @@ type EnsName struct {
 	Name      string
 }
 
-func (r *Repo) BatchCreate(data []EnsName) []EnsName {
-	var created []EnsName
-	for i := range data {
-		target := data[i]
-		target.UpdatedAt = time.Now()
-
-		err := r.db.Model(&EnsName{}).Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "name"}},
-			DoUpdates: clause.AssignmentColumns([]string{"address"}),
-		}).Create(&target).Error
-		if err != nil {
-			log.Error().
-				Err(err).
-				Str("name", target.Name).
-				Str("address", target.Address).
-				Msg("create ens name in db")
-
-			continue
-		}
-
-		created = append(created, target)
-	}
-
-	return created
+func (r *Repo) BatchCreate(data []EnsName) error {
+	return r.db.
+		Model(&EnsName{}).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: "address"},
+			},
+			UpdateAll: true,
+		}).
+		CreateInBatches(data, 500).
+		Error
 }
 
 func (r *Repo) GetByAddresses(addresses []string) ([]EnsName, error) {
