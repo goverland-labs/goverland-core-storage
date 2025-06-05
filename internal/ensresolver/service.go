@@ -88,9 +88,7 @@ func (s *Service) processAddresses(list []string) {
 		Addresses: list,
 	})
 	if err != nil {
-		// todo: add to queue?
 		log.Error().Err(err).Msg("resolve domains")
-
 		return
 	}
 
@@ -102,15 +100,12 @@ func (s *Service) processAddresses(list []string) {
 		})
 	}
 
-	created := s.repo.BatchCreate(result)
-
-	log.Info().Msgf("processed %d items, created %d items", len(list), len(created))
-
-	if len(created) == 0 {
+	if err = s.repo.BatchCreate(result); err != nil {
+		log.Error().Err(err).Msg("BatchCreate ens names")
 		return
 	}
 
-	if err := s.publisher.PublishJSON(ctx, coreevents.SubjectEnsResolverResolved, convertToCoreEvent(result)); err != nil {
+	if err = s.publisher.PublishJSON(ctx, coreevents.SubjectEnsResolverResolved, convertToCoreEvent(result)); err != nil {
 		log.Error().Err(err).Msgf("publish ens names event")
 	}
 }
