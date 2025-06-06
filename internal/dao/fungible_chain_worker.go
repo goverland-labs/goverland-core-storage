@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	fungibleUpdateDelay = time.Hour
+	fungibleUpdateDelay = 2 * 24 * time.Hour
 )
 
 type FungibleChainWorker struct {
@@ -113,7 +113,7 @@ func (c *FungibleChainWorker) process() error {
 			}
 		}
 
-		time.Sleep(time.Second) // TODO: add rate limiter
+		time.Sleep(10 * time.Second) // TODO: add rate limiter
 	}
 
 	return nil
