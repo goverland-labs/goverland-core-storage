@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.18] - 2025-06-07
+
 ### Fixed
 - Increased fungible worker duration, to avoid Zerion limit reaching  
 
