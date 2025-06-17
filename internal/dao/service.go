@@ -170,7 +170,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	equal := compare(new, existed)
 	fi := ""
 	ts := ""
-	if new.Verified && existed.FungibleId == "" {
+	if existed.FungibleId == "" && existed.VerificationStatus != "declined" && (slices.Contains(existed.Categories, newDaoCategoryName) || new.Verified) {
 		fi, ts = s.getFungibleId(new.Strategies)
 		existed.FungibleId = fi
 		existed.TokenSymbol = ts
