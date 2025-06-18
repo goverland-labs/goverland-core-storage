@@ -649,3 +649,24 @@ func convertToTokenPricesPayload(list []zerion.Point, daoId uuid.UUID) coreevent
 
 	return res
 }
+
+func (s *Service) UpdateFungibleIds(ctx context.Context, category string) (bool, error) {
+	filters := []Filter{
+		FungibleIdEmptyFilter{},
+	}
+	if category == "new" {
+		filters = append(filters, CategoryFilter{Category: newDaoCategoryName})
+	} else {
+		filters = append(filters, VerifiedFilter{})
+	}
+	daos, err := s.repo.GetByFilters(filters, false)
+	if err != nil {
+		return false, fmt.Errorf("get daos: %w", err)
+	}
+
+	for _, dao := range daos.Daos {
+		_ = s.processExisted(ctx, dao, dao)
+	}
+
+	return true, nil
+}
