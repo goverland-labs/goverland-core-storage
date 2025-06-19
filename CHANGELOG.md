@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.20] - 2025-06-19
+
+### Fixed
+- Method to recalculate fungible ids
+
 ## [0.4.19] - 2025-06-16
 
 ### Added

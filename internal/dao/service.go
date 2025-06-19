@@ -650,7 +650,7 @@ func convertToTokenPricesPayload(list []zerion.Point, daoId uuid.UUID) coreevent
 	return res
 }
 
-func (s *Service) UpdateFungibleIds(ctx context.Context, category string) (bool, error) {
+func (s *Service) UpdateFungibleIds(_ context.Context, category string) (bool, error) {
 	filters := []Filter{
 		FungibleIdEmptyFilter{},
 	}
@@ -663,9 +663,8 @@ func (s *Service) UpdateFungibleIds(ctx context.Context, category string) (bool,
 	if err != nil {
 		return false, fmt.Errorf("get daos: %w", err)
 	}
-
 	for _, dao := range daos.Daos {
-		_ = s.processExisted(ctx, dao, dao)
+		_ = s.processExisted(context.TODO(), dao, dao)
 	}
 
 	return true, nil
