@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.19] - 2025-06-16
+
+### Added
+- Verification status for dao
+- Method to recalculate fungible ids
+
 ## [0.4.18] - 2025-06-07
 
 ### Fixed

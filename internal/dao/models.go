@@ -110,44 +110,47 @@ type Dao struct {
 	// ActiveVotes the number of active proposals
 	ActiveVotes int
 	// ActiveProposalsIDs the list of active proposals identifiers
-	ActiveProposalsIDs []string `gorm:"serializer:json"`
-	Verified           bool
-	FungibleId         string
-	TokenSymbol        string
+	ActiveProposalsIDs  []string `gorm:"serializer:json"`
+	Verified            bool
+	FungibleId          string
+	TokenSymbol         string
+	VerificationStatus  string
+	VerificationComment string
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {
 	return events.DaoPayload{
-		ID:              dao.ID,
-		CreatedAt:       dao.CreatedAt,
-		Alias:           dao.OriginalID,
-		Name:            dao.Name,
-		Private:         dao.Private,
-		About:           dao.About,
-		Avatar:          dao.Avatar,
-		Terms:           dao.Terms,
-		Location:        dao.Location,
-		Website:         dao.Website,
-		Twitter:         dao.Twitter,
-		Github:          dao.Github,
-		Coingecko:       dao.Coingecko,
-		Email:           dao.Email,
-		Network:         dao.Network,
-		Symbol:          dao.Symbol,
-		Skin:            dao.Skin,
-		Domain:          dao.Domain,
-		Strategies:      convertToStrategies(dao.Strategies),
-		Voting:          convertToVoting(dao.Voting),
-		Categories:      dao.Categories,
-		Treasures:       convertToTreasures(dao.Treasures),
-		FollowersCount:  dao.FollowersCount,
-		ProposalsCount:  dao.ProposalsCount,
-		Guidelines:      dao.Guidelines,
-		Template:        dao.Template,
-		ParentID:        dao.ParentID,
-		ActiveSince:     &dao.ActivitySince,
-		Verified:        dao.Verified,
-		PopularityIndex: &dao.PopularityIndex,
+		ID:                 dao.ID,
+		CreatedAt:          dao.CreatedAt,
+		Alias:              dao.OriginalID,
+		Name:               dao.Name,
+		Private:            dao.Private,
+		About:              dao.About,
+		Avatar:             dao.Avatar,
+		Terms:              dao.Terms,
+		Location:           dao.Location,
+		Website:            dao.Website,
+		Twitter:            dao.Twitter,
+		Github:             dao.Github,
+		Coingecko:          dao.Coingecko,
+		Email:              dao.Email,
+		Network:            dao.Network,
+		Symbol:             dao.Symbol,
+		Skin:               dao.Skin,
+		Domain:             dao.Domain,
+		Strategies:         convertToStrategies(dao.Strategies),
+		Voting:             convertToVoting(dao.Voting),
+		Categories:         dao.Categories,
+		Treasures:          convertToTreasures(dao.Treasures),
+		FollowersCount:     dao.FollowersCount,
+		ProposalsCount:     dao.ProposalsCount,
+		Guidelines:         dao.Guidelines,
+		Template:           dao.Template,
+		ParentID:           dao.ParentID,
+		ActiveSince:        &dao.ActivitySince,
+		Verified:           dao.Verified,
+		PopularityIndex:    &dao.PopularityIndex,
+		VerificationStatus: dao.VerificationStatus,
 	}
 }
 

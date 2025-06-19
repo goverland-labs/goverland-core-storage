@@ -147,3 +147,10 @@ type FungibleIdFilter struct {
 func (f FungibleIdFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("fungible_id is not null and fungible_id!=''")
 }
+
+type FungibleIdEmptyFilter struct {
+}
+
+func (f FungibleIdEmptyFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Where("fungible_id is null or fungible_id=''")
+}

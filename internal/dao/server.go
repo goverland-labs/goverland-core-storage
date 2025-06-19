@@ -315,6 +315,15 @@ func (s *Server) PopulateTokenPrices(ctx context.Context, req *storagepb.TokenPr
 	return &storagepb.TokenPricesResponse{Status: ok}, nil
 }
 
+func (s *Server) UpdateFungibleIds(ctx context.Context, req *storagepb.UpdateFungibleIdsRequest) (*storagepb.UpdateFungibleIdsResponse, error) {
+	ok, err := s.sp.UpdateFungibleIds(ctx, req.Category)
+	if err != nil {
+		log.Error().Err(err).Msgf("update fungible ids: %+v", req)
+		return &storagepb.UpdateFungibleIdsResponse{Status: false}, status.Error(codes.Internal, "internal error")
+	}
+	return &storagepb.UpdateFungibleIdsResponse{Status: ok}, nil
+}
+
 func convertChartToAPI(data *zerion.ChartData) *storagepb.TokenChartResponse {
 	var pc float64
 	if data.ChartAttributes.Stats.First != 0 {

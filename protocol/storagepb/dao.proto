@@ -15,6 +15,7 @@ service Dao {
     rpc GetTokenInfo(TokenInfoRequest) returns (TokenInfoResponse);
     rpc GetTokenChart(TokenChartRequest) returns (TokenChartResponse);
     rpc PopulateTokenPrices(TokenPricesRequest) returns (TokenPricesResponse);
+    rpc UpdateFungibleIds(UpdateFungibleIdsRequest) returns (UpdateFungibleIdsResponse);
 }
 
 message DaoByIDRequest {
@@ -169,5 +170,13 @@ message TokenPricesRequest {
 }
 
 message TokenPricesResponse {
+    bool status = 1;
+}
+
+message UpdateFungibleIdsRequest {
+    string category = 1;
+}
+
+message UpdateFungibleIdsResponse {
     bool status = 1;
 }
