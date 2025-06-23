@@ -2,12 +2,14 @@ package dao
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"github.com/goverland-labs/goverland-core-storage/pkg/sdk/zerion"
-	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
-	"golang.org/x/exp/maps"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	coreevents "github.com/goverland-labs/goverland-platform-events/events/core"
+	"golang.org/x/exp/maps"
+
+	"github.com/goverland-labs/goverland-core-storage/pkg/sdk/zerion"
 
 	"github.com/rs/zerolog/log"
 )
@@ -54,6 +56,7 @@ func (w *TokenPriceWorker) Process(ctx context.Context) error {
 				l, err := w.zerionClient.GetFungibleList(strings.Join(ids, ","), "")
 				if err != nil {
 					log.Error().Err(err).Msg("zerion client error")
+					break
 				}
 				if err := w.service.events.PublishJSON(ctx, coreevents.DaoTokenPriceUpdated, convertToCorePaylod(l.List, fm)); err != nil {
 					log.Error().Err(err).Msgf("publish token prices event")
