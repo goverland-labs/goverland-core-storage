@@ -154,3 +154,15 @@ type FungibleIdEmptyFilter struct {
 func (f FungibleIdEmptyFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("fungible_id is null or fungible_id=''")
 }
+
+type FungibleIDsFilter struct {
+	FungibleIDs []string
+}
+
+func (f FungibleIDsFilter) Apply(db *gorm.DB) *gorm.DB {
+	if len(f.FungibleIDs) == 0 {
+		return db
+	}
+
+	return db.Where("fungible_id IN ?", f.FungibleIDs)
+}
