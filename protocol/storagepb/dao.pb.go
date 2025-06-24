@@ -264,6 +264,7 @@ type DaoInfo struct {
 	ActiveProposalsIds []string               `protobuf:"bytes,34,rep,name=active_proposals_ids,json=activeProposalsIds,proto3" json:"active_proposals_ids,omitempty"`
 	TokenExist         bool                   `protobuf:"varint,35,opt,name=token_exist,json=tokenExist,proto3" json:"token_exist,omitempty"`
 	TokenSymbol        string                 `protobuf:"bytes,36,opt,name=token_symbol,json=tokenSymbol,proto3" json:"token_symbol,omitempty"`
+	FungibleId         string                 `protobuf:"bytes,37,opt,name=fungible_id,json=fungibleId,proto3" json:"fungible_id,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -546,6 +547,13 @@ func (x *DaoInfo) GetTokenExist() bool {
 func (x *DaoInfo) GetTokenSymbol() string {
 	if x != nil {
 		return x.TokenSymbol
+	}
+	return ""
+}
+
+func (x *DaoInfo) GetFungibleId() string {
+	if x != nil {
+		return x.FungibleId
 	}
 	return ""
 }
@@ -1629,7 +1637,7 @@ const file_storagepb_dao_proto_rawDesc = "" +
 	"\bTreasury\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x18\n" +
-	"\anetwork\x18\x03 \x01(\tR\anetwork\"\x99\t\n" +
+	"\anetwork\x18\x03 \x01(\tR\anetwork\"\xba\t\n" +
 	"\aDaoInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x129\n" +
 	"\n" +
@@ -1678,7 +1686,9 @@ const file_storagepb_dao_proto_rawDesc = "" +
 	"\x14active_proposals_ids\x18\" \x03(\tR\x12activeProposalsIds\x12\x1f\n" +
 	"\vtoken_exist\x18# \x01(\bR\n" +
 	"tokenExist\x12!\n" +
-	"\ftoken_symbol\x18$ \x01(\tR\vtokenSymbol\"7\n" +
+	"\ftoken_symbol\x18$ \x01(\tR\vtokenSymbol\x12\x1f\n" +
+	"\vfungible_id\x18% \x01(\tR\n" +
+	"fungibleId\"7\n" +
 	"\x0fDaoByIDResponse\x12$\n" +
 	"\x03dao\x18\x01 \x01(\v2\x12.storagepb.DaoInfoR\x03dao\"\xf0\x01\n" +
 	"\x12DaoByFilterRequest\x12\x19\n" +

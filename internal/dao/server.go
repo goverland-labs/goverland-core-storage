@@ -191,6 +191,7 @@ func ConvertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
 		ActiveProposalsIds: dao.ActiveProposalsIDs,
 		TokenExist:         dao.FungibleId != "",
 		TokenSymbol:        dao.TokenSymbol,
+		FungibleId:         dao.FungibleId,
 		// TODO: parentID
 	}
 }
