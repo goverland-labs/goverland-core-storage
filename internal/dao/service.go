@@ -178,7 +178,10 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 			existed.VerificationStatus = "pending"
 		}
 	}
-	if equal && fi == "" {
+	if equal {
+		if fi != "" {
+			_ = s.repo.Update(existed)
+		}
 		return nil
 	}
 
@@ -239,7 +242,9 @@ func (s *Service) getFungibleId(strategies Strategies) (string, string) {
 		l, err := s.zerionClient.GetFungibleList("", adr)
 		if err == nil && l != nil && len(l.List) == 1 {
 			data := l.List[0]
-			return data.ID, data.Attributes.Symbol
+			if data.Attributes.MarketData.Price != 0 {
+				return data.ID, data.Attributes.Symbol
+			}
 		}
 	}
 
@@ -664,7 +669,15 @@ func (s *Service) UpdateFungibleIds(_ context.Context, category string) (bool, e
 		return false, fmt.Errorf("get daos: %w", err)
 	}
 	for _, dao := range daos.Daos {
-		_ = s.processExisted(context.TODO(), dao, dao)
+		if dao.VerificationStatus != "declined" {
+			fi, ts := s.getFungibleId(dao.Strategies)
+			if fi != "" {
+				dao.VerificationStatus = "pending"
+				dao.FungibleId = fi
+				dao.TokenSymbol = ts
+				_ = s.repo.Update(dao)
+			}
+		}
 	}
 
 	return true, nil

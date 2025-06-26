@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.22] - 2025-06-26
+
+### Changed
+- Do not send update dao message if only fungible id is changed
+- Set fungible id only if the price is not null
+
 ## [0.4.21] - 2025-06-23
 
 ### Fixed
