@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.23] - 2025-06-27
+
 ### Added 
 - Added fungible ids filter to get daos by fungible ids
 
