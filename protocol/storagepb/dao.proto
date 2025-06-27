@@ -76,6 +76,7 @@ message DaoInfo {
     repeated string active_proposals_ids = 34;
     bool token_exist = 35;
     string token_symbol = 36;
+    string fungible_id = 37;
 }
 
 message DaoByIDResponse {
@@ -88,6 +89,7 @@ message DaoByFilterRequest {
     optional uint64 limit = 3;
     optional uint64 offset = 4;
     repeated string dao_ids = 5;
+    repeated string fungible_ids = 6;
 }
 
 message DaoByFilterResponse {

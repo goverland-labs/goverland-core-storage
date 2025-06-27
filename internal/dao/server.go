@@ -92,6 +92,12 @@ func (s *Server) GetByFilter(_ context.Context, req *storagepb.DaoByFilterReques
 		})
 	}
 
+	if len(req.GetFungibleIds()) != 0 {
+		filters = append(filters, FungibleIDsFilter{
+			FungibleIDs: req.GetFungibleIds(),
+		})
+	}
+
 	list, err := s.sp.GetByFilters(filters)
 	if err != nil {
 		log.Error().Err(err).Msgf("get daos by filter: %+v", req)
@@ -185,6 +191,7 @@ func ConvertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
 		ActiveProposalsIds: dao.ActiveProposalsIDs,
 		TokenExist:         dao.FungibleId != "",
 		TokenSymbol:        dao.TokenSymbol,
+		FungibleId:         dao.FungibleId,
 		// TODO: parentID
 	}
 }
