@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.24] - 2025-06-30
+
+### Changed
+- Top logic
+
 ## [0.4.23] - 2025-06-27
 
 ### Added 
