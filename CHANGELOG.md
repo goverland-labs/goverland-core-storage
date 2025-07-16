@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.26] - 2025-07-16
+
+### Added
+- Send dao to discord for which a token is defined
+
 ## [0.4.25] - 2025-07-16
 
 ### Added

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"github.com/goverland-labs/goverland-core-storage/internal/discord"
 	"log"
 	"net/http"
 	"os"
@@ -69,7 +70,8 @@ type Application struct {
 
 	statsService *stats.Service
 
-	zerionClient *zerionsdk.Client
+	zerionClient  *zerionsdk.Client
+	discordSender *discord.Sender
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -169,6 +171,7 @@ func (a *Application) initServices() error {
 	}
 
 	a.initZerionAPI()
+	a.initDiscordSender()
 
 	err = a.initEnsResolver(pb)
 	if err != nil {
@@ -227,7 +230,7 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 	topDAOCache := dao.NewTopDAOCache(a.daoRepo)
 	fungibleChainRepo := dao.NewFungibleChainRepo(a.db)
 
-	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache, fungibleChainRepo, a.zerionClient)
+	service, err := dao.NewService(a.daoRepo, a.daoUniqueRepo, a.daoIDService, pb, a.proposalRepo, topDAOCache, fungibleChainRepo, a.zerionClient, a.discordSender)
 	if err != nil {
 		return fmt.Errorf("dao service: %w", err)
 	}
@@ -402,4 +405,9 @@ func (a *Application) registerShutdown() {
 func (a *Application) initZerionAPI() {
 	zc := zerionsdk.NewClient(a.cfg.Zerion.BaseURL, a.cfg.Zerion.Key, http.DefaultClient)
 	a.zerionClient = zc
+}
+
+func (a *Application) initDiscordSender() {
+	ds := discord.NewSender(a.cfg.Discord.NewDaosURL)
+	a.discordSender = ds
 }
