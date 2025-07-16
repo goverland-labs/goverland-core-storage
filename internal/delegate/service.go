@@ -142,26 +142,40 @@ func (s *Service) GetDelegates(ctx context.Context, request GetDelegatesRequest)
 
 	respAddresses := make([]string, 0, len(resp.GetDelegates()))
 	for _, d := range resp.GetDelegates() {
-		respAddresses = append(respAddresses, d.GetAddress())
+		respAddresses = append(respAddresses, strings.ToLower(d.GetAddress()))
 	}
 	ensNames, err := s.resolveAddressesName(respAddresses)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve addresses names: %w", err)
 	}
 
+	votesCnt, err := s.repo.GetVotesCnt(daoEntity.ID, respAddresses)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get votes count: %w", err)
+	}
+
+	prCnt, err := s.repo.GetProposalsCnt(daoEntity.ID, respAddresses)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get votes count: %w", err)
+	}
+
 	delegates := make([]Delegate, 0, len(resp.Delegates))
 	for _, d := range resp.GetDelegates() {
+		address := strings.ToLower(d.GetAddress())
+		votes := votesCnt[address]
+		proposals := prCnt[address]
+
 		delegates = append(delegates, Delegate{
-			Address:               d.GetAddress(),
-			ENSName:               ensNames[d.GetAddress()],
+			Address:               address,
+			ENSName:               ensNames[address],
 			DelegatorCount:        d.GetDelegatorCount(),
 			PercentOfDelegators:   d.GetPercentOfDelegators(),
 			VotingPower:           d.GetVotingPower(),
 			PercentOfVotingPower:  d.GetPercentOfVotingPower(),
 			About:                 d.GetAbout(),
 			Statement:             d.GetStatement(),
-			VotesCount:            0,
-			CreatedProposalsCount: 0,
+			VotesCount:            int32(votes),
+			CreatedProposalsCount: int32(proposals),
 		})
 	}
 

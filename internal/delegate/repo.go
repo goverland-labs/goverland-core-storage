@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -395,4 +396,70 @@ func (r *Repo) AllowedDaos() ([]AllowedDao, error) {
 	}
 
 	return list, nil
+}
+
+func (r *Repo) GetVotesCnt(daoID uuid.UUID, voters []string) (map[string]int, error) {
+	rows, err := r.db.Raw(`
+			select lower(voter), count(*)
+			from votes
+			where lower(voter) = ANY(?)
+				and dao_id = ?
+			group by voter	
+		`, pq.Array(voters), daoID).Rows()
+
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+
+	result := make(map[string]int)
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			address string
+			count   int
+		)
+		if err = rows.Scan(
+			&address,
+			&count,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		result[strings.ToLower(address)] = count
+	}
+
+	return result, nil
+}
+
+func (r *Repo) GetProposalsCnt(daoID uuid.UUID, authors []string) (map[string]int, error) {
+	rows, err := r.db.Raw(`
+			select lower(author), count(*)
+			from proposals
+			where lower(author) = ANY(?)
+				and dao_id = ?
+			group by author	
+		`, pq.Array(authors), daoID).Rows()
+
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+
+	result := make(map[string]int)
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			address string
+			count   int
+		)
+		if err = rows.Scan(
+			&address,
+			&count,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		result[strings.ToLower(address)] = count
+	}
+
+	return result, nil
 }
