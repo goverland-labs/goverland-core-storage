@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Extend delegates summary with votes and proposals counters
+
 ## [0.4.24] - 2025-06-30
 
 ### Changed
