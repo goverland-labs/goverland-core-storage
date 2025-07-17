@@ -240,7 +240,7 @@ func enrichWithSystemCategories(list, existed []string) []string {
 
 func (s *Service) getFungibleId(strategies Strategies) (string, string) {
 	for _, strategy := range strategies {
-		if strategy.Name != "erc20-balance-of" && strategy.Name != "erc20-votes" && strategy.Name != "balance-of-with-min" {
+		if strategy.Name != "erc20-balance-of" && strategy.Name != "erc20-votes" && strategy.Name != "erc20-balance-of-delegation" && strategy.Name != "comp-like-votes" {
 			continue
 		}
 		adr := strategy.Params["address"].(string)
