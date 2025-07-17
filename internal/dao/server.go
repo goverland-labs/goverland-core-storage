@@ -189,7 +189,7 @@ func ConvertDaoToAPI(dao *Dao) *storagepb.DaoInfo {
 		Verified:           dao.Verified,
 		PopularityIndex:    dao.PopularityIndex,
 		ActiveProposalsIds: dao.ActiveProposalsIDs,
-		TokenExist:         dao.FungibleId != "",
+		TokenExist:         dao.FungibleId != "" && dao.VerificationStatus != "declined",
 		TokenSymbol:        dao.TokenSymbol,
 		FungibleId:         dao.FungibleId,
 		// TODO: parentID

@@ -8,4 +8,5 @@ type App struct {
 	DB          DB
 	InternalAPI InternalAPI
 	Zerion      Zerion
+	Discord     Discord
 }

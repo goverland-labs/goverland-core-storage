@@ -60,6 +60,16 @@ func (r *Repo) GetEarliestByDaoID(daoID uuid.UUID) (*Proposal, error) {
 	return pr, nil
 }
 
+func (r *Repo) GetLatestByDaoID(daoID uuid.UUID) (*Proposal, error) {
+	var pr *Proposal
+	err := r.db.Raw("select * from proposals p where p.dao_id = ? order by created desc limit 1", daoID).First(&pr).Error
+	if err != nil {
+		return nil, fmt.Errorf("find active: %w", err)
+	}
+
+	return pr, nil
+}
+
 type ProposalList struct {
 	Proposals  []Proposal
 	TotalCount int64

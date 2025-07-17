@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goverland-labs/goverland-core-storage/internal/discord"
+	"golang.org/x/text/language"
+	message2 "golang.org/x/text/message"
 	"reflect"
 	"slices"
 	"sync"
@@ -64,6 +67,7 @@ type UniqueVoterProvider interface {
 
 type ProposalProvider interface {
 	GetEarliestByDaoID(uuid.UUID) (*proposal.Proposal, error)
+	GetLatestByDaoID(uuid.UUID) (*proposal.Proposal, error)
 	GetByID(string) (*proposal.Proposal, error)
 }
 
@@ -81,11 +85,12 @@ type Service struct {
 	idProvider        DaoIDProvider
 	proposals         ProposalProvider
 
-	topDAOCache  *TopDAOCache
-	zerionClient *zerion.Client
+	topDAOCache   *TopDAOCache
+	zerionClient  *zerion.Client
+	discordSender *discord.Sender
 }
 
-func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, fungibleChainRepo *FungibleChainRepo, zerionClient *zerion.Client) (*Service, error) {
+func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, fungibleChainRepo *FungibleChainRepo, zerionClient *zerion.Client, discordSender *discord.Sender) (*Service, error) {
 	return &Service{
 		repo:              r,
 		uniqueRepo:        ur,
@@ -97,6 +102,7 @@ func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publ
 		topDAOCache:       topDAOCache,
 		fungibleChainRepo: fungibleChainRepo,
 		zerionClient:      zerionClient,
+		discordSender:     discordSender,
 	}, nil
 }
 
@@ -141,6 +147,7 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 		dao.FungibleId = fi
 		dao.TokenSymbol = ts
 		dao.VerificationStatus = "pending"
+		s.sendDaoToDiscord(dao)
 	}
 	if err := s.repo.Create(dao); err != nil {
 		return fmt.Errorf("can't create dao: %w", err)
@@ -176,6 +183,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 		existed.TokenSymbol = ts
 		if fi != "" {
 			existed.VerificationStatus = "pending"
+			s.sendDaoToDiscord(existed)
 		}
 	}
 	if equal {
@@ -232,7 +240,7 @@ func enrichWithSystemCategories(list, existed []string) []string {
 
 func (s *Service) getFungibleId(strategies Strategies) (string, string) {
 	for _, strategy := range strategies {
-		if strategy.Name != "erc20-balance-of" && strategy.Name != "erc20-votes" && strategy.Name != "balance-of-with-min" {
+		if strategy.Name != "erc20-balance-of" && strategy.Name != "erc20-votes" && strategy.Name != "erc20-balance-of-delegation" && strategy.Name != "comp-like-votes" {
 			continue
 		}
 		adr := strategy.Params["address"].(string)
@@ -676,9 +684,33 @@ func (s *Service) UpdateFungibleIds(_ context.Context, category string) (bool, e
 				dao.FungibleId = fi
 				dao.TokenSymbol = ts
 				_ = s.repo.Update(dao)
+				s.sendDaoToDiscord(dao)
 			}
 		}
 	}
 
 	return true, nil
+}
+
+func (s *Service) sendDaoToDiscord(dao Dao) {
+	pr, err := s.proposals.GetLatestByDaoID(dao.ID)
+	vp := float32(0)
+	if err == nil && pr != nil {
+		vp = pr.ScoresTotal
+	}
+	price := float64(0)
+	fdp := float64(0)
+	data, err := s.zerionClient.GetFungibleData(dao.FungibleId)
+	if err == nil && data != nil {
+		if data.Attributes.MarketData.Price != 0 {
+			price = data.Attributes.MarketData.Price
+			fdp = data.Attributes.MarketData.FullyDilutedValuation
+		}
+	}
+	pEN := message2.NewPrinter(language.English)
+	message := pEN.Sprintf("DAO: https://gl.app/dao/%s\nCreated: %s\n FungibleId: %s\nToken %s: Price - %v, FDV - %v\nLast Proposal VP: %v",
+		dao.OriginalID, dao.CreatedAt.Format(time.DateOnly), dao.FungibleId, dao.TokenSymbol, price, fdp, vp)
+	if err := s.discordSender.SendMessage(message); err != nil {
+		log.Warn().Err(err).Msgf("can't send discord message for dao: %s", dao.ID.String())
+	}
 }
