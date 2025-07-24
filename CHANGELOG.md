@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.27] - 2025-07-24
+
+### Added
+- Check fungible id if proposal is created
+
 ## [0.4.26] - 2025-07-16
 
 ### Added
