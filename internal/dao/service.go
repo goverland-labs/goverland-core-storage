@@ -357,16 +357,21 @@ func (s *Service) UpdateFungibleId(_ context.Context, id uuid.UUID) {
 		return
 	}
 
-	if dao.FungibleId == "" && dao.VerificationStatus != "declined" {
-		fi, ts := s.getFungibleId(dao.Strategies)
-		if fi != "" {
-			dao.VerificationStatus = "pending"
-			dao.FungibleId = fi
-			dao.TokenSymbol = ts
-			_ = s.repo.Update(*dao)
-			s.sendDaoToDiscord(*dao)
-		}
+	if dao.FungibleId != "" || dao.VerificationStatus == "declined" {
+		return
 	}
+
+	fi, ts := s.getFungibleId(dao.Strategies)
+	if fi == "" {
+		return
+
+	}
+
+	dao.VerificationStatus = "pending"
+	dao.FungibleId = fi
+	dao.TokenSymbol = ts
+	_ = s.repo.Update(*dao)
+	s.sendDaoToDiscord(*dao)
 }
 
 // todo: add transaction here to avoid concurrent update
