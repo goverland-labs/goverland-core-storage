@@ -87,6 +87,8 @@ func (c *Consumer) activitySinceHandler() pevents.DaoHandler {
 			return err
 		}
 
+		c.service.UpdateFungibleId(context.TODO(), daoID)
+
 		if updated == nil {
 			return nil
 		}

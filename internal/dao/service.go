@@ -143,12 +143,6 @@ func (s *Service) HandleDao(ctx context.Context, dao Dao) error {
 }
 
 func (s *Service) processNew(ctx context.Context, dao Dao) error {
-	if fi, ts := s.getFungibleId(dao.Strategies); fi != "" {
-		dao.FungibleId = fi
-		dao.TokenSymbol = ts
-		dao.VerificationStatus = "pending"
-		s.sendDaoToDiscord(dao)
-	}
 	if err := s.repo.Create(dao); err != nil {
 		return fmt.Errorf("can't create dao: %w", err)
 	}
@@ -175,21 +169,7 @@ func (s *Service) processNew(ctx context.Context, dao Dao) error {
 
 func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	equal := compare(new, existed)
-	fi := ""
-	ts := ""
-	if existed.FungibleId == "" && existed.VerificationStatus != "declined" && (slices.Contains(existed.Categories, newDaoCategoryName) || new.Verified) {
-		fi, ts = s.getFungibleId(new.Strategies)
-		existed.FungibleId = fi
-		existed.TokenSymbol = ts
-		if fi != "" {
-			existed.VerificationStatus = "pending"
-			s.sendDaoToDiscord(existed)
-		}
-	}
 	if equal {
-		if fi != "" {
-			_ = s.repo.Update(existed)
-		}
 		return nil
 	}
 
@@ -200,6 +180,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Dao) error {
 	new.FungibleId = existed.FungibleId
 	new.TokenSymbol = existed.TokenSymbol
 	new.VerificationStatus = existed.VerificationStatus
+	new.VerificationComment = existed.VerificationComment
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update dao #%s: %w", new.ID, err)
@@ -267,6 +248,7 @@ func compare(d1, d2 Dao) bool {
 	d1.FungibleId = d2.FungibleId
 	d1.TokenSymbol = d2.TokenSymbol
 	d1.VerificationStatus = d2.VerificationStatus
+	d1.VerificationComment = d2.VerificationComment
 
 	return reflect.DeepEqual(d1, d2)
 }
@@ -363,6 +345,33 @@ func (s *Service) HandleActivitySince(_ context.Context, id uuid.UUID) (*Dao, er
 	}
 
 	return dao, s.repo.Update(*dao)
+}
+
+func (s *Service) UpdateFungibleId(_ context.Context, id uuid.UUID) {
+	dao, err := s.GetByID(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn().Str("dao_id", id.String()).Msg("dao is not ready yet")
+		return
+	}
+	if err != nil {
+		return
+	}
+
+	if dao.FungibleId != "" || dao.VerificationStatus == "declined" {
+		return
+	}
+
+	fi, ts := s.getFungibleId(dao.Strategies)
+	if fi == "" {
+		return
+
+	}
+
+	dao.VerificationStatus = "pending"
+	dao.FungibleId = fi
+	dao.TokenSymbol = ts
+	_ = s.repo.Update(*dao)
+	s.sendDaoToDiscord(*dao)
 }
 
 // todo: add transaction here to avoid concurrent update
