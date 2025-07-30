@@ -61,10 +61,6 @@ func (w *TopDAOCache) reload() error {
 		filters := []Filter{
 			CategoryFilter{Category: category},
 			PageFilter{Limit: topDaoCategoryLimit, Offset: 0},
-			OrderByVerificationStatusVerifiedFilter{},
-			OrderByMoreThanVoterCountFilter{
-				VoterCount: 10,
-			},
 			OrderByPopularityIndexFilter{},
 		}
 
