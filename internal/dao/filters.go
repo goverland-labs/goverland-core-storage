@@ -141,21 +141,6 @@ func (f OrderByPopularityIndexFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("popularity_index desc")
 }
 
-type OrderByVerificationStatusVerifiedFilter struct {
-}
-
-func (f OrderByVerificationStatusVerifiedFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order("verification_status != 'verified'")
-}
-
-type OrderByMoreThanVoterCountFilter struct {
-	VoterCount int32
-}
-
-func (f OrderByMoreThanVoterCountFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order(fmt.Sprintf("voters_count < %d", f.VoterCount))
-}
-
 type FungibleIdFilter struct {
 }
 

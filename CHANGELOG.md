@@ -7,10 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.4.27] - 2025-07-24
+## [0.4.27] - 2025-07-30
 
 ### Added
 - Check fungible id if proposal is created
+
+### Changed 
+- Order top daos only by popularity index
 
 ## [0.4.26] - 2025-07-16
 
