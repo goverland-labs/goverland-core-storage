@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Processing erc20-votes indexer for delegation events
+
 ## [0.4.28] - 2026-02-02
 
 ### Added

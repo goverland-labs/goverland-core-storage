@@ -52,6 +52,20 @@ func (c *Consumer) handleDelegates() events.DelegateHandler {
 	}
 }
 
+func (c *Consumer) handleERC20Delegates() events.ERC20DelegateHandler {
+	return func(payload events.ERC20DelegatePayload) error {
+		if err := c.service.handleDelegate(context.TODO(), convertERC20ToInternal(payload)); err != nil {
+			log.Error().Err(err).Msg("erc20 delegates: process delegates info")
+
+			return fmt.Errorf("erc20 delegates: process delegates info: %w", err)
+		}
+
+		log.Debug().Msgf("erc20 delegates: event was processed: %d %s", payload.BlockNumber, payload.Network)
+
+		return nil
+	}
+}
+
 func (c *Consumer) handleProposalCreated() events.ProposalHandler {
 	return func(payload events.ProposalPayload) error {
 		if err := c.service.handleProposalCreated(context.TODO(), convertEventToProposal(payload)); err != nil {
@@ -112,8 +126,12 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectProposalVotesFetched, err)
 	}
+	erc20c, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateERC20, c.handleERC20Delegates(), client.WithAckWait(time.Minute*5), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectDelegateERC20, err)
+	}
 
-	c.consumers = append(c.consumers, de, pr, vc, vfc)
+	c.consumers = append(c.consumers, de, pr, vc, vfc, erc20c)
 
 	log.Info().Msg("delegates consumers are started")
 

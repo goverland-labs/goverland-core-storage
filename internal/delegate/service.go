@@ -28,6 +28,7 @@ var errNoResolved = errors.New("no addresses resolved")
 type DaoProvider interface {
 	GetByID(id uuid.UUID) (*dao.Dao, error)
 	GetIDByOriginalID(string) (uuid.UUID, error)
+	GetDaoByOriginalID(id string) (*dao.Dao, error)
 }
 
 type ProposalProvider interface {
@@ -338,13 +339,13 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 			return fmt.Errorf("repo.CreateHistory: %w", err)
 		}
 
-		// get space id by provided original_space_id
-		daoID, err := s.daoProvider.GetIDByOriginalID(hr.OriginalSpaceID)
+		// get space by provided original_space_id
+		delegatedDao, err := s.daoProvider.GetDaoByOriginalID(hr.OriginalSpaceID)
 		if err != nil {
 			return fmt.Errorf("dp.GetIDByOriginalID: %w", err)
 		}
 
-		bts, err := s.repo.GetSummaryBlockTimestamp(tx, strings.ToLower(hr.AddressFrom), daoID.String())
+		bts, err := s.repo.GetSummaryBlockTimestamp(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String())
 		if err != nil {
 			return fmt.Errorf("s.repo.GetSummaryBlockTimestamp: %w", err)
 		}
@@ -357,14 +358,26 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 		}
 
 		if hr.Action == actionExpire {
-			if err := s.repo.UpdateSummaryExpiration(tx, strings.ToLower(hr.AddressFrom), daoID.String(), hr.Delegations.Expiration, hr.BlockTimestamp); err != nil {
+			if err := s.repo.UpdateSummaryExpiration(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String(), hr.Delegations.Expiration, hr.BlockTimestamp); err != nil {
 				return fmt.Errorf("UpdateSummaryExpiration: %w", err)
 			}
 
 			return nil
 		}
 
-		if err := s.repo.RemoveSummary(tx, strings.ToLower(hr.AddressFrom), daoID.String()); err != nil {
+		strategy := delegatedDao.GetPrimaryStrategy()
+		if strategy == nil {
+			log.Warn().Msgf("no strategy found for delegated dao %s", delegatedDao.OriginalID)
+
+			return nil
+		}
+
+		var chainID *string
+		if strategy.Name != dao.StrategyNameSplitDelegation {
+			chainID = &hr.ChainID
+		}
+
+		if err = s.repo.RemoveSummary(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String(), chainID); err != nil {
 			return fmt.Errorf("UpdateSummaryExpiration: %w", err)
 		}
 
@@ -380,12 +393,14 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 			if err = s.repo.CreateSummary(tx, Summary{
 				AddressFrom:        strings.ToLower(hr.AddressFrom),
 				AddressTo:          strings.ToLower(info.Address),
-				DaoID:              daoID.String(),
+				DaoID:              delegatedDao.ID.String(),
 				Weight:             info.Weight,
 				LastBlockTimestamp: hr.BlockTimestamp,
 				ExpiresAt:          int64(hr.Delegations.Expiration),
+				Type:               strategy.Name,
+				ChainID:            chainID,
 			}); err != nil {
-				return fmt.Errorf("createSummary [%s/%s/%s]: %w", hr.AddressFrom, info.Address, daoID.String(), err)
+				return fmt.Errorf("createSummary [%s/%s/%s]: %w", hr.AddressFrom, info.Address, delegatedDao.ID.String(), err)
 			}
 		}
 
@@ -393,7 +408,7 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 			event := events.DelegatePayload{
 				Initiator: strings.ToLower(hr.AddressFrom),
 				Delegator: strings.ToLower(info.Address),
-				DaoID:     daoID,
+				DaoID:     delegatedDao.ID,
 			}
 
 			if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateCreated, event); err != nil {

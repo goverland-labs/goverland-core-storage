@@ -9,14 +9,37 @@ import (
 	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 )
 
-var (
+const (
 	actionClear  = "clear"
 	actionExpire = "expire"
+)
+
+const (
+	sourceSplitDelegation = "split-delegation"
+	sourceErc20Votes      = "erc20-votes"
+)
+
+var (
+	daoErc20Set = map[string]Erc20Mapping{
+		"0x912ce59144191c1204e64559fe8253a0e49e6548": {
+			OriginalID: "arbitrumfoundation.eth",
+			ChainID:    "42161",
+		},
+		"0xCa14007Eff0dB1f8135f4C25B34De49AB0d42766": {
+			OriginalID: "starknet.eth",
+			ChainID:    "1",
+		},
+	}
 )
 
 type DelegationDetails struct {
 	Address string
 	Weight  int
+}
+
+type Erc20Mapping struct {
+	OriginalID string
+	ChainID    string
 }
 
 type Delegations struct {
@@ -33,6 +56,7 @@ type History struct {
 	BlockNumber     int
 	BlockTimestamp  int
 	Delegations     Delegations `gorm:"-"`
+	Source          string
 	Payload         json.RawMessage
 }
 
@@ -73,6 +97,31 @@ func convertToInternal(payload events.DelegatePayload) History {
 			Expiration: payload.Delegations.Expiration,
 			Details:    delegations,
 		},
+		Source:  sourceSplitDelegation,
+		Payload: pl,
+	}
+}
+
+func convertERC20ToInternal(payload events.ERC20DelegatePayload) History {
+	pl, _ := json.Marshal(payload)
+	daoInfo := daoErc20Set[payload.Token]
+
+	return History{
+		Action:          events.DelegateActionSet,
+		AddressFrom:     payload.AddressFrom,
+		ChainID:         daoInfo.ChainID,
+		OriginalSpaceID: daoInfo.OriginalID,
+		BlockNumber:     payload.BlockNumber,
+		BlockTimestamp:  payload.BlockTimestamp,
+		Delegations: Delegations{
+			Details: []DelegationDetails{
+				{
+					Address: payload.AddressTo,
+					Weight:  10000,
+				},
+			},
+		},
+		Source:  sourceErc20Votes,
 		Payload: pl,
 	}
 }
@@ -89,6 +138,8 @@ type Summary struct {
 	LastBlockTimestamp int
 	ExpiresAt          int64
 	CreatedAt          time.Time
+	ChainID            *string
+	Type               string
 
 	// virtual property
 	MaxCnt     int    `gorm:"-"`

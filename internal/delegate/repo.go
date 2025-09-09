@@ -84,21 +84,20 @@ func (r *Repo) UpdateSummaryExpiration(tx *gorm.DB, addressFrom, daoID string, e
 	return nil
 }
 
-func (r *Repo) RemoveSummary(tx *gorm.DB, addressFrom, daoID string) error {
+func (r *Repo) RemoveSummary(tx *gorm.DB, addressFrom, daoID string, chainID *string) error {
 	var (
 		dump = Summary{}
 		_    = dump.AddressFrom
 		_    = dump.DaoID
+		_    = dump.ChainID
 	)
 
-	if err := tx.
-		Exec(`
-			delete from delegates_summary
-			where address_from = ? and dao_id = ?`,
-			addressFrom,
-			daoID,
-		).
-		Error; err != nil {
+	query := tx.Where("address_from = ? AND dao_id = ?", addressFrom, daoID)
+	if chainID != nil {
+		query = query.Where("chain_id = ?", chainID)
+	}
+
+	if err := query.Delete(&Summary{}).Error; err != nil {
 		return fmt.Errorf("delete summary: %w", err)
 	}
 
