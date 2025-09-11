@@ -124,23 +124,11 @@ type Dao struct {
 	VerificationComment string
 }
 
-func (d *Dao) GetPrimaryStrategy() *Strategy {
-	priorities := []string{
-		StrategyNameSplitDelegation,
-		StrategyNameDelegation,
-		StrategyNameErc20Votes,
-	}
-
-	for _, p := range priorities {
-		for _, info := range d.Strategies {
-			if info.Name == p {
-				return &info
-			}
+func (d *Dao) GetStrategyByName(name string) *Strategy {
+	for _, info := range d.Strategies {
+		if info.Name == name {
+			return &info
 		}
-	}
-
-	if len(d.Strategies) > 0 {
-		return &d.Strategies[0]
 	}
 
 	return nil

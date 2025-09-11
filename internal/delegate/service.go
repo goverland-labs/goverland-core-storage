@@ -365,7 +365,7 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 			return nil
 		}
 
-		strategy := delegatedDao.GetPrimaryStrategy()
+		strategy := getDaoPrimaryStrategy(delegatedDao, hr.Source)
 		if strategy == nil {
 			log.Warn().Msgf("no strategy found for delegated dao %s", delegatedDao.OriginalID)
 
@@ -426,6 +426,30 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 	}
 
 	return nil
+}
+
+func getDaoPrimaryStrategy(space *dao.Dao, source string) *dao.Strategy {
+	var strategy *dao.Strategy
+	if strategy = space.GetStrategyByName(dao.StrategyNameSplitDelegation); strategy != nil {
+		return strategy
+	}
+
+	switch source {
+	case sourceSplitDelegation:
+		strategy = space.GetStrategyByName(dao.StrategyNameDelegation)
+	case sourceErc20Votes:
+		strategy = space.GetStrategyByName(dao.StrategyNameErc20Votes)
+	}
+
+	if strategy != nil {
+		return strategy
+	}
+
+	if len(space.Strategies) == 0 {
+		return nil
+	}
+
+	return &space.Strategies[0]
 }
 
 func (s *Service) handleProposalCreated(ctx context.Context, pr Proposal) error {
