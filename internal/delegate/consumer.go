@@ -3,7 +3,6 @@ package delegate
 import (
 	"context"
 	"fmt"
-	"time"
 
 	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 	client "github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
@@ -122,11 +121,11 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectVoteCreated, err)
 	}
-	vfc, err := client.NewConsumer(ctx, c.conn, group, events.SubjectProposalVotesFetched, c.handleVotesFetched(), client.WithAckWait(time.Minute*5), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	vfc, err := client.NewConsumer(ctx, c.conn, group, events.SubjectProposalVotesFetched, c.handleVotesFetched(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectProposalVotesFetched, err)
 	}
-	erc20c, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateERC20, c.handleERC20Delegates(), client.WithAckWait(time.Minute*5), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	erc20c, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateERC20, c.handleERC20Delegates(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectDelegateERC20, err)
 	}

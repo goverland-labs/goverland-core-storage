@@ -7,6 +7,9 @@ ALTER TABLE delegates_summary
 ALTER TABLE delegates_summary
     ADD COLUMN IF NOT EXISTS chain_id text default null;
 
+ALTER TABLE delegates_summary
+    ADD COLUMN IF NOT EXISTS voting_power numeric default null;
+
 WITH strategies AS (SELECT d.id,
                            d.original_id,
                            s ->> 'Name'    AS strategy_name,
@@ -14,8 +17,7 @@ WITH strategies AS (SELECT d.id,
                            CASE
                                WHEN s ->> 'Name' = 'split-delegation' THEN 1
                                WHEN s ->> 'Name' = 'delegation' THEN 2
-                               WHEN s ->> 'Name' = 'erc20-votes' THEN 3
-                               ELSE 4
+                               ELSE 3
                                END         AS priority
                     FROM daos d
                              CROSS JOIN LATERAL jsonb_array_elements(d.strategies) s
@@ -32,7 +34,11 @@ WITH strategies AS (SELECT d.id,
                 FROM ranked
                 WHERE rn = 1)
 UPDATE delegates_summary ds
-SET type     = c.strategy_name,
+SET type     = CASE
+                   WHEN c.strategy_name = 'split-delegation' THEN 'split-delegation'
+                   WHEN c.strategy_name = 'delegation' THEN 'delegation'
+                   ELSE 'unrecognized'
+    END,
     chain_id = CASE
                    WHEN c.strategy_name != 'split-delegation' THEN c.strategy_network
         END

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -21,11 +22,11 @@ const (
 
 var (
 	daoErc20Set = map[string]Erc20Mapping{
-		"0x912ce59144191c1204e64559fe8253a0e49e6548": {
+		strings.ToLower("0x912ce59144191c1204e64559fe8253a0e49e6548"): {
 			OriginalID: "arbitrumfoundation.eth",
 			ChainID:    "42161",
 		},
-		"0xCa14007Eff0dB1f8135f4C25B34De49AB0d42766": {
+		strings.ToLower("0xCa14007Eff0dB1f8135f4C25B34De49AB0d42766"): {
 			OriginalID: "starknet.eth",
 			ChainID:    "1",
 		},
@@ -55,9 +56,10 @@ type History struct {
 	ChainID         string
 	BlockNumber     int
 	BlockTimestamp  int
-	Delegations     Delegations `gorm:"-"`
 	Source          string
 	Payload         json.RawMessage
+	Delegations     Delegations `gorm:"-"`
+	VotingPower     string      `gorm:"-"`
 }
 
 func (History) TableName() string {
@@ -97,22 +99,26 @@ func convertToInternal(payload events.DelegatePayload) History {
 			Expiration: payload.Delegations.Expiration,
 			Details:    delegations,
 		},
-		Source:  sourceSplitDelegation,
-		Payload: pl,
+		Source:      sourceSplitDelegation,
+		Payload:     pl,
+		VotingPower: "0",
 	}
 }
 
 func convertERC20ToInternal(payload events.ERC20DelegatePayload) History {
 	pl, _ := json.Marshal(payload)
-	daoInfo := daoErc20Set[payload.Token]
+	daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
+	if !ok {
+		log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
+	}
 
 	return History{
 		Action:          events.DelegateActionSet,
 		AddressFrom:     payload.AddressFrom,
 		ChainID:         daoInfo.ChainID,
 		OriginalSpaceID: daoInfo.OriginalID,
-		BlockNumber:     payload.BlockNumber,
-		BlockTimestamp:  payload.BlockTimestamp,
+		BlockNumber:     int(payload.BlockNumber),
+		BlockTimestamp:  int(payload.BlockTimestamp),
 		Delegations: Delegations{
 			Details: []DelegationDetails{
 				{
@@ -121,8 +127,9 @@ func convertERC20ToInternal(payload events.ERC20DelegatePayload) History {
 				},
 			},
 		},
-		Source:  sourceErc20Votes,
-		Payload: pl,
+		Source:      sourceErc20Votes,
+		VotingPower: payload.VotingPower,
+		Payload:     pl,
 	}
 }
 
@@ -140,6 +147,7 @@ type Summary struct {
 	CreatedAt          time.Time
 	ChainID            *string
 	Type               string
+	VotingPower        string
 
 	// virtual property
 	MaxCnt     int    `gorm:"-"`

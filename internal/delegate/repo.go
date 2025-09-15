@@ -32,28 +32,26 @@ func (r *Repo) CallInTx(cb func(tx *gorm.DB) error) error {
 	return r.db.Transaction(cb)
 }
 
-func (r *Repo) GetSummaryBlockTimestamp(tx *gorm.DB, addressFrom, daoID string) (int, error) {
+func (r *Repo) GetSummaryBlockTimestamp(tx *gorm.DB, addressFrom, daoID string, chainID *string) (int, error) {
 	var (
 		dump = Summary{}
 		_    = dump.AddressFrom
 		_    = dump.DaoID
 		_    = dump.LastBlockTimestamp
+		_    = dump.ChainID
 	)
 
 	var bts int
 
-	err := tx.
-		Raw(`
-			select coalesce(max(last_block_timestamp), 0) block_timestamp
-			from delegates_summary 
-			where address_from = ? 
-			  and dao_id = ?
-		  `,
-			addressFrom,
-			daoID,
-		).
-		Scan(&bts).
-		Error
+	query := tx.Where("address_from = ? AND dao_id = ?", addressFrom, daoID)
+	if chainID != nil {
+		query = query.Where("chain_id = ?", chainID)
+	}
+
+	err := query.
+		Table("delegates_summary").
+		Select("COALESCE(MAX(last_block_timestamp), 0) as block_timestamp").
+		Scan(&bts).Error
 
 	return bts, err
 }

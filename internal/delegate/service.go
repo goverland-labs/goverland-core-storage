@@ -23,7 +23,13 @@ import (
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
 )
 
-var errNoResolved = errors.New("no addresses resolved")
+var (
+	errNoResolved = errors.New("no addresses resolved")
+)
+
+const (
+	unrecognizedStrategyName = "unrecognized"
+)
 
 type DaoProvider interface {
 	GetByID(id uuid.UUID) (*dao.Dao, error)
@@ -246,15 +252,8 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 }
 
 func (s *Service) getDelegationStrategy(daoEntity *dao.Dao) ([]byte, error) {
-	var delegationStrategy *dao.Strategy
-	for _, strategy := range daoEntity.Strategies {
-		if strategy.Name == "split-delegation" {
-			delegationStrategy = &strategy
-			break
-		}
-	}
-
-	if delegationStrategy == nil {
+	strategy := daoEntity.GetStrategyByName(dao.StrategyNameSplitDelegation)
+	if strategy == nil {
 		return nil, fmt.Errorf("delegation strategy not found for dao")
 	}
 
@@ -266,17 +265,17 @@ func (s *Service) getDelegationStrategy(daoEntity *dao.Dao) ([]byte, error) {
 	}
 
 	ms := marshalStrategy{
-		Name:    delegationStrategy.Name,
-		Network: delegationStrategy.Network,
-		Params:  delegationStrategy.Params,
+		Name:    strategy.Name,
+		Network: strategy.Network,
+		Params:  strategy.Params,
 	}
 
-	delegationStrategyJson, err := json.Marshal(ms)
+	converted, err := json.Marshal(ms)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal delegation strategy: %w", err)
 	}
 
-	return delegationStrategyJson, nil
+	return converted, nil
 }
 
 func (s *Service) resolveQueryAccounts(accs []string) ([]string, error) {
@@ -327,9 +326,15 @@ func (s *Service) resolveAddressesName(addresses []string) (map[string]string, e
 }
 
 func (s *Service) handleDelegate(ctx context.Context, hr History) error {
+	logger := log.With().
+		Str("source", "handle_delegates").
+		Str("block_number", fmt.Sprintf("%d", hr.BlockNumber)).
+		Str("address_from", hr.AddressFrom).
+		Logger()
+
 	if err := s.repo.CallInTx(func(tx *gorm.DB) error {
 		if hr.OriginalSpaceID == "" {
-			log.Warn().Msgf("skip processing block %d from %s cause dao id is empty", hr.BlockNumber, hr.ChainID)
+			logger.Warn().Msg("skip processing block from empty original_space_id")
 
 			return nil
 		}
@@ -345,14 +350,26 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 			return fmt.Errorf("dp.GetIDByOriginalID: %w", err)
 		}
 
-		bts, err := s.repo.GetSummaryBlockTimestamp(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String())
+		strategy := getDaoPrimaryStrategy(delegatedDao, hr.Source)
+		if strategy == nil {
+			logger.Warn().Msgf("no strategy found for delegated dao %s", delegatedDao.OriginalID)
+
+			return nil
+		}
+
+		var chainID *string
+		if strategy.Name != dao.StrategyNameSplitDelegation {
+			chainID = &hr.ChainID
+		}
+
+		bts, err := s.repo.GetSummaryBlockTimestamp(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String(), chainID)
 		if err != nil {
 			return fmt.Errorf("s.repo.GetSummaryBlockTimestamp: %w", err)
 		}
 
 		// skip this block due to already processed
 		if bts != 0 && bts >= hr.BlockTimestamp {
-			log.Warn().Msgf("delegates: skip processing block %d from %s due to invalid timestamp", hr.BlockNumber, hr.ChainID)
+			logger.Warn().Msgf("delegates: skip processing block %d from %s due to invalid timestamp", hr.BlockNumber, hr.ChainID)
 
 			return nil
 		}
@@ -363,18 +380,6 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 			}
 
 			return nil
-		}
-
-		strategy := getDaoPrimaryStrategy(delegatedDao, hr.Source)
-		if strategy == nil {
-			log.Warn().Msgf("no strategy found for delegated dao %s", delegatedDao.OriginalID)
-
-			return nil
-		}
-
-		var chainID *string
-		if strategy.Name != dao.StrategyNameSplitDelegation {
-			chainID = &hr.ChainID
 		}
 
 		if err = s.repo.RemoveSummary(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String(), chainID); err != nil {
@@ -399,6 +404,7 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 				ExpiresAt:          int64(hr.Delegations.Expiration),
 				Type:               strategy.Name,
 				ChainID:            chainID,
+				VotingPower:        hr.VotingPower,
 			}); err != nil {
 				return fmt.Errorf("createSummary [%s/%s/%s]: %w", hr.AddressFrom, info.Address, delegatedDao.ID.String(), err)
 			}
@@ -412,7 +418,7 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 			}
 
 			if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateCreated, event); err != nil {
-				log.Warn().Err(err).Msgf("failed to publish delegate payload")
+				logger.Warn().Err(err).Msgf("failed to publish delegate payload")
 			}
 		}
 
@@ -445,11 +451,9 @@ func getDaoPrimaryStrategy(space *dao.Dao, source string) *dao.Strategy {
 		return strategy
 	}
 
-	if len(space.Strategies) == 0 {
-		return nil
+	return &dao.Strategy{
+		Name: unrecognizedStrategyName,
 	}
-
-	return &space.Strategies[0]
 }
 
 func (s *Service) handleProposalCreated(ctx context.Context, pr Proposal) error {
