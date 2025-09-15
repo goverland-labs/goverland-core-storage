@@ -44,3 +44,9 @@ SET type     = CASE
         END
 FROM chosen c
 WHERE ds.dao_id::uuid = c.id;
+
+
+drop index if exists idx_delegates_summary_unique;
+
+create unique index if not exists idx_delegates_summary_unique
+    on delegates_summary(address_from, address_to, dao_id, chain_id);
