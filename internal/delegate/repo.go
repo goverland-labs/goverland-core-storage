@@ -1,6 +1,7 @@
 package delegate
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -459,4 +460,62 @@ func (r *Repo) GetProposalsCnt(daoID uuid.UUID, authors []string) (map[string]in
 	}
 
 	return result, nil
+}
+
+func (r *Repo) GetErc20DelegatesInfo(_ context.Context, daoID uuid.UUID, chainID string, limit, offset int) ([]Delegate, error) {
+	var delegates []Delegate
+
+	err := r.db.Raw(`
+		with stats as (
+		    select address_to,
+		           count(distinct address_from) as delegator_count,
+		           sum(voting_power)            as voting_power
+		    from storage.delegates_summary
+		    where dao_id = ?
+		      and type = 'erc20-votes'
+		      and chain_id = ?
+		    group by address_to
+		),
+		totals as (
+		    select sum(delegator_count) as total_delegators,
+		           sum(voting_power)    as total_voting_power
+		    from stats
+		)
+		select d.address_to as address,
+		       d.delegator_count,
+		       round(d.delegator_count::numeric / t.total_delegators * 100, 2)  as percent_of_delegators,
+		       d.voting_power,
+		       round(d.voting_power / nullif(t.total_voting_power, 0) * 100, 2) as percent_of_voting_power
+		from stats d
+		         cross join totals t
+		order by d.voting_power desc
+		limit ? offset ?
+	`, daoID, chainID, limit, offset).Scan(&delegates).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("query delegates: %w", err)
+	}
+
+	return delegates, nil
+}
+
+func (r *Repo) GetDelegatesCount(_ context.Context, daoID uuid.UUID, chainID string) (int32, error) {
+	var count int32
+	err := r.db.Raw(`
+		with stats as (
+			select address_to
+			from storage.delegates_summary
+			where dao_id = ?
+			  and type = 'erc20-votes'
+			  and chain_id = ?
+			group by address_to
+		)
+		select count(*) as total_rows from stats;
+	`, daoID, chainID).Row().Scan(&count)
+
+	if err != nil {
+		return 0, fmt.Errorf("scan: %w", err)
+	}
+
+	return count, nil
 }

@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Extend getting DAO delegates based on erc20-votes indexer
+
 ### Added
 - Processing erc20-votes indexer for delegation events
 

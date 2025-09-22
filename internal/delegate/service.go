@@ -114,46 +114,31 @@ func (s *Service) updateAllowedDaos() error {
 	return nil
 }
 
-func (s *Service) GetDelegates(ctx context.Context, request GetDelegatesRequest) (*GetDelegatesResponse, error) {
-	daoEntity, err := s.daoProvider.GetByID(request.DaoID)
+func (s *Service) GetDelegates(ctx context.Context, req GetDelegatesRequest) (*GetDelegatesResponse, error) {
+	delegates, total, err := s.getDelegates(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("s.getDelegates: %w", err)
+	}
+
+	if len(delegates) == 0 {
+		return &GetDelegatesResponse{
+			Delegates: delegates,
+			Total:     total,
+		}, nil
+	}
+
+	daoEntity, err := s.daoProvider.GetByID(req.DaoID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get dao: %w", err)
 	}
 
-	delegationStrategyJson, err := s.getDelegationStrategy(daoEntity)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get delegation strategy: %w", err)
-	}
-
-	queryAddresses, err := s.resolveQueryAccounts(request.QueryAccounts)
-	if errors.Is(err, errNoResolved) {
-		return &GetDelegatesResponse{}, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to resolve query accounts: %w", err)
-	}
-
-	resp, err := s.delegateClient.GetDelegates(ctx, &delegatepb.GetDelegatesRequest{
-		DaoOriginalId: daoEntity.OriginalID,
-		Strategy: &protoany.Any{
-			Value: delegationStrategyJson,
-		},
-		Addresses: queryAddresses,
-		Sort:      request.Sort,
-		Limit:     int32(request.Limit),
-		Offset:    int32(request.Offset),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	respAddresses := make([]string, 0, len(resp.GetDelegates()))
-	for _, d := range resp.GetDelegates() {
-		respAddresses = append(respAddresses, strings.ToLower(d.GetAddress()))
+	respAddresses := make([]string, 0, len(delegates))
+	for _, d := range delegates {
+		respAddresses = append(respAddresses, d.Address)
 	}
 	ensNames, err := s.resolveAddressesName(respAddresses)
 	if err != nil {
-		return nil, fmt.Errorf("failed to resolve addresses names: %w", err)
+		return nil, fmt.Errorf("s.resolveAddressesName: %w", err)
 	}
 
 	votesCnt, err := s.repo.GetVotesCnt(daoEntity.ID, respAddresses)
@@ -166,30 +151,96 @@ func (s *Service) GetDelegates(ctx context.Context, request GetDelegatesRequest)
 		return nil, fmt.Errorf("failed to get votes count: %w", err)
 	}
 
-	delegates := make([]Delegate, 0, len(resp.Delegates))
-	for _, d := range resp.GetDelegates() {
-		address := strings.ToLower(d.GetAddress())
-		votes := votesCnt[address]
-		proposals := prCnt[address]
+	// enrich with our stats
+	for idx := range delegates {
+		address := delegates[idx].Address
 
-		delegates = append(delegates, Delegate{
-			Address:               address,
-			ENSName:               ensNames[address],
-			DelegatorCount:        d.GetDelegatorCount(),
-			PercentOfDelegators:   d.GetPercentOfDelegators(),
-			VotingPower:           d.GetVotingPower(),
-			PercentOfVotingPower:  d.GetPercentOfVotingPower(),
-			About:                 d.GetAbout(),
-			Statement:             d.GetStatement(),
-			VotesCount:            int32(votes),
-			CreatedProposalsCount: int32(proposals),
-		})
+		delegates[idx].ENSName = ensNames[address]
+		delegates[idx].VotesCount = int32(votesCnt[address])
+		delegates[idx].CreatedProposalsCount = int32(prCnt[address])
 	}
 
 	return &GetDelegatesResponse{
 		Delegates: delegates,
-		Total:     resp.GetTotal(),
+		Total:     total,
 	}, nil
+}
+
+func (s *Service) getDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+	if req.DelegationType != DelegationTypeERC20Votes {
+		return s.getExternalDelegates(ctx, req)
+	}
+
+	return s.getInternalDelegates(ctx, req)
+}
+
+func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+	var chainID string
+	if req.ChainID != nil {
+		chainID = *req.ChainID
+	}
+
+	delegates, err := s.repo.GetErc20DelegatesInfo(ctx, req.DaoID, chainID, req.Limit, req.Offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.repo.GetErc20DelegatesInfo: %w", err)
+	}
+
+	total, err := s.repo.GetDelegatesCount(ctx, req.DaoID, chainID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.repo.GetDelegatesCount: %w", err)
+	}
+
+	return delegates, total, nil
+}
+
+func (s *Service) getExternalDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+	daoEntity, err := s.daoProvider.GetByID(req.DaoID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get dao: %w", err)
+	}
+
+	delegationStrategyJson, err := s.getDelegationStrategy(daoEntity)
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.getDelegationStrategy: %w", err)
+	}
+
+	queryAddresses, err := s.resolveQueryAccounts(req.QueryAccounts)
+	if errors.Is(err, errNoResolved) {
+		return []Delegate{}, 0, nil
+	}
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.resolveQueryAccounts: %w", err)
+	}
+
+	resp, err := s.delegateClient.GetDelegates(ctx, &delegatepb.GetDelegatesRequest{
+		DaoOriginalId: daoEntity.OriginalID,
+		Strategy: &protoany.Any{
+			Value: delegationStrategyJson,
+		},
+		Addresses: queryAddresses,
+		Sort:      req.Sort,
+		Limit:     int32(req.Limit),
+		Offset:    int32(req.Offset),
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.delegateClient.GetDelegates: %w", err)
+	}
+
+	list := make([]Delegate, 0, len(resp.Delegates))
+	for _, d := range resp.GetDelegates() {
+		address := strings.ToLower(d.GetAddress())
+		list = append(list, Delegate{
+			Address:              address,
+			DelegatorCount:       d.GetDelegatorCount(),
+			PercentOfDelegators:  d.GetPercentOfDelegators(),
+			VotingPower:          d.GetVotingPower(),
+			PercentOfVotingPower: d.GetPercentOfVotingPower(),
+			About:                d.GetAbout(),
+			Statement:            d.GetStatement(),
+		})
+	}
+
+	return list, resp.GetTotal(), nil
 }
 
 func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegateProfileRequest) (GetDelegateProfileResponse, error) {

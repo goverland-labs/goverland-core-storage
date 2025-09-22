@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"github.com/goverland-labs/goverland-core-storage/internal/discord"
 	"log"
 	"net/http"
 	"os"
@@ -24,14 +23,14 @@ import (
 
 	"github.com/goverland-labs/goverland-core-storage/protocol/storagepb"
 
-	"github.com/goverland-labs/goverland-core-storage/internal/pubsub"
-
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
 	"github.com/goverland-labs/goverland-core-storage/internal/delegate"
+	"github.com/goverland-labs/goverland-core-storage/internal/discord"
 	"github.com/goverland-labs/goverland-core-storage/internal/ensresolver"
 	"github.com/goverland-labs/goverland-core-storage/internal/events"
 	"github.com/goverland-labs/goverland-core-storage/internal/proposal"
+	"github.com/goverland-labs/goverland-core-storage/internal/pubsub"
 	"github.com/goverland-labs/goverland-core-storage/internal/stats"
 	"github.com/goverland-labs/goverland-core-storage/internal/vote"
 	"github.com/goverland-labs/goverland-core-storage/pkg/grpcsrv"

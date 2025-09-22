@@ -17,6 +17,10 @@ import (
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
 )
 
+const (
+	defaultLimit = 10
+)
+
 type DaoSearcher interface {
 	GetByFilters(filters []dao.Filter) (dao.DaoList, error)
 }
@@ -45,12 +49,19 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
 	}
 
+	limit := int(req.GetLimit())
+	if limit == 0 {
+		limit = defaultLimit
+	}
+
 	delegatesResponse, err := s.sp.GetDelegates(ctx, GetDelegatesRequest{
-		DaoID:         daoID,
-		QueryAccounts: req.GetQueryAccounts(),
-		Sort:          req.Sort,
-		Limit:         int(req.GetLimit()),
-		Offset:        int(req.GetOffset()),
+		DaoID:          daoID,
+		QueryAccounts:  req.GetQueryAccounts(),
+		Sort:           req.Sort,
+		Limit:          limit,
+		Offset:         int(req.GetOffset()),
+		ChainID:        req.ChainId,
+		DelegationType: convertDelegationType(req.GetDelegationType()),
 	})
 	if err != nil {
 		log.Error().
@@ -83,6 +94,18 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 	}, nil
 }
 
+func convertDelegationType(dt storagepb.DelegationType) DelegationType {
+	switch dt {
+	case storagepb.DelegationType_DELEGATION_TYPE_SPLIT_DELEGATION:
+		return DelegationTypeSplitDelegation
+	case storagepb.DelegationType_DELEGATION_TYPE_DELEGATION:
+		return DelegationTypeDelegation
+	case storagepb.DelegationType_DELEGATION_TYPE_ERC20_VOTES:
+		return DelegationTypeERC20Votes
+	default:
+		return DelegationTypeUnrecognized
+	}
+}
 func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDelegateProfileRequest) (*storagepb.GetDelegateProfileResponse, error) {
 	if req.GetDaoId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")

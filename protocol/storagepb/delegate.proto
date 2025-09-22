@@ -30,11 +30,21 @@ message GetDelegatesRequest {
   optional string sort = 3;
   int32 limit = 4;
   int32 offset = 5;
+  optional DelegationType delegation_type = 6;
+  optional string chain_id = 7;
 }
 
 message GetDelegatesResponse {
   repeated DelegateEntry delegates = 1;
   int32 total = 2;
+}
+
+enum DelegationType {
+  DELEGATION_TYPE_UNSPECIFIED = 0;
+  DELEGATION_TYPE_SPLIT_DELEGATION = 1;
+  DELEGATION_TYPE_DELEGATION = 2;
+  DELEGATION_TYPE_ERC20_VOTES = 3;
+  DELEGATION_TYPE_UNRECOGNIZED = 4;
 }
 
 message DelegateEntry {
@@ -48,6 +58,8 @@ message DelegateEntry {
   string statement = 8;
   int32 votes_count = 9;
   int32 created_proposals_count = 10;
+  DelegationType delegation_type = 11;
+  string chain_id = 12;
 }
 
 message GetDelegateProfileRequest {

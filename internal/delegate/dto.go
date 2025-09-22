@@ -6,12 +6,23 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	DelegationTypeSplitDelegation DelegationType = "split-delegation"
+	DelegationTypeDelegation      DelegationType = "delegation"
+	DelegationTypeERC20Votes      DelegationType = "erc20-votes"
+	DelegationTypeUnrecognized    DelegationType = "unrecognised"
+)
+
+type DelegationType string
+
 type GetDelegatesRequest struct {
-	DaoID         uuid.UUID
-	QueryAccounts []string
-	Sort          *string
-	Limit         int
-	Offset        int
+	DaoID          uuid.UUID
+	QueryAccounts  []string
+	Sort           *string
+	Limit          int
+	Offset         int
+	DelegationType DelegationType
+	ChainID        *string
 }
 
 type GetDelegatesResponse struct {
