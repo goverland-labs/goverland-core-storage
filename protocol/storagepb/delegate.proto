@@ -59,7 +59,7 @@ message DelegateEntry {
   int32 votes_count = 9;
   int32 created_proposals_count = 10;
   DelegationType delegation_type = 11;
-  string chain_id = 12;
+  optional string chain_id = 12;
 }
 
 message GetDelegateProfileRequest {

@@ -85,6 +85,8 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 			Statement:             d.Statement,
 			VotesCount:            d.VotesCount,
 			CreatedProposalsCount: d.CreatedProposalsCount,
+			DelegationType:        req.GetDelegationType(),
+			ChainId:               req.ChainId,
 		})
 	}
 
