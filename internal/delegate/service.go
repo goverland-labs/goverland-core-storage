@@ -180,7 +180,11 @@ func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequ
 		chainID = *req.ChainID
 	}
 
-	delegates, err := s.repo.GetErc20DelegatesInfo(ctx, req.DaoID, chainID, req.Limit, req.Offset)
+	var searchAddress *string
+	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 {
+		searchAddress = &req.QueryAccounts[0]
+	}
+	delegates, err := s.repo.GetErc20DelegatesInfo(ctx, req.DaoID, chainID, searchAddress, req.Limit, req.Offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("s.repo.GetErc20DelegatesInfo: %w", err)
 	}

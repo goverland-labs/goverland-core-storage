@@ -462,7 +462,13 @@ func (r *Repo) GetProposalsCnt(daoID uuid.UUID, authors []string) (map[string]in
 	return result, nil
 }
 
-func (r *Repo) GetErc20DelegatesInfo(_ context.Context, daoID uuid.UUID, chainID string, limit, offset int) ([]Delegate, error) {
+func (r *Repo) GetErc20DelegatesInfo(
+	_ context.Context,
+	daoID uuid.UUID,
+	chainID string,
+	address *string,
+	limit, offset int,
+) ([]Delegate, error) {
 	var delegates []Delegate
 
 	err := r.db.Raw(`
@@ -474,6 +480,7 @@ func (r *Repo) GetErc20DelegatesInfo(_ context.Context, daoID uuid.UUID, chainID
 		    where dao_id = ?
 		      and type = 'erc20-votes'
 		      and chain_id = ?
+			  and (address_to = ? or ? is null)
 		    group by address_to
 		),
 		totals as (
@@ -490,7 +497,7 @@ func (r *Repo) GetErc20DelegatesInfo(_ context.Context, daoID uuid.UUID, chainID
 		         cross join totals t
 		order by d.voting_power desc
 		limit ? offset ?
-	`, daoID, chainID, limit, offset).Scan(&delegates).Error
+	`, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)
