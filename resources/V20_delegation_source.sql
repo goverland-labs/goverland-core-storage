@@ -50,3 +50,6 @@ drop index if exists idx_delegates_summary_unique;
 
 create unique index if not exists idx_delegates_summary_unique
     on delegates_summary(address_from, address_to, dao_id, chain_id);
+
+create index concurrently votes_dao_case_insensitive_voter_idx
+    on votes (dao_id, lower(voter));
