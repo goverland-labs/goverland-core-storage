@@ -1,6 +1,8 @@
 package delegate
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -64,4 +66,127 @@ type ProfileDelegateItem struct {
 	ENSName        string
 	Weight         float64
 	DelegatedPower float64
+}
+
+type ERC20Event interface {
+	GetKey() string
+	ConvertToHistory() *Erc20EventHistory
+}
+
+type ERC20Delegation struct {
+	DelegatorAddress string
+	AddressFrom      string
+	AddressTo        string
+	OriginalSpaceID  string
+	ChainID          string
+	BlockNumber      int
+	BlockTimestamp   int
+	LogIndex         int
+}
+
+func (e ERC20Delegation) GetKey() string {
+	return generateUniqueKey(e.ChainID, e.BlockNumber, e.LogIndex)
+}
+
+func (e ERC20Delegation) ConvertToHistory() *Erc20EventHistory {
+	payload, _ := json.Marshal(map[string]any{
+		"delegator_address": e.DelegatorAddress,
+		"address_from":      e.AddressFrom,
+		"address_to":        e.AddressTo,
+	})
+
+	return &Erc20EventHistory{
+		ID:            e.GetKey(),
+		OriginalDaoID: e.OriginalSpaceID,
+		ChainID:       e.ChainID,
+		BlockNumber:   e.BlockNumber,
+		LogIndex:      e.LogIndex,
+		Type:          "delegation",
+		Payload:       payload,
+		CreatedAt:     time.Now(),
+	}
+}
+
+func generateUniqueKey(chainID string, blockNumber, logIndex int) string {
+	return fmt.Sprintf("%s_%d_%d", chainID, blockNumber, logIndex)
+}
+
+type ERC20VPChanges struct {
+	Address         string
+	OriginalSpaceID string
+	ChainID         string
+	BlockNumber     int
+	BlockTimestamp  int
+	LogIndex        int
+	VP              string
+}
+
+func (e ERC20VPChanges) GetKey() string {
+	return generateUniqueKey(e.ChainID, e.BlockNumber, e.LogIndex)
+}
+
+func (e ERC20VPChanges) ConvertToHistory() *Erc20EventHistory {
+	payload, _ := json.Marshal(map[string]any{
+		"address": e.Address,
+		"vp":      e.VP,
+	})
+
+	return &Erc20EventHistory{
+		ID:            e.GetKey(),
+		OriginalDaoID: e.OriginalSpaceID,
+		ChainID:       e.ChainID,
+		BlockNumber:   e.BlockNumber,
+		LogIndex:      e.LogIndex,
+		Type:          "vp_changes",
+		Payload:       payload,
+		CreatedAt:     time.Now(),
+	}
+}
+
+type ERC20Transfer struct {
+	AddressFrom     string
+	AddressTo       string
+	OriginalSpaceID string
+	ChainID         string
+	BlockNumber     int
+	BlockTimestamp  int
+	LogIndex        int
+	Amount          string
+}
+
+func (e ERC20Transfer) GetKey() string {
+	return generateUniqueKey(e.ChainID, e.BlockNumber, e.LogIndex)
+}
+
+func (e ERC20Transfer) ConvertToHistory() *Erc20EventHistory {
+	payload, _ := json.Marshal(map[string]any{
+		"address_from": e.AddressFrom,
+		"address_to":   e.AddressTo,
+		"amount":       e.Amount,
+	})
+
+	return &Erc20EventHistory{
+		ID:            e.GetKey(),
+		OriginalDaoID: e.OriginalSpaceID,
+		ChainID:       e.ChainID,
+		BlockNumber:   e.BlockNumber,
+		LogIndex:      e.LogIndex,
+		Type:          "transfer",
+		Payload:       payload,
+		CreatedAt:     time.Now(),
+	}
+}
+
+type VPUpdate struct {
+	Value       string
+	BlockNumber int
+	LogIndex    int
+}
+
+type ERC20DelegateUpdate struct {
+	Address    string
+	OriginalID string
+	ChainID    string
+	VPUpdate   *VPUpdate
+	CntDelta   *int
 }

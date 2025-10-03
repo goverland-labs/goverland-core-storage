@@ -7,9 +7,6 @@ ALTER TABLE delegates_summary
 ALTER TABLE delegates_summary
     ADD COLUMN IF NOT EXISTS chain_id text default null;
 
-ALTER TABLE delegates_summary
-    ADD COLUMN IF NOT EXISTS voting_power numeric default null;
-
 WITH strategies AS (SELECT d.id,
                            d.original_id,
                            s ->> 'Name'    AS strategy_name,
@@ -45,11 +42,67 @@ SET type     = CASE
 FROM chosen c
 WHERE ds.dao_id::uuid = c.id;
 
-
 drop index if exists idx_delegates_summary_unique;
 
 create unique index if not exists idx_delegates_summary_unique
-    on delegates_summary(address_from, address_to, dao_id, chain_id);
+    on delegates_summary (address_from, address_to, dao_id, chain_id);
 
 create index concurrently votes_dao_case_insensitive_voter_idx
     on votes (dao_id, lower(voter));
+
+create table erc20_event_history
+(
+    id              text
+        primary key,
+    original_dao_id text not null,
+    chain_id        text not null,
+    block_number    integer,
+    log_index       integer,
+    type            text not null check (type in ('delegation', 'vp_changes', 'transfer')),
+    created_at      timestamp default now(),
+    payload         json,
+    constraint idx_unique_erc20_event_history
+        unique (chain_id, block_number, log_index)
+);
+
+create table erc20_delegates
+(
+    id                bigserial
+        primary key,
+    address           text           not null,
+    dao_id            uuid           not null,
+    chain_id          text           not null,
+    vp                NUMERIC(78, 0) NOT NULL default 0,
+    vp_updated_at_key text,
+    represented_cnt   integer        not null default 0,
+    created_at        timestamp               default now(),
+    updated_at        timestamp               default now(),
+    constraint idx_unique_erc20_delegates
+        unique (address, dao_id, chain_id)
+);
+
+CREATE INDEX idx_erc20_delegates_dao_chain
+    ON erc20_delegates (dao_id, chain_id);
+
+CREATE INDEX idx_erc20_delegates_address
+    ON erc20_delegates (address);
+
+create table erc20_balances
+(
+    id         bigserial
+        primary key,
+    address    text           not null,
+    dao_id     uuid           not null,
+    chain_id   text,
+    value      NUMERIC(78, 0) NOT NULL default 0,
+    created_at timestamp               default now(),
+    updated_at timestamp               default now(),
+    constraint idx_unique_erc20_balance
+        unique (address, dao_id, chain_id)
+);
+
+CREATE INDEX idx_erc20_balances_dao_chain
+    ON erc20_balances (dao_id, chain_id);
+
+CREATE INDEX idx_erc20_balances_address
+    ON erc20_balances (address);

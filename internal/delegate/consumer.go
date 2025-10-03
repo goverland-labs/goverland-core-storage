@@ -3,11 +3,13 @@ package delegate
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
 	client "github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 
 	"github.com/goverland-labs/goverland-core-storage/internal/config"
 )
@@ -15,6 +17,10 @@ import (
 const (
 	groupName                = "delegates"
 	maxPendingAckPerConsumer = 10
+)
+
+const (
+	nullAddress = "0x0000000000000000000000000000000000000000"
 )
 
 type closable interface {
@@ -39,7 +45,7 @@ func NewConsumer(nc *nats.Conn, s *Service) (*Consumer, error) {
 
 func (c *Consumer) handleDelegates() events.DelegateHandler {
 	return func(payload events.DelegatePayload) error {
-		if err := c.service.handleDelegate(context.TODO(), convertToInternal(payload)); err != nil {
+		if err := c.service.handleSplitDelegation(context.TODO(), convertToInternal(payload)); err != nil {
 			log.Error().Err(err).Msg("delegates: process delegates info")
 
 			return fmt.Errorf("delegates: process delegates info: %w", err)
@@ -51,17 +57,138 @@ func (c *Consumer) handleDelegates() events.DelegateHandler {
 	}
 }
 
-func (c *Consumer) handleERC20Delegates() events.ERC20DelegateHandler {
-	return func(payload events.ERC20DelegatePayload) error {
-		if err := c.service.handleDelegate(context.TODO(), convertERC20ToInternal(payload)); err != nil {
-			log.Error().Err(err).Msg("erc20 delegates: process delegates info")
+func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
+	return func(payload events.ERC20DelegationPayload) error {
+		daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
+		if !ok {
+			log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
 
-			return fmt.Errorf("erc20 delegates: process delegates info: %w", err)
+			return nil
 		}
 
-		log.Debug().Msgf("erc20 delegates: event was processed: %d %s", payload.BlockNumber, payload.Network)
+		event := ERC20Delegation{
+			DelegatorAddress: payload.Delegator,
+			AddressFrom:      payload.AddressFrom,
+			AddressTo:        payload.AddressTo,
+			OriginalSpaceID:  daoInfo.OriginalID,
+			ChainID:          daoInfo.ChainID,
+			BlockNumber:      int(payload.BlockNumber),
+			BlockTimestamp:   int(payload.BlockTimestamp),
+			LogIndex:         int(payload.LogIndex),
+		}
 
-		return nil
+		processor := func(ctx context.Context, tx *gorm.DB) error {
+			err := c.service.handleERC20Delegation(ctx, event, tx)
+			if err != nil {
+				return fmt.Errorf("c.service.handleERC20Delegation: %w", err)
+			}
+
+			increaseCnt := 1
+			if err = c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
+				Address:    event.AddressTo,
+				OriginalID: event.OriginalSpaceID,
+				ChainID:    event.ChainID,
+				CntDelta:   &increaseCnt,
+			}); err != nil {
+				return fmt.Errorf("c.service.UpdateERC20Delegate: increase: %w", err)
+			}
+
+			if event.AddressFrom == nullAddress {
+				return nil
+			}
+
+			decreaseCnt := -1
+			if err = c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
+				Address:    event.AddressFrom,
+				OriginalID: event.OriginalSpaceID,
+				ChainID:    event.ChainID,
+				CntDelta:   &decreaseCnt,
+			}); err != nil {
+				return fmt.Errorf("c.service.UpdateERC20Delegate: decrease: %w", err)
+			}
+
+			return nil
+		}
+
+		return c.service.processErc20Event(context.TODO(), event, processor)
+	}
+}
+
+func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
+	return func(payload events.ERC20VPChangesPayload) error {
+		daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
+		if !ok {
+			log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
+
+			return nil
+		}
+
+		event := ERC20VPChanges{
+			Address:         payload.Address,
+			OriginalSpaceID: daoInfo.OriginalID,
+			ChainID:         daoInfo.ChainID,
+			BlockNumber:     int(payload.BlockNumber),
+			BlockTimestamp:  int(payload.BlockTimestamp),
+			LogIndex:        int(payload.LogIndex),
+			VP:              payload.VotingPower,
+		}
+
+		processor := func(ctx context.Context, tx *gorm.DB) error {
+			if err := c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
+				Address:    event.Address,
+				OriginalID: event.OriginalSpaceID,
+				ChainID:    event.ChainID,
+				VPUpdate: &VPUpdate{
+					Value:       event.VP,
+					BlockNumber: event.BlockNumber,
+					LogIndex:    event.LogIndex,
+				},
+			}); err != nil {
+				return fmt.Errorf("c.service.UpsertERC20Delegate: vp_changes: %w", err)
+			}
+
+			return nil
+		}
+
+		return c.service.processErc20Event(context.TODO(), event, processor)
+	}
+}
+
+func (c *Consumer) handleERC20Transfers() events.ERC20TransfersHandler {
+	return func(payload events.ERC20TransferPayload) error {
+		daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
+		if !ok {
+			log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
+
+			return nil
+		}
+
+		event := ERC20Transfer{
+			AddressFrom:     payload.AddressFrom,
+			AddressTo:       payload.AddressTo,
+			OriginalSpaceID: daoInfo.OriginalID,
+			ChainID:         daoInfo.ChainID,
+			BlockNumber:     int(payload.BlockNumber),
+			BlockTimestamp:  int(payload.BlockTimestamp),
+			LogIndex:        int(payload.LogIndex),
+			Amount:          payload.Amount,
+		}
+
+		processor := func(ctx context.Context, tx *gorm.DB) error {
+			amount := event.Amount
+			if err := c.service.UpsertERC20Balance(tx, event.AddressTo, event.OriginalSpaceID, event.ChainID, amount); err != nil {
+				return fmt.Errorf("c.service.UpsertERC20Balance: increase: %w", err)
+			}
+
+			negAmount := "-" + amount
+			if err := c.service.UpsertERC20Balance(tx, event.AddressFrom, event.OriginalSpaceID, event.ChainID, negAmount); err != nil {
+				return fmt.Errorf("c.service.UpsertERC20Balance: decrease: %w", err)
+			}
+
+			return nil
+		}
+
+		return c.service.processErc20Event(context.TODO(), event, processor)
 	}
 }
 
@@ -125,12 +252,20 @@ func (c *Consumer) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectProposalVotesFetched, err)
 	}
-	erc20c, err := client.NewConsumer(ctx, c.conn, group, events.SubjectDelegateERC20, c.handleERC20Delegates(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	erc20del, err := client.NewConsumer(ctx, c.conn, group, events.SubjectERC20Delegations, c.handleERC20Delegates(), client.WithMaxAckPending(maxPendingAckPerConsumer))
 	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectDelegateERC20, err)
+		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectERC20Delegations, err)
+	}
+	erc20vpc, err := client.NewConsumer(ctx, c.conn, group, events.SubjectERC20VPChanges, c.handleERC20VPChanges(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectERC20VPChanges, err)
+	}
+	erc20transfers, err := client.NewConsumer(ctx, c.conn, group, events.SubjectERC20Transfer, c.handleERC20Transfers(), client.WithMaxAckPending(maxPendingAckPerConsumer))
+	if err != nil {
+		return fmt.Errorf("consume for %s/%s: %w", group, events.SubjectERC20Transfer, err)
 	}
 
-	c.consumers = append(c.consumers, de, pr, vc, vfc, erc20c)
+	c.consumers = append(c.consumers, de, pr, vc, vfc, erc20del, erc20vpc, erc20transfers)
 
 	log.Info().Msg("delegates consumers are started")
 

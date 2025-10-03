@@ -10,9 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goverland-labs/goverland-core-storage/internal/discord"
 	"golang.org/x/text/language"
 	message2 "golang.org/x/text/message"
+
+	"github.com/goverland-labs/goverland-core-storage/internal/discord"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -73,9 +74,17 @@ type ProposalProvider interface {
 	GetByID(string) (*proposal.Proposal, error)
 }
 
+type cachedDAO struct {
+	value     *Dao
+	expiresAt time.Time
+}
+
 type Service struct {
 	daoIds map[string]uuid.UUID
 	daoMu  sync.RWMutex
+
+	spacesByOriginalID map[string]cachedDAO
+	spacesLock         sync.RWMutex
 
 	recommendations   []Recommendation
 	recommendationsMu sync.RWMutex
@@ -94,17 +103,19 @@ type Service struct {
 
 func NewService(r DataProvider, ur UniqueVoterProvider, ip DaoIDProvider, p Publisher, pp ProposalProvider, topDAOCache *TopDAOCache, fungibleChainRepo *FungibleChainRepo, zerionClient *zerion.Client, discordSender *discord.Sender) (*Service, error) {
 	return &Service{
-		repo:              r,
-		uniqueRepo:        ur,
-		events:            p,
-		idProvider:        ip,
-		proposals:         pp,
-		daoIds:            make(map[string]uuid.UUID),
-		daoMu:             sync.RWMutex{},
-		topDAOCache:       topDAOCache,
-		fungibleChainRepo: fungibleChainRepo,
-		zerionClient:      zerionClient,
-		discordSender:     discordSender,
+		repo:               r,
+		uniqueRepo:         ur,
+		events:             p,
+		idProvider:         ip,
+		proposals:          pp,
+		daoIds:             make(map[string]uuid.UUID),
+		daoMu:              sync.RWMutex{},
+		spacesByOriginalID: make(map[string]cachedDAO),
+		spacesLock:         sync.RWMutex{},
+		topDAOCache:        topDAOCache,
+		fungibleChainRepo:  fungibleChainRepo,
+		zerionClient:       zerionClient,
+		discordSender:      discordSender,
 	}, nil
 }
 
@@ -265,10 +276,25 @@ func (s *Service) GetByID(id uuid.UUID) (*Dao, error) {
 }
 
 func (s *Service) GetDaoByOriginalID(id string) (*Dao, error) {
+	s.spacesLock.RLock()
+	data, ok := s.spacesByOriginalID[id]
+	s.spacesLock.RUnlock()
+	if ok && data.expiresAt.After(time.Now()) {
+		return data.value, nil
+	}
+
 	dao, err := s.repo.GetByOriginalID(id)
 	if err != nil {
 		return nil, fmt.Errorf("get by original id: %w", err)
 	}
+
+	// simple caching for 5 minutes
+	s.spacesLock.Lock()
+	s.spacesByOriginalID[id] = cachedDAO{
+		value:     dao,
+		expiresAt: time.Now().Add(time.Minute * 5),
+	}
+	s.spacesLock.Unlock()
 
 	return dao, nil
 }

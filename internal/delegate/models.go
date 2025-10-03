@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	events "github.com/goverland-labs/goverland-platform-events/events/aggregator"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -22,16 +21,49 @@ const (
 
 var (
 	daoErc20Set = map[string]Erc20Mapping{
+		// [1.8M holders | 108M transactions],
 		strings.ToLower("0x912ce59144191c1204e64559fe8253a0e49e6548"): {
 			OriginalID: "arbitrumfoundation.eth",
 			ChainID:    "42161",
 		},
+		// [25K holders | 1M transactions] ,
+		strings.ToLower("0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27"): {
+			OriginalID: "etherfi-dao.eth",
+			ChainID:    "42161",
+		},
+		// [0,1K holders | 1K transactions],
+		strings.ToLower("0x54b6e28a869a56f4e34d1187ae0a35b7dd3be111"): {
+			OriginalID: "maiadao.eth",
+			ChainID:    "42161",
+		},
+		// [28K holders | 272K transactions],
 		strings.ToLower("0xCa14007Eff0dB1f8135f4C25B34De49AB0d42766"): {
 			OriginalID: "starknet.eth",
 			ChainID:    "1",
 		},
+		// [ 65K holders | 1.3M transactions] ,
 		strings.ToLower("0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72"): {
 			OriginalID: "ens.eth",
+			ChainID:    "1",
+		},
+		// [25K holders | 370K transactions],
+		strings.ToLower("0x3c3a81e81dc49A522A592e7622A7E711c06bf354"): {
+			OriginalID: "bitdao.eth",
+			ChainID:    "1",
+		},
+		// [4K holders | 159K transactions],
+		strings.ToLower("0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b"): {
+			OriginalID: "eulerdao.eth",
+			ChainID:    "1",
+		},
+		// [12K holders | 122K transactions],
+		strings.ToLower("0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC"): {
+			OriginalID: "hop.eth",
+			ChainID:    "1",
+		},
+		// [110K holders | 1M transactions],
+		strings.ToLower("0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb"): {
+			OriginalID: "etherfi-dao.eth",
 			ChainID:    "1",
 		},
 	}
@@ -63,7 +95,6 @@ type History struct {
 	Source          string
 	Payload         json.RawMessage
 	Delegations     Delegations `gorm:"-"`
-	VotingPower     string      `gorm:"-"`
 }
 
 func (History) TableName() string {
@@ -103,37 +134,8 @@ func convertToInternal(payload events.DelegatePayload) History {
 			Expiration: payload.Delegations.Expiration,
 			Details:    delegations,
 		},
-		Source:      sourceSplitDelegation,
-		Payload:     pl,
-		VotingPower: "0",
-	}
-}
-
-func convertERC20ToInternal(payload events.ERC20DelegatePayload) History {
-	pl, _ := json.Marshal(payload)
-	daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
-	if !ok {
-		log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
-	}
-
-	return History{
-		Action:          events.DelegateActionSet,
-		AddressFrom:     payload.AddressFrom,
-		ChainID:         daoInfo.ChainID,
-		OriginalSpaceID: daoInfo.OriginalID,
-		BlockNumber:     int(payload.BlockNumber),
-		BlockTimestamp:  int(payload.BlockTimestamp),
-		Delegations: Delegations{
-			Details: []DelegationDetails{
-				{
-					Address: payload.AddressTo,
-					Weight:  10000,
-				},
-			},
-		},
-		Source:      sourceErc20Votes,
-		VotingPower: payload.VotingPower,
-		Payload:     pl,
+		Source:  sourceSplitDelegation,
+		Payload: pl,
 	}
 }
 
@@ -151,7 +153,6 @@ type Summary struct {
 	CreatedAt          time.Time
 	ChainID            *string
 	Type               string
-	VotingPower        string
 
 	// virtual property
 	MaxCnt     int    `gorm:"-"`
@@ -221,4 +222,51 @@ type AllowedDao struct {
 
 func (a *AllowedDao) TableName() string {
 	return "delegate_allowed_daos"
+}
+
+// Erc20EventHistory storing erc20 votes history
+type Erc20EventHistory struct {
+	ID            string
+	OriginalDaoID string `gorm:"original_dao_id"`
+	ChainID       string
+	BlockNumber   int
+	LogIndex      int
+	Type          string
+	Payload       json.RawMessage
+	CreatedAt     time.Time
+}
+
+func (Erc20EventHistory) TableName() string {
+	return "erc20_event_history"
+}
+
+type ERC20Delegate struct {
+	ID             uint64
+	Address        string
+	DaoID          uuid.UUID
+	ChainID        string
+	VP             string
+	BlockNumber    int
+	LogIndex       int
+	RepresentedCnt int
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+func (ERC20Delegate) TableName() string {
+	return "erc20_delegates"
+}
+
+type ERC20Balance struct {
+	ID        uint
+	Address   string
+	DaoID     uuid.UUID
+	ChainID   string
+	Value     string `gorm:"type:numeric(78,0);not null;default:0"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (ERC20Balance) TableName() string {
+	return "erc20_balances"
 }

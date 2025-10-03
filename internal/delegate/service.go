@@ -380,7 +380,7 @@ func (s *Service) resolveAddressesName(addresses []string) (map[string]string, e
 	return res, nil
 }
 
-func (s *Service) handleDelegate(ctx context.Context, hr History) error {
+func (s *Service) handleSplitDelegation(ctx context.Context, hr History) error {
 	logger := log.With().
 		Str("source", "handle_delegates").
 		Str("block_number", fmt.Sprintf("%d", hr.BlockNumber)).
@@ -414,7 +414,7 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 
 		var chainID *string
 		if strategy.Name != dao.StrategyNameSplitDelegation {
-			chainID = &hr.ChainID
+			chainID = &strategy.Network
 		}
 
 		bts, err := s.repo.GetSummaryBlockTimestamp(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String(), chainID)
@@ -430,7 +430,7 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 		}
 
 		if hr.Action == actionExpire {
-			if err := s.repo.UpdateSummaryExpiration(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String(), hr.Delegations.Expiration, hr.BlockTimestamp); err != nil {
+			if err = s.repo.UpdateSummaryExpiration(tx, strings.ToLower(hr.AddressFrom), delegatedDao.ID.String(), hr.Delegations.Expiration, hr.BlockTimestamp); err != nil {
 				return fmt.Errorf("UpdateSummaryExpiration: %w", err)
 			}
 
@@ -459,7 +459,6 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 				ExpiresAt:          int64(hr.Delegations.Expiration),
 				Type:               strategy.Name,
 				ChainID:            chainID,
-				VotingPower:        hr.VotingPower,
 			}); err != nil {
 				return fmt.Errorf("createSummary [%s/%s/%s]: %w", hr.AddressFrom, info.Address, delegatedDao.ID.String(), err)
 			}
@@ -480,6 +479,176 @@ func (s *Service) handleDelegate(ctx context.Context, hr History) error {
 		go func(list []string) {
 			s.ensResolver.AddRequests(list)
 		}(addresses)
+
+		return nil
+	}); err != nil {
+		return fmt.Errorf("repo.CallInTx: %w", err)
+	}
+
+	return nil
+}
+
+// нужно ли history использовать?
+func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegation, tx *gorm.DB) error {
+	logger := log.With().
+		Str("source", "handle_erc20_delegates").
+		Str("block_number", fmt.Sprintf("%d", info.BlockNumber)).
+		Str("chain_id", fmt.Sprintf("%d", info.ChainID)).
+		Str("delegator", info.DelegatorAddress).
+		Logger()
+
+	// get space by provided original_space_id
+	delegatedDao, err := s.daoProvider.GetDaoByOriginalID(info.OriginalSpaceID)
+	if err != nil {
+		return fmt.Errorf("dp.GetIDByOriginalID: %w", err)
+	}
+
+	strategy := getDaoPrimaryStrategy(delegatedDao, sourceErc20Votes)
+	if strategy == nil {
+		logger.Warn().Msgf("no strategy found for delegated dao %s", delegatedDao.OriginalID)
+
+		return nil
+	}
+
+	bts, err := s.repo.GetSummaryBlockTimestamp(
+		tx,
+		strings.ToLower(info.DelegatorAddress),
+		delegatedDao.ID.String(),
+		&info.ChainID,
+	)
+	if err != nil {
+		return fmt.Errorf("s.repo.GetSummaryBlockTimestamp: %w", err)
+	}
+
+	// skip this block due to already processed
+	if bts != 0 && bts >= info.BlockTimestamp {
+		logger.Warn().Msg("skip processing block - already processed")
+
+		return nil
+	}
+
+	if err = s.repo.RemoveSummary(
+		tx,
+		strings.ToLower(info.DelegatorAddress),
+		delegatedDao.ID.String(),
+		&info.ChainID,
+	); err != nil {
+		return fmt.Errorf("RemoveSummary: %w", err)
+	}
+
+	if err = s.repo.CreateSummary(tx, Summary{
+		AddressFrom:        strings.ToLower(info.DelegatorAddress),
+		AddressTo:          strings.ToLower(info.AddressTo),
+		DaoID:              delegatedDao.ID.String(),
+		LastBlockTimestamp: info.BlockTimestamp,
+		Type:               strategy.Name,
+		ChainID:            &info.ChainID,
+		Weight:             10000, // 100%
+		ExpiresAt:          0,
+	}); err != nil {
+		return fmt.Errorf("createSummary [%s/%s/%s]: %w", info.DelegatorAddress, info.AddressTo, delegatedDao.ID.String(), err)
+	}
+
+	event := events.DelegatePayload{
+		Initiator: strings.ToLower(info.DelegatorAddress),
+		Delegator: strings.ToLower(info.AddressTo),
+		DaoID:     delegatedDao.ID,
+	}
+
+	if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateCreated, event); err != nil {
+		logger.Warn().Err(err).Msgf("failed to publish delegate payload")
+	}
+
+	// move to another part
+	go s.ensResolver.AddRequests([]string{info.DelegatorAddress, info.AddressTo, info.AddressFrom})
+
+	return nil
+}
+
+func (s *Service) UpdateERC20Delegate(
+	tx *gorm.DB,
+	update ERC20DelegateUpdate,
+) error {
+	space, err := s.daoProvider.GetDaoByOriginalID(update.OriginalID)
+	if err != nil {
+		return fmt.Errorf("s.daoProvider.GetDaoByOriginalID: %w", err)
+	}
+
+	row, err := s.repo.GetERC20Delegate(tx, update.Address, space.ID, update.ChainID)
+	if err != nil {
+		return fmt.Errorf("s.repo.GetERC20Delegate: %w", err)
+	}
+
+	if row == nil {
+		row = &ERC20Delegate{
+			Address:        update.Address,
+			DaoID:          space.ID,
+			ChainID:        update.ChainID,
+			VP:             "0",
+			RepresentedCnt: 0,
+			BlockNumber:    0,
+			LogIndex:       0,
+		}
+	}
+
+	row.UpdatedAt = time.Now()
+
+	if update.CntDelta != nil {
+		row.RepresentedCnt += *update.CntDelta
+
+		return s.repo.SaveERC20Delegate(tx, row)
+	}
+
+	if update.VPUpdate == nil {
+		return nil
+	}
+
+	vpUpdate := update.VPUpdate
+	// do not update VP if event was earlier than last update
+	if (row.BlockNumber > vpUpdate.BlockNumber) ||
+		(row.BlockNumber == vpUpdate.BlockNumber && row.LogIndex > vpUpdate.LogIndex) {
+		return nil
+	}
+
+	row.BlockNumber = vpUpdate.BlockNumber
+	row.LogIndex = vpUpdate.LogIndex
+	row.VP = vpUpdate.Value
+
+	return s.repo.SaveERC20Delegate(tx, row)
+}
+
+func (s *Service) UpsertERC20Balance(
+	tx *gorm.DB,
+	address string,
+	originalID string,
+	chainID string,
+	balanceDelta string,
+) error {
+	space, err := s.daoProvider.GetDaoByOriginalID(originalID)
+	if err != nil {
+		return fmt.Errorf("s.daoProvider.GetDaoByOriginalID: %w", err)
+	}
+
+	return s.repo.UpsertERC20Balance(tx, address, space.ID, chainID, balanceDelta)
+}
+
+func (s *Service) processErc20Event(ctx context.Context, event ERC20Event, processor func(ctx context.Context, tx *gorm.DB) error) error {
+	if err := s.repo.CallInTx(func(tx *gorm.DB) error {
+		erc20Event, err := s.repo.GetErc20EventByKey(tx, event.GetKey())
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("s.repo.GetErc20Event: %w", err)
+		}
+		if erc20Event != nil {
+			return nil
+		}
+
+		if err = processor(ctx, tx); err != nil {
+			return fmt.Errorf("processor: %w", err)
+		}
+
+		if err = s.repo.StoreErc20Event(tx, event.ConvertToHistory()); err != nil {
+			return fmt.Errorf("s.repo.StoreErc20Event: %w", err)
+		}
 
 		return nil
 	}); err != nil {

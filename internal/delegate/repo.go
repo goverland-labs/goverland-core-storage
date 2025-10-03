@@ -2,6 +2,7 @@ package delegate
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repo struct {
@@ -525,4 +527,88 @@ func (r *Repo) GetDelegatesCount(_ context.Context, daoID uuid.UUID, chainID str
 	}
 
 	return count, nil
+}
+
+func (r *Repo) GetErc20EventByKey(tx *gorm.DB, id string) (*Erc20EventHistory, error) {
+	var event Erc20EventHistory
+
+	if err := tx.
+		First(&event, "id = ?", id).
+		Error; err != nil {
+		return nil, err
+	}
+
+	return &event, nil
+}
+
+func (r *Repo) StoreErc20Event(tx *gorm.DB, event *Erc20EventHistory) error {
+	if err := tx.
+		Create(event).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *Repo) GetERC20DelegateByAddressDaoChain(ctx context.Context, tx *gorm.DB, address string, daoID uuid.UUID, chainID string) (*ERC20Delegate, error) {
+	var delegate ERC20Delegate
+
+	if err := tx.
+		WithContext(ctx).
+		Where("address = ? AND dao_id = ? AND chain_id = ?", address, daoID, chainID).
+		First(&delegate).
+		Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &delegate, nil
+}
+
+func (r *Repo) GetERC20Delegate(
+	tx *gorm.DB,
+	address string,
+	daoID uuid.UUID,
+	chainID string,
+) (*ERC20Delegate, error) {
+	var delegate ERC20Delegate
+	err := tx.
+		Where("address = ? AND dao_id = ? AND chain_id = ?", address, daoID, chainID).
+		First(&delegate).
+		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &delegate, err
+}
+
+func (r *Repo) SaveERC20Delegate(
+	tx *gorm.DB,
+	delegate *ERC20Delegate,
+) error {
+	return tx.Save(delegate).Error
+}
+
+func (r *Repo) UpsertERC20Balance(tx *gorm.DB, address string, daoID uuid.UUID, chainID string, deltaValue string) error {
+	balance := &ERC20Balance{
+		Address: address,
+		DaoID:   daoID,
+		ChainID: chainID,
+		Value:   deltaValue,
+	}
+
+	return tx.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "address"},
+			{Name: "dao_id"},
+			{Name: "chain_id"},
+		},
+		DoUpdates: clause.Assignments(map[string]interface{}{
+			"value":      gorm.Expr("erc20_balances.value + excluded.value"),
+			"updated_at": gorm.Expr("NOW()"),
+		}),
+	}).Create(balance).Error
 }
