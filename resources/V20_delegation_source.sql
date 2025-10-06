@@ -67,16 +67,17 @@ create table erc20_event_history
 
 create table erc20_delegates
 (
-    id                bigserial
+    id              bigserial
         primary key,
-    address           text           not null,
-    dao_id            uuid           not null,
-    chain_id          text           not null,
-    vp                NUMERIC(78, 0) NOT NULL default 0,
-    vp_updated_at_key text,
-    represented_cnt   integer        not null default 0,
-    created_at        timestamp               default now(),
-    updated_at        timestamp               default now(),
+    address         text           not null,
+    dao_id          uuid           not null,
+    chain_id        text           not null,
+    vp              NUMERIC(78, 0) NOT NULL default 0,
+    block_number    integer,
+    log_index       integer,
+    represented_cnt integer        not null default 0,
+    created_at      timestamp               default now(),
+    updated_at      timestamp               default now(),
     constraint idx_unique_erc20_delegates
         unique (address, dao_id, chain_id)
 );

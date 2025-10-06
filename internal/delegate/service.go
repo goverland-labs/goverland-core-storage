@@ -382,7 +382,7 @@ func (s *Service) resolveAddressesName(addresses []string) (map[string]string, e
 
 func (s *Service) handleSplitDelegation(ctx context.Context, hr History) error {
 	logger := log.With().
-		Str("source", "handle_delegates").
+		Str("source", "handle_split_delegates").
 		Str("block_number", fmt.Sprintf("%d", hr.BlockNumber)).
 		Str("address_from", hr.AddressFrom).
 		Logger()
