@@ -612,3 +612,22 @@ func (r *Repo) UpsertERC20Balance(tx *gorm.DB, address string, daoID uuid.UUID, 
 		}),
 	}).Create(balance).Error
 }
+
+func (r *Repo) UpsertERC20VPTotal(tx *gorm.DB, daoID uuid.UUID, chainID string, deltaValue string) error {
+	vpTotal := &ERC20VPTotals{
+		DaoID:   daoID,
+		ChainID: chainID,
+		Value:   deltaValue,
+	}
+
+	return tx.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "dao_id"},
+			{Name: "chain_id"},
+		},
+		DoUpdates: clause.Assignments(map[string]interface{}{
+			"value":      gorm.Expr("erc20_vp_totals.value + excluded.value"),
+			"updated_at": gorm.Expr("NOW()"),
+		}),
+	}).Create(vpTotal).Error
+}

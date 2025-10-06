@@ -119,6 +119,7 @@ type ERC20VPChanges struct {
 	BlockTimestamp  int
 	LogIndex        int
 	VP              string
+	Delta           string
 }
 
 func (e ERC20VPChanges) GetKey() string {
@@ -129,6 +130,7 @@ func (e ERC20VPChanges) ConvertToHistory() *Erc20EventHistory {
 	payload, _ := json.Marshal(map[string]any{
 		"address": e.Address,
 		"vp":      e.VP,
+		"delta":   e.Delta,
 	})
 
 	return &Erc20EventHistory{
@@ -189,4 +191,10 @@ type ERC20DelegateUpdate struct {
 	ChainID    string
 	VPUpdate   *VPUpdate
 	CntDelta   *int
+}
+
+type ERC20VPTotalChanges struct {
+	OriginalID string
+	ChainID    string
+	Delta      string
 }

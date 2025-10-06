@@ -617,6 +617,18 @@ func (s *Service) UpdateERC20Delegate(
 	return s.repo.SaveERC20Delegate(tx, row)
 }
 
+func (s *Service) UpdateERC20VPTotal(
+	tx *gorm.DB,
+	update ERC20VPTotalChanges,
+) error {
+	space, err := s.daoProvider.GetDaoByOriginalID(update.OriginalID)
+	if err != nil {
+		return fmt.Errorf("s.daoProvider.GetDaoByOriginalID: %w", err)
+	}
+
+	return s.repo.UpsertERC20VPTotal(tx, space.ID, update.ChainID, update.Delta)
+}
+
 func (s *Service) UpsertERC20Balance(
 	tx *gorm.DB,
 	address string,

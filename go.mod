@@ -14,7 +14,7 @@ require (
 	github.com/goverland-labs/goverland-core-storage/protocol v0.4.5-0.20250307083516-f7ff5d31f0e8
 	github.com/goverland-labs/goverland-datasource-snapshot/protocol v0.6.2
 	github.com/goverland-labs/goverland-helpers-ens-resolver/protocol v0.1.0
-	github.com/goverland-labs/goverland-platform-events v0.3.16-0.20250930125157-fb46bc26e637
+	github.com/goverland-labs/goverland-platform-events v0.3.16-0.20251006145850-9a0884a61160
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/lib/pq v1.10.9

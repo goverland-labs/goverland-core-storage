@@ -270,3 +270,16 @@ type ERC20Balance struct {
 func (ERC20Balance) TableName() string {
 	return "erc20_balances"
 }
+
+type ERC20VPTotals struct {
+	ID        uint
+	DaoID     uuid.UUID
+	ChainID   string
+	Value     string `gorm:"type:numeric(78,0);not null;default:0"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (ERC20VPTotals) TableName() string {
+	return "erc20_vp_totals"
+}

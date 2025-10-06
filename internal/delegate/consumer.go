@@ -131,6 +131,7 @@ func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
 			BlockTimestamp:  int(payload.BlockTimestamp),
 			LogIndex:        int(payload.LogIndex),
 			VP:              payload.VotingPower,
+			Delta:           payload.DeltaPower,
 		}
 
 		processor := func(ctx context.Context, tx *gorm.DB) error {
@@ -145,6 +146,14 @@ func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
 				},
 			}); err != nil {
 				return fmt.Errorf("c.service.UpsertERC20Delegate: vp_changes: %w", err)
+			}
+
+			if err := c.service.UpdateERC20VPTotal(tx, ERC20VPTotalChanges{
+				OriginalID: event.OriginalSpaceID,
+				ChainID:    event.ChainID,
+				Delta:      event.Delta,
+			}); err != nil {
+				return fmt.Errorf("c.service.UpdateERC20VPTotal: %w", err)
 			}
 
 			return nil
