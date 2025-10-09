@@ -108,15 +108,16 @@ CREATE INDEX idx_erc20_balances_dao_chain
 CREATE INDEX idx_erc20_balances_address
     ON erc20_balances (address);
 
-create table erc20_vp_totals
+create table erc20_totals
 (
-    id         bigserial
+    id               bigserial
         primary key,
-    dao_id     uuid           not null,
-    chain_id   text           not null,
-    vp         NUMERIC(78, 0) NOT NULL default 0,
-    created_at timestamp               default now(),
-    updated_at timestamp               default now(),
-    constraint idx_unique_erc20_vp_totals
+    dao_id           uuid           not null,
+    chain_id         text           not null,
+    voting_power     NUMERIC(78, 0) NOT NULL default 0,
+    total_delegators integer        NOT NULL default 0,
+    created_at       timestamp               default now(),
+    updated_at       timestamp               default now(),
+    constraint idx_unique_erc20_totals
         unique (dao_id, chain_id)
 );

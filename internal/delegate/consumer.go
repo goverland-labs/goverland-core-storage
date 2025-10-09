@@ -83,17 +83,39 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 				return fmt.Errorf("c.service.handleERC20Delegation: %w", err)
 			}
 
-			increaseCnt := 1
-			if err = c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
-				Address:    event.AddressTo,
-				OriginalID: event.OriginalSpaceID,
-				ChainID:    event.ChainID,
-				CntDelta:   &increaseCnt,
-			}); err != nil {
-				return fmt.Errorf("c.service.UpdateERC20Delegate: increase: %w", err)
+			if event.AddressTo == nullAddress {
+				if err = c.service.UpdateERC20Totals(tx, ERC20TotalChanges{
+					OriginalID:      event.OriginalSpaceID,
+					ChainID:         event.ChainID,
+					VPDelta:         "0",
+					DelegatorsDelta: -1,
+				}); err != nil {
+					return fmt.Errorf("c.service.UpdateERC20Totals: %w", err)
+				}
+
+				return nil
+			} else {
+				increaseCnt := 1
+				if err = c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
+					Address:    event.AddressTo,
+					OriginalID: event.OriginalSpaceID,
+					ChainID:    event.ChainID,
+					CntDelta:   &increaseCnt,
+				}); err != nil {
+					return fmt.Errorf("c.service.UpdateERC20Delegate: increase: %w", err)
+				}
 			}
 
 			if event.AddressFrom == nullAddress {
+				if err = c.service.UpdateERC20Totals(tx, ERC20TotalChanges{
+					OriginalID:      event.OriginalSpaceID,
+					ChainID:         event.ChainID,
+					VPDelta:         "0",
+					DelegatorsDelta: 1,
+				}); err != nil {
+					return fmt.Errorf("c.service.UpdateERC20Totals: %w", err)
+				}
+
 				return nil
 			}
 
@@ -148,12 +170,13 @@ func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
 				return fmt.Errorf("c.service.UpsertERC20Delegate: vp_changes: %w", err)
 			}
 
-			if err := c.service.UpdateERC20VPTotal(tx, ERC20VPTotalChanges{
-				OriginalID: event.OriginalSpaceID,
-				ChainID:    event.ChainID,
-				Delta:      event.Delta,
+			if err := c.service.UpdateERC20Totals(tx, ERC20TotalChanges{
+				OriginalID:      event.OriginalSpaceID,
+				ChainID:         event.ChainID,
+				VPDelta:         event.Delta,
+				DelegatorsDelta: 0,
 			}); err != nil {
-				return fmt.Errorf("c.service.UpdateERC20VPTotal: %w", err)
+				return fmt.Errorf("c.service.UpdateERC20Totals: %w", err)
 			}
 
 			return nil

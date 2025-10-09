@@ -474,32 +474,28 @@ func (r *Repo) GetErc20DelegatesInfo(
 	var delegates []Delegate
 
 	err := r.db.Raw(`
-		with stats as (
-		    select address_to,
-		           count(distinct address_from) as delegator_count,
-		           sum(voting_power)            as voting_power
-		    from storage.delegates_summary
-		    where dao_id = ?
-		      and type = 'erc20-votes'
-		      and chain_id = ?
-			  and (address_to = ? or ? is null)
-		    group by address_to
-		),
-		totals as (
-		    select sum(delegator_count) as total_delegators,
-		           sum(voting_power)    as total_voting_power
-		    from stats
+		WITH totals AS (
+			SELECT
+				total_delegators,
+				voting_power AS total_voting_power
+			FROM erc20_totals
+			WHERE dao_id = ?
+			  AND chain_id = ?
 		)
-		select d.address_to as address,
-		       d.delegator_count,
-		       round(d.delegator_count::numeric / t.total_delegators * 100, 2)  as percent_of_delegators,
-		       d.voting_power,
-		       round(d.voting_power / nullif(t.total_voting_power, 0) * 100, 2) as percent_of_voting_power
-		from stats d
-		         cross join totals t
-		order by d.voting_power desc
-		limit ? offset ?
-	`, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
+		SELECT
+			d.address AS address,
+			d.represented_cnt,
+			ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
+			d.vp,
+			ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
+		FROM erc20_delegates d
+		CROSS JOIN totals t
+		WHERE d.dao_id = ?
+		  AND d.chain_id = ?
+		  AND (?::text IS NULL OR d.address = ?)
+		ORDER BY d.vp DESC
+		LIMIT ? OFFSET ?
+	`, daoID, chainID, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)
@@ -511,15 +507,10 @@ func (r *Repo) GetErc20DelegatesInfo(
 func (r *Repo) GetDelegatesCount(_ context.Context, daoID uuid.UUID, chainID string) (int32, error) {
 	var count int32
 	err := r.db.Raw(`
-		with stats as (
-			select address_to
-			from storage.delegates_summary
-			where dao_id = ?
-			  and type = 'erc20-votes'
-			  and chain_id = ?
-			group by address_to
-		)
-		select count(*) as total_rows from stats;
+		SELECT COALESCE(total_delegators, 0)
+		FROM erc20_totals
+		WHERE dao_id = ?
+		  AND chain_id = ?
 	`, daoID, chainID).Row().Scan(&count)
 
 	if err != nil {
@@ -613,11 +604,12 @@ func (r *Repo) UpsertERC20Balance(tx *gorm.DB, address string, daoID uuid.UUID, 
 	}).Create(balance).Error
 }
 
-func (r *Repo) UpsertERC20VPTotal(tx *gorm.DB, daoID uuid.UUID, chainID string, deltaValue string) error {
-	vpTotal := &ERC20VPTotals{
-		DaoID:   daoID,
-		ChainID: chainID,
-		Value:   deltaValue,
+func (r *Repo) UpsertERC20Total(tx *gorm.DB, daoID uuid.UUID, chainID string, deltaVP string, deltaCnt int64) error {
+	vpTotal := &ERC20Totals{
+		DaoID:           daoID,
+		ChainID:         chainID,
+		VotingPower:     deltaVP,
+		TotalDelegators: deltaCnt,
 	}
 
 	return tx.Clauses(clause.OnConflict{
@@ -626,8 +618,9 @@ func (r *Repo) UpsertERC20VPTotal(tx *gorm.DB, daoID uuid.UUID, chainID string, 
 			{Name: "chain_id"},
 		},
 		DoUpdates: clause.Assignments(map[string]interface{}{
-			"value":      gorm.Expr("erc20_vp_totals.value + excluded.value"),
-			"updated_at": gorm.Expr("NOW()"),
+			"voting_power":     gorm.Expr("erc20_totals.voting_power + excluded.voting_power"),
+			"total_delegators": gorm.Expr("erc20_totals.total_delegators + excluded.total_delegators"),
+			"updated_at":       gorm.Expr("NOW()"),
 		}),
 	}).Create(vpTotal).Error
 }

@@ -193,8 +193,9 @@ type ERC20DelegateUpdate struct {
 	CntDelta   *int
 }
 
-type ERC20VPTotalChanges struct {
-	OriginalID string
-	ChainID    string
-	Delta      string
+type ERC20TotalChanges struct {
+	OriginalID      string
+	ChainID         string
+	VPDelta         string
+	DelegatorsDelta int64
 }
