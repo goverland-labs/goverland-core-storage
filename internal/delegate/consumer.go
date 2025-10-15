@@ -67,9 +67,9 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 		}
 
 		event := ERC20Delegation{
-			DelegatorAddress: payload.Delegator,
-			AddressFrom:      payload.AddressFrom,
-			AddressTo:        payload.AddressTo,
+			DelegatorAddress: strings.ToLower(payload.Delegator),
+			AddressFrom:      strings.ToLower(payload.AddressFrom),
+			AddressTo:        strings.ToLower(payload.AddressTo),
 			OriginalSpaceID:  daoInfo.OriginalID,
 			ChainID:          daoInfo.ChainID,
 			BlockNumber:      int(payload.BlockNumber),
@@ -146,7 +146,7 @@ func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
 		}
 
 		event := ERC20VPChanges{
-			Address:         payload.Address,
+			Address:         strings.ToLower(payload.Address),
 			OriginalSpaceID: daoInfo.OriginalID,
 			ChainID:         daoInfo.ChainID,
 			BlockNumber:     int(payload.BlockNumber),
@@ -158,7 +158,7 @@ func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
 
 		processor := func(ctx context.Context, tx *gorm.DB) error {
 			if err := c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
-				Address:    event.Address,
+				Address:    strings.ToLower(event.Address),
 				OriginalID: event.OriginalSpaceID,
 				ChainID:    event.ChainID,
 				VPUpdate: &VPUpdate{
@@ -196,8 +196,8 @@ func (c *Consumer) handleERC20Transfers() events.ERC20TransfersHandler {
 		}
 
 		event := ERC20Transfer{
-			AddressFrom:     payload.AddressFrom,
-			AddressTo:       payload.AddressTo,
+			AddressFrom:     strings.ToLower(payload.AddressFrom),
+			AddressTo:       strings.ToLower(payload.AddressTo),
 			OriginalSpaceID: daoInfo.OriginalID,
 			ChainID:         daoInfo.ChainID,
 			BlockNumber:     int(payload.BlockNumber),
