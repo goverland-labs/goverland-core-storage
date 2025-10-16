@@ -199,3 +199,16 @@ type ERC20TotalChanges struct {
 	VPDelta         string
 	DelegatorsDelta int64
 }
+
+type ERC20DelegatorsRequest struct {
+	Address string
+	ChainID string
+	DaoID   uuid.UUID
+	Limit   int
+	Offset  int
+}
+
+type AddressValue struct {
+	Address    string
+	TokenValue string
+}

@@ -899,3 +899,21 @@ func (s *Service) GetByFilters(filters ...Filter) ([]Summary, error) {
 func (s *Service) GetCntByFilters(filters ...Filter) (int64, error) {
 	return s.repo.GetCnt(filters...)
 }
+
+func (s *Service) GetDelegators(ctx context.Context, req ERC20DelegatorsRequest) ([]AddressValue, error) {
+	top, err := s.repo.GetErc20TopDelegators(ctx, req.DaoID, req.ChainID, req.Address, req.Limit, req.Offset)
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetErc20TopDelegators: %w", err)
+	}
+
+	return top, nil
+}
+
+func (s *Service) GetErc20Delegate(_ context.Context, daoID uuid.UUID, chainID, address string) (*ERC20Delegate, error) {
+	delegate, err := s.repo.GetERC20Delegate(s.repo.db, address, daoID, chainID)
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetERC20Delegate: %w", err)
+	}
+
+	return delegate, nil
+}

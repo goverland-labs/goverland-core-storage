@@ -457,3 +457,57 @@ func (s *Server) GetDelegatorsByDao(_ context.Context, req *storagepb.GetDelegat
 		TotalCount: int32(cnt),
 	}, nil
 }
+
+// GetDelegators returns list of erc20 delegators based on internal info ordered by voting power desc
+func (s *Server) GetDelegators(
+	ctx context.Context,
+	req *storagepb.GetDelegatorsRequest,
+) (*storagepb.GetDelegatorsResponse, error) {
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	daoID, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
+	}
+
+	delegate, err := s.sp.GetErc20Delegate(ctx, daoID, req.GetChainId(), req.GetAddress())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get erc20 delegate")
+	}
+
+	list, err := s.sp.GetDelegators(ctx, ERC20DelegatorsRequest{
+		Address: req.GetAddress(),
+		ChainID: req.GetChainId(),
+		DaoID:   daoID,
+		Limit:   int(req.GetLimit()),
+		Offset:  int(req.GetOffset()),
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get delegators")
+	}
+
+	addresses := make([]string, 0, len(list))
+	for _, d := range list {
+		addresses = append(addresses, d.Address)
+	}
+	ensNames, err := s.sp.resolveAddressesName(addresses)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to resolve ens names")
+	}
+
+	converted := make([]*storagepb.DelegatorEntry, 0, len(list))
+	for _, info := range list {
+		converted = append(converted, &storagepb.DelegatorEntry{
+			Address:    info.Address,
+			EnsName:    ensNames[info.Address],
+			TokenValue: info.TokenValue,
+		})
+	}
+
+	return &storagepb.GetDelegatorsResponse{
+		List:       converted,
+		TotalCount: int32(delegate.RepresentedCnt),
+	}, nil
+}

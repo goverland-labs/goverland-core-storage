@@ -484,9 +484,9 @@ func (r *Repo) GetErc20DelegatesInfo(
 		)
 		SELECT
 			d.address AS address,
-			d.represented_cnt,
+			d.represented_cnt as delegator_count,
 			ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
-			d.vp,
+			d.vp as voting_power,
 			ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
 		FROM erc20_delegates d
 		CROSS JOIN totals t
@@ -623,4 +623,70 @@ func (r *Repo) UpsertERC20Total(tx *gorm.DB, daoID uuid.UUID, chainID string, de
 			"updated_at":       gorm.Expr("NOW()"),
 		}),
 	}).Create(vpTotal).Error
+}
+
+func (r *Repo) GetErc20TopDelegators(
+	_ context.Context,
+	daoID uuid.UUID,
+	chainID string,
+	address string,
+	limit, offset int,
+) ([]AddressValue, error) {
+	var list []AddressValue
+	err := r.db.Raw(`
+		SELECT 
+		    e.address, 
+		    e.value as token_value
+		FROM erc20_balances e
+		JOIN delegates_summary d
+			 ON e.address = d.address_from
+		WHERE lower(d.address_to) = lower(?)
+		 AND d.dao_id = ?
+		 AND d.chain_id = ?
+		ORDER BY e.value DESC
+		LIMIT ? OFFSET ?
+	`, address, daoID, chainID, limit, offset).Scan(&list).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("query list: %w", err)
+	}
+
+	return list, nil
+}
+
+func (r *Repo) GetErc20Delegates(
+	_ context.Context,
+	daoID uuid.UUID,
+	chainID string,
+	list []string,
+) ([]Delegate, error) {
+	var delegates []Delegate
+
+	err := r.db.Raw(`
+		WITH totals AS (
+			SELECT
+				total_delegators,
+				voting_power AS total_voting_power
+			FROM erc20_totals
+			WHERE dao_id = ?
+			  AND chain_id = ?
+		)
+		SELECT
+			d.address AS address,
+			d.represented_cnt,
+			ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
+			d.vp,
+			ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
+		FROM erc20_delegates d
+		CROSS JOIN totals t
+		WHERE d.dao_id = ?
+		  AND d.chain_id = ?
+		  AND d.address = ANY(?)
+	`, daoID, chainID, daoID, chainID, pq.Array(list)).Scan(&delegates).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("query delegates: %w", err)
+	}
+
+	return delegates, nil
 }

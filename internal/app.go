@@ -218,7 +218,7 @@ func (a *Application) initEnsResolver(pb *natsclient.Publisher) error {
 		return fmt.Errorf("ensresolver.NewService: %w", err)
 	}
 
-	a.manager.AddWorker(process.NewCallbackWorker("ens-resolver", a.ensService.Start))
+	//a.manager.AddWorker(process.NewCallbackWorker("ens-resolver", a.ensService.Start))
 
 	return nil
 }
@@ -238,30 +238,30 @@ func (a *Application) initDao(nc *nats.Conn, pb *natsclient.Publisher) error {
 		return fmt.Errorf("PrefillDaoIDs: %w", err)
 	}
 
-	fungibleChainWorker := dao.NewFungibleChainWorker(a.zerionClient, service, fungibleChainRepo)
-
-	cs, err := dao.NewConsumer(nc, service)
-	if err != nil {
-		return fmt.Errorf("dao consumer: %w", err)
-	}
-	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
-
-	cw := dao.NewNewCategoryWorker(service)
-	mc := dao.NewVotersCountWorker(service)
-	pcw := dao.NewPopularCategoryWorker(service)
-	avw := dao.NewCntCalculationWorker(service)
-	rw := dao.NewRecommendationWorker(service)
-	tpw := dao.NewTokenPriceWorker(service, a.zerionClient)
-	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-process-worker", cw.ProcessNew))
-	a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-outdated-worker", cw.RemoveOutdated))
-	a.manager.AddWorker(process.NewCallbackWorker("dao-new-voters-worker", mc.ProcessNew))
-	a.manager.AddWorker(process.NewCallbackWorker("dao-popular-category-process-worker", pcw.Process))
-	a.manager.AddWorker(process.NewCallbackWorker("dao-active-votes-worker", avw.ProcessVotes))
-	a.manager.AddWorker(process.NewCallbackWorker("dao-proposals-counter-worker", avw.ProcessProposalCounters))
-	a.manager.AddWorker(process.NewCallbackWorker("top-dao-cache-worker", topDAOCache.Start))
-	a.manager.AddWorker(process.NewCallbackWorker("dao-recommendations", rw.Process))
-	a.manager.AddWorker(process.NewCallbackWorker("token-price", tpw.Process))
-	a.manager.AddWorker(process.NewCallbackWorker("fungible-chain-worker", fungibleChainWorker.Start))
+	//fungibleChainWorker := dao.NewFungibleChainWorker(a.zerionClient, service, fungibleChainRepo)
+	//
+	//cs, err := dao.NewConsumer(nc, service)
+	//if err != nil {
+	//	return fmt.Errorf("dao consumer: %w", err)
+	//}
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
+	//
+	//cw := dao.NewNewCategoryWorker(service)
+	//mc := dao.NewVotersCountWorker(service)
+	//pcw := dao.NewPopularCategoryWorker(service)
+	//avw := dao.NewCntCalculationWorker(service)
+	//rw := dao.NewRecommendationWorker(service)
+	//tpw := dao.NewTokenPriceWorker(service, a.zerionClient)
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-process-worker", cw.ProcessNew))
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-new-category-outdated-worker", cw.RemoveOutdated))
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-new-voters-worker", mc.ProcessNew))
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-popular-category-process-worker", pcw.Process))
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-active-votes-worker", avw.ProcessVotes))
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-proposals-counter-worker", avw.ProcessProposalCounters))
+	//a.manager.AddWorker(process.NewCallbackWorker("top-dao-cache-worker", topDAOCache.Start))
+	//a.manager.AddWorker(process.NewCallbackWorker("dao-recommendations", rw.Process))
+	//a.manager.AddWorker(process.NewCallbackWorker("token-price", tpw.Process))
+	//a.manager.AddWorker(process.NewCallbackWorker("fungible-chain-worker", fungibleChainWorker.Start))
 
 	return nil
 }
@@ -280,17 +280,17 @@ func (a *Application) initProposal(nc *nats.Conn, pb *natsclient.Publisher) erro
 	}
 	a.proposalService = service
 
-	cs, err := proposal.NewConsumer(nc, service)
-	if err != nil {
-		return fmt.Errorf("proposal consumer: %w", err)
-	}
-	a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
-
-	vw := proposal.NewVotingWorker(service)
-	a.manager.AddWorker(process.NewCallbackWorker("voting-worker", vw.Start))
-
-	tw := proposal.NewTopWorker(service)
-	a.manager.AddWorker(process.NewCallbackWorker("proposal-top-worker", tw.Start))
+	//cs, err := proposal.NewConsumer(nc, service)
+	//if err != nil {
+	//	return fmt.Errorf("proposal consumer: %w", err)
+	//}
+	//a.manager.AddWorker(process.NewCallbackWorker("proposal-consumer", cs.Start))
+	//
+	//vw := proposal.NewVotingWorker(service)
+	//a.manager.AddWorker(process.NewCallbackWorker("voting-worker", vw.Start))
+	//
+	//tw := proposal.NewTopWorker(service)
+	//a.manager.AddWorker(process.NewCallbackWorker("proposal-top-worker", tw.Start))
 
 	return nil
 }
@@ -308,16 +308,16 @@ func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) err
 	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.proposalService, a.ensService, pb, a.eventsService)
 	a.delegateService = service
 
-	cs, err := delegate.NewConsumer(nc, service)
-	if err != nil {
-		return fmt.Errorf("delegates consumer: %w", err)
-	}
-
-	a.manager.AddWorker(process.NewCallbackWorker("delegates-allowed-daos", service.UpdateAllowedDaos))
-	a.manager.AddWorker(process.NewCallbackWorker("delegates-consumer", cs.Start))
-
-	ltw := delegate.NewLifeTimeWorker(service)
-	a.manager.AddWorker(process.NewCallbackWorker("delegates-life-time-worker", ltw.Start))
+	//cs, err := delegate.NewConsumer(nc, service)
+	//if err != nil {
+	//	return fmt.Errorf("delegates consumer: %w", err)
+	//}
+	//
+	//a.manager.AddWorker(process.NewCallbackWorker("delegates-allowed-daos", service.UpdateAllowedDaos))
+	//a.manager.AddWorker(process.NewCallbackWorker("delegates-consumer", cs.Start))
+	//
+	//ltw := delegate.NewLifeTimeWorker(service)
+	//a.manager.AddWorker(process.NewCallbackWorker("delegates-life-time-worker", ltw.Start))
 
 	return nil
 }
@@ -340,20 +340,20 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 	}
 	a.voteService = service
 
-	cs, err := vote.NewConsumer(nc, service)
-	if err != nil {
-		return fmt.Errorf("vote consumer: %w", err)
-	}
-	a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
+	//cs, err := vote.NewConsumer(nc, service)
+	//if err != nil {
+	//	return fmt.Errorf("vote consumer: %w", err)
+	//}
+	//a.manager.AddWorker(process.NewCallbackWorker("vote-consumer", cs.Start))
 
 	return nil
 }
 
 func (a *Application) initStats() {
 	a.statsService = stats.NewService(a.daoRepo, a.proposalRepo)
-	cw := stats.NewCalcTotalsWorker(a.statsService)
-
-	a.manager.AddWorker(process.NewCallbackWorker("calc-totals", cw.Start))
+	//cw := stats.NewCalcTotalsWorker(a.statsService)
+	//
+	//a.manager.AddWorker(process.NewCallbackWorker("calc-totals", cw.Start))
 }
 
 func (a *Application) initAPI() error {
