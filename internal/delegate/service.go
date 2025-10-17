@@ -510,6 +510,7 @@ func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegatio
 		return nil
 	}
 
+	// todo: use log_index to avoid multi delegations in ONE block
 	bts, err := s.repo.GetSummaryBlockTimestamp(
 		tx,
 		strings.ToLower(info.DelegatorAddress),

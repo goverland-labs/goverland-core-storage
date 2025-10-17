@@ -66,6 +66,11 @@ var (
 			OriginalID: "etherfi-dao.eth",
 			ChainID:    "1",
 		},
+		// [16K holders | 50K transfers],
+		strings.ToLower("0xF5E3D1290FDBFC50ec436f021ad516D0Bcac5d28"): {
+			OriginalID: "integration-test.eth",
+			ChainID:    "56",
+		},
 	}
 )
 
