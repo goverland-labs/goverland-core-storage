@@ -71,6 +71,10 @@ var (
 			OriginalID: "integration-test.eth",
 			ChainID:    "56",
 		},
+		strings.ToLower("0xB0fFa8000886e57F86dd5264b9582b2Ad87b2b91"): {
+			OriginalID: "wormholegovernance.eth",
+			ChainID:    "1",
+		},
 	}
 )
 
