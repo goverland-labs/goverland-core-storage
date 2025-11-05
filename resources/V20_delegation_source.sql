@@ -121,3 +121,6 @@ create table erc20_totals
     constraint idx_unique_erc20_totals
         unique (dao_id, chain_id)
 );
+
+ALTER TABLE delegates_summary
+    ADD COLUMN IF NOT EXISTS log_index integer default 0;

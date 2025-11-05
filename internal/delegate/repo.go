@@ -35,6 +35,30 @@ func (r *Repo) CallInTx(cb func(tx *gorm.DB) error) error {
 	return r.db.Transaction(cb)
 }
 
+func (r *Repo) GetSummary(tx *gorm.DB, addressFrom, daoID string, chainID *string) (*Summary, error) {
+	var summary Summary
+
+	query := tx.Where("address_from = ? AND dao_id = ?", addressFrom, daoID)
+	if chainID != nil {
+		query = query.Where("chain_id = ?", *chainID)
+	}
+
+	err := query.
+		Table("delegates_summary").
+		Order("last_block_timestamp DESC").
+		First(&summary).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &summary, nil
+}
+
 func (r *Repo) GetSummaryBlockTimestamp(tx *gorm.DB, addressFrom, daoID string, chainID *string) (int, error) {
 	var (
 		dump = Summary{}
@@ -492,6 +516,7 @@ func (r *Repo) GetErc20DelegatesInfo(
 		CROSS JOIN totals t
 		WHERE d.dao_id = ?
 		  AND d.chain_id = ?
+		  AND d.represented_cnt > 0
 		  AND (?::text IS NULL OR d.address = ?)
 		ORDER BY d.vp DESC
 		LIMIT ? OFFSET ?

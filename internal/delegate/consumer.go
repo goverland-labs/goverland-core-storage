@@ -92,8 +92,6 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 				}); err != nil {
 					return fmt.Errorf("c.service.UpdateERC20Totals: %w", err)
 				}
-
-				return nil
 			} else {
 				increaseCnt := 1
 				if err = c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{

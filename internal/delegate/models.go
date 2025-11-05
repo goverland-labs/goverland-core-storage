@@ -158,6 +158,7 @@ type Summary struct {
 	DaoID              string
 	Weight             int
 	LastBlockTimestamp int
+	LogIndex           int
 	ExpiresAt          int64
 	CreatedAt          time.Time
 	ChainID            *string

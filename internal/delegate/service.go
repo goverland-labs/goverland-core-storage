@@ -488,7 +488,6 @@ func (s *Service) handleSplitDelegation(ctx context.Context, hr History) error {
 	return nil
 }
 
-// нужно ли history использовать?
 func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegation, tx *gorm.DB) error {
 	logger := log.With().
 		Str("source", "handle_erc20_delegates").
@@ -510,8 +509,7 @@ func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegatio
 		return nil
 	}
 
-	// todo: use log_index to avoid multi delegations in ONE block
-	bts, err := s.repo.GetSummaryBlockTimestamp(
+	existed, err := s.repo.GetSummary(
 		tx,
 		strings.ToLower(info.DelegatorAddress),
 		delegatedDao.ID.String(),
@@ -521,11 +519,14 @@ func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegatio
 		return fmt.Errorf("s.repo.GetSummaryBlockTimestamp: %w", err)
 	}
 
-	// skip this block due to already processed
-	if bts != 0 && bts >= info.BlockTimestamp {
-		logger.Warn().Msg("skip processing block - already processed")
+	// skip this delegation due to already processed
+	if existed != nil {
+		if (existed.LastBlockTimestamp > info.BlockTimestamp) ||
+			(existed.LastBlockTimestamp == info.BlockTimestamp && existed.LogIndex >= info.LogIndex) {
+			logger.Warn().Msg("skip processing block - already processed")
 
-		return nil
+			return nil
+		}
 	}
 
 	if err = s.repo.RemoveSummary(
@@ -542,6 +543,7 @@ func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegatio
 		AddressTo:          strings.ToLower(info.AddressTo),
 		DaoID:              delegatedDao.ID.String(),
 		LastBlockTimestamp: info.BlockTimestamp,
+		LogIndex:           info.LogIndex,
 		Type:               strategy.Name,
 		ChainID:            &info.ChainID,
 		Weight:             10000, // 100%
@@ -575,6 +577,40 @@ func (s *Service) UpdateERC20Delegate(
 		return fmt.Errorf("s.daoProvider.GetDaoByOriginalID: %w", err)
 	}
 
+	if update.CntDelta != nil {
+		cntDelta := *update.CntDelta
+
+		result := tx.Model(&ERC20Delegate{}).
+			Where("address = ? AND dao_id = ? AND chain_id = ?", update.Address, space.ID, update.ChainID).
+			UpdateColumn("represented_cnt", gorm.Expr("represented_cnt + ?", cntDelta))
+		if result.Error != nil {
+			return fmt.Errorf("update represented_cnt: %w", result.Error)
+		}
+
+		if result.RowsAffected == 0 {
+			newRow := &ERC20Delegate{
+				Address:        update.Address,
+				DaoID:          space.ID,
+				ChainID:        update.ChainID,
+				VP:             "0",
+				RepresentedCnt: cntDelta,
+				BlockNumber:    0,
+				LogIndex:       0,
+				UpdatedAt:      time.Now(),
+			}
+			if err = s.repo.SaveERC20Delegate(tx, newRow); err != nil {
+				return fmt.Errorf("s.repo.SaveERC20Delegate: %w", err)
+			}
+		}
+
+		return nil
+	}
+
+	if update.VPUpdate == nil {
+		return nil
+	}
+
+	vpUpdate := update.VPUpdate
 	row, err := s.repo.GetERC20Delegate(tx, update.Address, space.ID, update.ChainID)
 	if err != nil {
 		return fmt.Errorf("s.repo.GetERC20Delegate: %w", err)
@@ -585,35 +621,25 @@ func (s *Service) UpdateERC20Delegate(
 			Address:        update.Address,
 			DaoID:          space.ID,
 			ChainID:        update.ChainID,
-			VP:             "0",
+			VP:             vpUpdate.Value,
 			RepresentedCnt: 0,
-			BlockNumber:    0,
-			LogIndex:       0,
+			BlockNumber:    vpUpdate.BlockNumber,
+			LogIndex:       vpUpdate.LogIndex,
+			UpdatedAt:      time.Now(),
 		}
-	}
-
-	row.UpdatedAt = time.Now()
-
-	if update.CntDelta != nil {
-		row.RepresentedCnt += *update.CntDelta
 
 		return s.repo.SaveERC20Delegate(tx, row)
 	}
 
-	if update.VPUpdate == nil {
-		return nil
-	}
-
-	vpUpdate := update.VPUpdate
-	// do not update VP if event was earlier than last update
 	if (row.BlockNumber > vpUpdate.BlockNumber) ||
 		(row.BlockNumber == vpUpdate.BlockNumber && row.LogIndex > vpUpdate.LogIndex) {
 		return nil
 	}
 
+	row.VP = vpUpdate.Value
 	row.BlockNumber = vpUpdate.BlockNumber
 	row.LogIndex = vpUpdate.LogIndex
-	row.VP = vpUpdate.Value
+	row.UpdatedAt = time.Now()
 
 	return s.repo.SaveERC20Delegate(tx, row)
 }
