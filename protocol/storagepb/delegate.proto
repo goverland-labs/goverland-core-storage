@@ -73,6 +73,8 @@ message DelegatorEntry {
 message GetDelegateProfileRequest {
   string dao_id = 1;
   string address = 2;
+  DelegationType delegation_type = 3;
+  optional string chain_id = 4;
 }
 
 message GetDelegateProfileResponse {

@@ -108,6 +108,7 @@ func convertDelegationType(dt storagepb.DelegationType) DelegationType {
 		return DelegationTypeUnrecognized
 	}
 }
+
 func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDelegateProfileRequest) (*storagepb.GetDelegateProfileResponse, error) {
 	if req.GetDaoId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
@@ -119,8 +120,10 @@ func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDeleg
 	}
 
 	profile, err := s.sp.GetDelegateProfile(ctx, GetDelegateProfileRequest{
-		DaoID:   daoID,
-		Address: req.GetAddress(),
+		DaoID:          daoID,
+		Address:        req.GetAddress(),
+		DelegationType: convertDelegationType(req.GetDelegationType()),
+		ChainID:        req.GetChainId(),
 	})
 	if err != nil {
 		log.Error().

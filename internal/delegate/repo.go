@@ -307,6 +307,21 @@ func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, e
 	return result, nil
 }
 
+func (r *Repo) GetDelegationByAddress(addressFrom, daoID string) (*Summary, error) {
+	var summary *Summary
+
+	err := r.db.
+		Where("dao_id = ? AND address_from = ?", daoID, addressFrom).
+		Order("created_at DESC").
+		First(&summary).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	return summary, err
+}
+
 func (r *Repo) GetByFilters(filters ...Filter) ([]Summary, error) {
 	db := r.db.Model(&Summary{})
 	for _, f := range filters {
@@ -584,6 +599,26 @@ func (r *Repo) GetERC20DelegateByAddressDaoChain(ctx context.Context, tx *gorm.D
 	return &delegate, nil
 }
 
+func (r *Repo) GetERC20DelegateForUpdate(
+	tx *gorm.DB,
+	address string,
+	daoID uuid.UUID,
+	chainID string,
+) (*ERC20Delegate, error) {
+	var delegate ERC20Delegate
+	err := tx.
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("address = ? AND dao_id = ? AND chain_id = ?", address, daoID, chainID).
+		First(&delegate).
+		Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	return &delegate, err
+}
+
 func (r *Repo) GetERC20Delegate(
 	tx *gorm.DB,
 	address string,
@@ -601,11 +636,79 @@ func (r *Repo) GetERC20Delegate(
 	return &delegate, err
 }
 
+func (r *Repo) GetERC20Totals(
+	tx *gorm.DB,
+	daoID uuid.UUID,
+	chainID string,
+) (*ERC20Totals, error) {
+	var info ERC20Totals
+	err := tx.
+		Where("dao_id = ? AND chain_id = ?", daoID, chainID).
+		First(&info).
+		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &info, err
+}
+
 func (r *Repo) SaveERC20Delegate(
 	tx *gorm.DB,
 	delegate *ERC20Delegate,
 ) error {
 	return tx.Save(delegate).Error
+}
+
+func (r *Repo) UpsertERC20Delegate(
+	tx *gorm.DB,
+	address string,
+	daoID uuid.UUID,
+	chainID string,
+	cntDelta *int,
+	vp string,
+	blockNumber int,
+	logIndex int,
+) error {
+	delegate := &ERC20Delegate{
+		Address:        address,
+		DaoID:          daoID,
+		ChainID:        chainID,
+		VP:             vp,
+		RepresentedCnt: 0,
+		BlockNumber:    blockNumber,
+		LogIndex:       logIndex,
+		UpdatedAt:      time.Now(),
+	}
+
+	doUpdates := map[string]any{
+		"updated_at": gorm.Expr("NOW()"),
+	}
+
+	if cntDelta != nil {
+		doUpdates["represented_cnt"] = gorm.Expr("erc20_delegates.represented_cnt + ?", *cntDelta)
+	}
+
+	if vp != "" {
+		// VP обновляем только если событие новее
+		doUpdates["vp"] = gorm.Expr(
+			"CASE WHEN block_number < ? OR (block_number = ? AND log_index < ?) THEN ? ELSE vp END",
+			blockNumber, blockNumber, logIndex, vp,
+		)
+		doUpdates["block_number"] = gorm.Expr("GREATEST(block_number, ?)", blockNumber)
+		doUpdates["log_index"] = gorm.Expr(
+			"CASE WHEN block_number = ? THEN GREATEST(log_index, ?) ELSE log_index END",
+			blockNumber, logIndex,
+		)
+	}
+
+	return tx.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "address"},
+			{Name: "dao_id"},
+			{Name: "chain_id"},
+		},
+		DoUpdates: clause.Assignments(doUpdates),
+	}).Create(delegate).Error
 }
 
 func (r *Repo) UpsertERC20Balance(tx *gorm.DB, address string, daoID uuid.UUID, chainID string, deltaValue string) error {
@@ -622,7 +725,7 @@ func (r *Repo) UpsertERC20Balance(tx *gorm.DB, address string, daoID uuid.UUID, 
 			{Name: "dao_id"},
 			{Name: "chain_id"},
 		},
-		DoUpdates: clause.Assignments(map[string]interface{}{
+		DoUpdates: clause.Assignments(map[string]any{
 			"value":      gorm.Expr("erc20_balances.value + excluded.value"),
 			"updated_at": gorm.Expr("NOW()"),
 		}),

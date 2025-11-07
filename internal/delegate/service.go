@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -251,6 +252,48 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 	daoEntity, err := s.daoProvider.GetByID(request.DaoID)
 	if err != nil {
 		return GetDelegateProfileResponse{}, fmt.Errorf("failed to get dao: %w", err)
+	}
+
+	// get delegate profile based on internal DB
+	if request.DelegationType != DelegationTypeSplitDelegation {
+		info, err := s.GetErc20Delegate(ctx, daoEntity.ID, request.ChainID, request.Address)
+		if err != nil {
+			return GetDelegateProfileResponse{}, fmt.Errorf("s.GetErc20Delegate: %w", err)
+		}
+
+		if info == nil {
+			return GetDelegateProfileResponse{}, nil
+		}
+
+		value, err := strconv.ParseFloat(info.VP, 64)
+		if err != nil {
+			return GetDelegateProfileResponse{}, fmt.Errorf("s.GetErc20Delegate: %w", err)
+		}
+
+		delegate, err := s.repo.GetDelegationByAddress(request.Address, request.DaoID.String())
+		if err != nil {
+			return GetDelegateProfileResponse{}, fmt.Errorf("s.repo.GetDelegationByAddress: %w", err)
+		}
+
+		var delegates []ProfileDelegateItem
+		if delegate != nil {
+			ensNames, err := s.resolveAddressesName([]string{delegate.AddressTo})
+			if err != nil {
+				return GetDelegateProfileResponse{}, fmt.Errorf("s.resolveAddressesName: %w", err)
+			}
+
+			delegates = append(delegates, ProfileDelegateItem{
+				Address: delegate.AddressTo,
+				ENSName: ensNames[delegate.AddressTo],
+				Weight:  float64(delegate.Weight),
+			})
+		}
+
+		return GetDelegateProfileResponse{
+			Address:     request.Address,
+			VotingPower: value,
+			Delegates:   delegates,
+		}, nil
 	}
 
 	delegationStrategyJson, err := s.getDelegationStrategy(daoEntity)
@@ -580,40 +623,38 @@ func (s *Service) UpdateERC20Delegate(
 	if update.CntDelta != nil {
 		cntDelta := *update.CntDelta
 
-		result := tx.Model(&ERC20Delegate{}).
-			Where("address = ? AND dao_id = ? AND chain_id = ?", update.Address, space.ID, update.ChainID).
-			UpdateColumn("represented_cnt", gorm.Expr("represented_cnt + ?", cntDelta))
-		if result.Error != nil {
-			return fmt.Errorf("update represented_cnt: %w", result.Error)
+		row, err := s.repo.GetERC20DelegateForUpdate(tx, update.Address, space.ID, update.ChainID)
+		if err != nil {
+			return fmt.Errorf("s.repo.GetERC20DelegateForUpdate: %w", err)
 		}
 
-		if result.RowsAffected == 0 {
-			newRow := &ERC20Delegate{
-				Address:        update.Address,
-				DaoID:          space.ID,
-				ChainID:        update.ChainID,
-				VP:             "0",
-				RepresentedCnt: cntDelta,
-				BlockNumber:    0,
-				LogIndex:       0,
-				UpdatedAt:      time.Now(),
-			}
-			if err = s.repo.SaveERC20Delegate(tx, newRow); err != nil {
-				return fmt.Errorf("s.repo.SaveERC20Delegate: %w", err)
-			}
+		if row != nil {
+			row.RepresentedCnt += cntDelta
+			row.UpdatedAt = time.Now()
+
+			return s.repo.SaveERC20Delegate(tx, row)
 		}
 
-		return nil
+		newRow := &ERC20Delegate{
+			Address:        update.Address,
+			DaoID:          space.ID,
+			ChainID:        update.ChainID,
+			VP:             "0",
+			RepresentedCnt: cntDelta,
+			BlockNumber:    0,
+			LogIndex:       0,
+			UpdatedAt:      time.Now(),
+		}
+		return s.repo.SaveERC20Delegate(tx, newRow)
 	}
 
 	if update.VPUpdate == nil {
 		return nil
 	}
 
-	vpUpdate := update.VPUpdate
-	row, err := s.repo.GetERC20Delegate(tx, update.Address, space.ID, update.ChainID)
+	row, err := s.repo.GetERC20DelegateForUpdate(tx, update.Address, space.ID, update.ChainID)
 	if err != nil {
-		return fmt.Errorf("s.repo.GetERC20Delegate: %w", err)
+		return fmt.Errorf("s.repo.GetERC20DelegateForUpdate: %w", err)
 	}
 
 	if row == nil {
@@ -621,24 +662,24 @@ func (s *Service) UpdateERC20Delegate(
 			Address:        update.Address,
 			DaoID:          space.ID,
 			ChainID:        update.ChainID,
-			VP:             vpUpdate.Value,
+			VP:             update.VPUpdate.Value,
 			RepresentedCnt: 0,
-			BlockNumber:    vpUpdate.BlockNumber,
-			LogIndex:       vpUpdate.LogIndex,
+			BlockNumber:    update.VPUpdate.BlockNumber,
+			LogIndex:       update.VPUpdate.LogIndex,
 			UpdatedAt:      time.Now(),
 		}
 
 		return s.repo.SaveERC20Delegate(tx, row)
 	}
 
-	if (row.BlockNumber > vpUpdate.BlockNumber) ||
-		(row.BlockNumber == vpUpdate.BlockNumber && row.LogIndex > vpUpdate.LogIndex) {
+	if (row.BlockNumber > update.VPUpdate.BlockNumber) ||
+		(row.BlockNumber == update.VPUpdate.BlockNumber && row.LogIndex > update.VPUpdate.LogIndex) {
 		return nil
 	}
 
-	row.VP = vpUpdate.Value
-	row.BlockNumber = vpUpdate.BlockNumber
-	row.LogIndex = vpUpdate.LogIndex
+	row.VP = update.VPUpdate.Value
+	row.BlockNumber = update.VPUpdate.BlockNumber
+	row.LogIndex = update.VPUpdate.LogIndex
 	row.UpdatedAt = time.Now()
 
 	return s.repo.SaveERC20Delegate(tx, row)
@@ -940,6 +981,15 @@ func (s *Service) GetErc20Delegate(_ context.Context, daoID uuid.UUID, chainID, 
 	delegate, err := s.repo.GetERC20Delegate(s.repo.db, address, daoID, chainID)
 	if err != nil {
 		return nil, fmt.Errorf("repo.GetERC20Delegate: %w", err)
+	}
+
+	return delegate, nil
+}
+
+func (s *Service) GetErc20Totals(_ context.Context, daoID uuid.UUID, chainID string) (*ERC20Totals, error) {
+	delegate, err := s.repo.GetERC20Totals(s.repo.db, daoID, chainID)
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetERC20Totals: %w", err)
 	}
 
 	return delegate, nil

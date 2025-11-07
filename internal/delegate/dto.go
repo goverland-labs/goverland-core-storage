@@ -46,8 +46,10 @@ type Delegate struct {
 }
 
 type GetDelegateProfileRequest struct {
-	DaoID   uuid.UUID
-	Address string
+	DaoID          uuid.UUID
+	Address        string
+	DelegationType DelegationType
+	ChainID        string
 }
 
 type GetDelegateProfileResponse struct {
