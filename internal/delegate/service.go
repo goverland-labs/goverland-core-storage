@@ -116,6 +116,27 @@ func (s *Service) updateAllowedDaos() error {
 }
 
 func (s *Service) GetDelegates(ctx context.Context, req GetDelegatesRequest) (*GetDelegatesResponse, error) {
+	daoEntity, err := s.daoProvider.GetByID(req.DaoID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get dao: %w", err)
+	}
+
+	// fallback logic for recognized delegation types
+	if req.DelegationType == DelegationTypeUnrecognized {
+		strategySD := daoEntity.GetStrategyByName(dao.StrategyNameSplitDelegation)
+		strategyErc20 := daoEntity.GetStrategyByName(dao.StrategyNameErc20Votes)
+
+		switch {
+		case strategySD != nil:
+			req.DelegationType = DelegationTypeSplitDelegation
+		case strategyErc20 != nil:
+			req.DelegationType = DelegationTypeERC20Votes
+			req.ChainID = &strategyErc20.Network
+		default:
+			return nil, fmt.Errorf("wrong delegation strategy: %s", daoEntity.OriginalID)
+		}
+	}
+
 	delegates, total, err := s.getDelegates(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("s.getDelegates: %w", err)
@@ -126,11 +147,6 @@ func (s *Service) GetDelegates(ctx context.Context, req GetDelegatesRequest) (*G
 			Delegates: delegates,
 			Total:     total,
 		}, nil
-	}
-
-	daoEntity, err := s.daoProvider.GetByID(req.DaoID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get dao: %w", err)
 	}
 
 	respAddresses := make([]string, 0, len(delegates))
