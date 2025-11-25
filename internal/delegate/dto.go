@@ -32,6 +32,29 @@ type GetDelegatesResponse struct {
 	Total     int32
 }
 
+type GetDelegatesMixedRequest struct {
+	DaoID          uuid.UUID
+	QueryAccounts  []string
+	Sort           *string
+	Limit          int
+	Offset         int
+	DelegationType DelegationType
+	ChainID        *string
+}
+
+type DelegatesWrapper struct {
+	DaoID          uuid.UUID
+	Delegates      []Delegate
+	DelegationType DelegationType
+	ChainID        *string
+	Total          int32
+}
+
+type GetDelegatesMixedResponse struct {
+	List  []DelegatesWrapper
+	Total int32
+}
+
 type Delegate struct {
 	Address               string
 	ENSName               string

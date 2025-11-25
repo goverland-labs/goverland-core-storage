@@ -259,6 +259,87 @@ func (r *Repo) GetTopDelegatorsByAddress(address string, limit int) ([]Summary, 
 	return result, nil
 }
 
+// GetTopDelegatorsMixed returns list of delegators grouped by delegation type, chain_id and joined with erc20 tables
+func (r *Repo) GetTopDelegatorsMixed(address, daoID string, limit int) ([]Summary, error) {
+	rows, err := r.db.
+		Raw(`
+				WITH ds AS (
+					SELECT
+						d.dao_id,
+						d.address_from,
+						d.type,
+						d.chain_id,
+						d.weight,
+						d.expires_at,
+						CASE
+							WHEN d.type = 'erc20-votes' THEN ed.vp
+							ELSE 0
+						END AS effective_vp
+					FROM storage.delegates_summary d
+					LEFT JOIN storage.erc20_delegates ed
+						ON  lower(ed.address) = lower(d.address_from)
+						   AND ed.dao_id = d.dao_id::uuid
+						   AND ed.chain_id = d.chain_id
+					WHERE lower(d.address_to) = lower(?)
+					  AND (?::text IS NULL OR d.dao_id = ?)
+				),
+				ranked AS (
+				 SELECT
+					 *,
+					 ROW_NUMBER() OVER (
+						 PARTITION BY type, chain_id
+						 ORDER BY effective_vp DESC NULLS LAST, created_at DESC
+					 ) AS rn,
+				
+					 COUNT(*) OVER (
+						 PARTITION BY type, chain_id
+					 ) AS group_size
+				 FROM ds
+				)
+				SELECT
+					dao_id,
+					address_from,
+					weight,
+					expires_at,
+					group_size,
+					type,
+					chain_id
+				FROM ranked
+				WHERE rn <= ?
+				ORDER BY type, chain_id, rn
+		  `,
+			address,
+			daoID,
+			daoID,
+			limit,
+		).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+
+	result := make([]Summary, 0, limit*10)
+	defer rows.Close()
+	for rows.Next() {
+		si := Summary{AddressTo: address}
+		if err = rows.Scan(
+			&si.DaoID,
+			&si.AddressFrom,
+			&si.Weight,
+			&si.ExpiresAt,
+			&si.MaxCnt,
+			&si.Type,
+			&si.ChainID,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		result = append(result, si)
+	}
+
+	return result, nil
+}
+
 func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, error) {
 	rows, err := r.db.
 		Raw(`
@@ -513,29 +594,86 @@ func (r *Repo) GetErc20DelegatesInfo(
 	var delegates []Delegate
 
 	err := r.db.Raw(`
-		WITH totals AS (
+			WITH totals AS (
+				SELECT
+					total_delegators,
+					voting_power AS total_voting_power
+				FROM erc20_totals
+				WHERE dao_id = ?
+				  AND chain_id = ?
+			),
+			real_delegates AS (
+				SELECT 
+					DISTINCT ds.address_to AS address
+				FROM delegates_summary ds
+				WHERE ds.dao_id = ?
+				  AND ds.chain_id = ?
+			)
 			SELECT
-				total_delegators,
-				voting_power AS total_voting_power
-			FROM erc20_totals
-			WHERE dao_id = ?
-			  AND chain_id = ?
-		)
-		SELECT
-			d.address AS address,
-			d.represented_cnt as delegator_count,
-			ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
-			d.vp as voting_power,
-			ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
-		FROM erc20_delegates d
-		CROSS JOIN totals t
-		WHERE d.dao_id = ?
-		  AND d.chain_id = ?
-		  AND d.represented_cnt > 0
-		  AND (?::text IS NULL OR d.address = ?)
-		ORDER BY d.vp DESC
-		LIMIT ? OFFSET ?
-	`, daoID, chainID, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
+				d.address,
+				d.represented_cnt AS delegator_count,
+				ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
+				d.vp AS voting_power,
+				ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
+			FROM storage.erc20_delegates d
+			JOIN real_delegates rd ON rd.address = d.address
+			CROSS JOIN totals t
+			WHERE d.dao_id = ?
+			  AND d.chain_id = ?
+			  AND (?::text IS NULL OR d.address = ?)
+			ORDER BY d.vp DESC
+			LIMIT ? OFFSET ?;
+
+	`, daoID, chainID, daoID, chainID, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("query delegates: %w", err)
+	}
+
+	return delegates, nil
+}
+
+func (r *Repo) GetErc20DelegatorsInfo(
+	_ context.Context,
+	daoID uuid.UUID,
+	chainID string,
+	address *string,
+	limit, offset int,
+) ([]Delegate, error) {
+	var delegates []Delegate
+
+	err := r.db.Raw(`
+			WITH totals AS (
+				SELECT
+					total_delegators,
+					voting_power AS total_voting_power
+				FROM erc20_totals
+				WHERE dao_id = ?
+				  AND chain_id = ?
+			),
+			real_delegates AS (
+				SELECT 
+					DISTINCT ds.address_from AS address
+				FROM delegates_summary ds
+				WHERE ds.dao_id = ?
+				  AND ds.chain_id = ?
+			)
+			SELECT
+				d.address,
+				d.represented_cnt AS delegator_count,
+				ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
+				d.vp AS voting_power,
+				ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
+			FROM storage.erc20_delegates d
+			JOIN real_delegates rd ON rd.address = d.address
+			CROSS JOIN totals t
+			WHERE d.dao_id = ?
+			  AND d.chain_id = ?
+			  AND (?::text IS NULL OR d.address = ?)
+			ORDER BY d.vp DESC
+			LIMIT ? OFFSET ?;
+
+	`, daoID, chainID, daoID, chainID, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)

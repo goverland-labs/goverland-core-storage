@@ -137,44 +137,9 @@ func (s *Service) GetDelegates(ctx context.Context, req GetDelegatesRequest) (*G
 		}
 	}
 
-	delegates, total, err := s.getDelegates(ctx, req)
+	delegates, total, err := s.getEnrichedDelegates(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("s.getDelegates: %w", err)
-	}
-
-	if len(delegates) == 0 {
-		return &GetDelegatesResponse{
-			Delegates: delegates,
-			Total:     total,
-		}, nil
-	}
-
-	respAddresses := make([]string, 0, len(delegates))
-	for _, d := range delegates {
-		respAddresses = append(respAddresses, d.Address)
-	}
-	ensNames, err := s.resolveAddressesName(respAddresses)
-	if err != nil {
-		return nil, fmt.Errorf("s.resolveAddressesName: %w", err)
-	}
-
-	votesCnt, err := s.repo.GetVotesCnt(daoEntity.ID, respAddresses)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get votes count: %w", err)
-	}
-
-	prCnt, err := s.repo.GetProposalsCnt(daoEntity.ID, respAddresses)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get votes count: %w", err)
-	}
-
-	// enrich with our stats
-	for idx := range delegates {
-		address := delegates[idx].Address
-
-		delegates[idx].ENSName = ensNames[address]
-		delegates[idx].VotesCount = int32(votesCnt[address])
-		delegates[idx].CreatedProposalsCount = int32(prCnt[address])
+		return nil, fmt.Errorf("s.getEnrichedDelegates: %w", err)
 	}
 
 	return &GetDelegatesResponse{
@@ -183,12 +148,16 @@ func (s *Service) GetDelegates(ctx context.Context, req GetDelegatesRequest) (*G
 	}, nil
 }
 
-func (s *Service) getDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+func (s *Service) getRawDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
 	if req.DelegationType != DelegationTypeERC20Votes {
 		return s.getExternalDelegates(ctx, req)
 	}
 
 	return s.getInternalDelegates(ctx, req)
+}
+
+func (s *Service) getRawDelegators(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+	return s.getInternalDelegators(ctx, req)
 }
 
 func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
@@ -204,6 +173,29 @@ func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequ
 	delegates, err := s.repo.GetErc20DelegatesInfo(ctx, req.DaoID, chainID, searchAddress, req.Limit, req.Offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("s.repo.GetErc20DelegatesInfo: %w", err)
+	}
+
+	total, err := s.repo.GetDelegatesCount(ctx, req.DaoID, chainID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.repo.GetDelegatesCount: %w", err)
+	}
+
+	return delegates, total, nil
+}
+
+func (s *Service) getInternalDelegators(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+	var chainID string
+	if req.ChainID != nil {
+		chainID = *req.ChainID
+	}
+
+	var searchAddress *string
+	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 {
+		searchAddress = &req.QueryAccounts[0]
+	}
+	delegates, err := s.repo.GetErc20DelegatorsInfo(ctx, req.DaoID, chainID, searchAddress, req.Limit, req.Offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.repo.GetErc20DelegatorsInfo: %w", err)
 	}
 
 	total, err := s.repo.GetDelegatesCount(ctx, req.DaoID, chainID)
@@ -954,6 +946,232 @@ func (s *Service) getTopDelegators(_ context.Context, address string) (map[strin
 	}
 
 	return result, nil
+}
+
+// getTopDelegators returns list of first 5 delegators grouped by dao
+func (s *Service) getTopDelegatorsMixed(_ context.Context, address, daoID string) (map[string]map[string][]Summary, error) {
+	limitPerDao := 5
+	list, err := s.repo.GetTopDelegatorsMixed(address, daoID, limitPerDao)
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetTopDelegatorsByAddress: %w", err)
+	}
+
+	result := make(map[string]map[string][]Summary, len(list))
+	for _, info := range list {
+		if _, ok := result[info.DaoID]; !ok {
+			result[info.DaoID] = make(map[string][]Summary, limitPerDao)
+		}
+
+		summaries := result[info.DaoID]
+		var chainID string
+		if info.ChainID != nil {
+			chainID = *info.ChainID
+		}
+		key := fmt.Sprintf("%s_%s", info.Type, chainID)
+		if _, ok := summaries[key]; !ok {
+			summaries[key] = make([]Summary, 0, limitPerDao)
+		}
+
+		summaries[key] = append(summaries[key], info)
+
+		result[info.DaoID] = summaries
+	}
+
+	return result, nil
+}
+
+func (s *Service) getEnrichedDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+	delegates, total, err := s.getRawDelegates(ctx, GetDelegatesRequest{
+		DaoID:          req.DaoID,
+		QueryAccounts:  req.QueryAccounts,
+		Limit:          req.Limit,
+		Offset:         req.Offset,
+		DelegationType: req.DelegationType,
+		ChainID:        req.ChainID,
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.getRawDelegates: %w", err)
+	}
+
+	if len(delegates) == 0 {
+		return nil, total, nil
+	}
+
+	respAddresses := make([]string, 0, len(delegates))
+	for _, d := range delegates {
+		respAddresses = append(respAddresses, d.Address)
+	}
+	ensNames, err := s.resolveAddressesName(respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("s.resolveAddressesName: %w", err)
+	}
+
+	votesCnt, err := s.repo.GetVotesCnt(req.DaoID, respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("failed to get votes count: %w", err)
+	}
+
+	prCnt, err := s.repo.GetProposalsCnt(req.DaoID, respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("failed to get votes count: %w", err)
+	}
+
+	// enrich with our stats
+	for idx := range delegates {
+		address := delegates[idx].Address
+
+		delegates[idx].ENSName = ensNames[address]
+		delegates[idx].VotesCount = int32(votesCnt[address])
+		delegates[idx].CreatedProposalsCount = int32(prCnt[address])
+	}
+
+	return delegates, total, nil
+}
+
+func (s *Service) getEnrichedDelegators(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
+	delegates, total, err := s.getRawDelegators(ctx, GetDelegatesRequest{
+		DaoID:          req.DaoID,
+		QueryAccounts:  req.QueryAccounts,
+		Limit:          req.Limit,
+		Offset:         req.Offset,
+		DelegationType: req.DelegationType,
+		ChainID:        req.ChainID,
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.getRawDelegators: %w", err)
+	}
+
+	if len(delegates) == 0 {
+		return nil, total, nil
+	}
+
+	respAddresses := make([]string, 0, len(delegates))
+	for _, d := range delegates {
+		respAddresses = append(respAddresses, d.Address)
+	}
+	ensNames, err := s.resolveAddressesName(respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("s.resolveAddressesName: %w", err)
+	}
+
+	votesCnt, err := s.repo.GetVotesCnt(req.DaoID, respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("failed to get votes count: %w", err)
+	}
+
+	prCnt, err := s.repo.GetProposalsCnt(req.DaoID, respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("failed to get votes count: %w", err)
+	}
+
+	// enrich with our stats
+	for idx := range delegates {
+		address := delegates[idx].Address
+
+		delegates[idx].ENSName = ensNames[address]
+		delegates[idx].VotesCount = int32(votesCnt[address])
+		delegates[idx].CreatedProposalsCount = int32(prCnt[address])
+	}
+
+	return delegates, total, nil
+}
+
+func (s *Service) getDelegatesMixed(ctx context.Context, req GetDelegatesMixedRequest) (*GetDelegatesMixedResponse, error) {
+	daoEntity, err := s.daoProvider.GetByID(req.DaoID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get dao: %w", err)
+	}
+
+	// fallback logic for recognized delegation types
+	if req.DelegationType == DelegationTypeUnrecognized {
+		strategySD := daoEntity.GetStrategyByName(dao.StrategyNameSplitDelegation)
+		strategyErc20 := daoEntity.GetStrategyByName(dao.StrategyNameErc20Votes)
+
+		switch {
+		case strategySD != nil:
+			req.DelegationType = DelegationTypeSplitDelegation
+		case strategyErc20 != nil:
+			req.DelegationType = DelegationTypeERC20Votes
+			req.ChainID = &strategyErc20.Network
+		default:
+			return nil, fmt.Errorf("wrong delegation strategy: %s", daoEntity.OriginalID)
+		}
+	}
+
+	delegates, total, err := s.getEnrichedDelegates(ctx, GetDelegatesRequest{
+		DaoID:          req.DaoID,
+		QueryAccounts:  req.QueryAccounts,
+		Sort:           req.Sort,
+		Limit:          req.Limit,
+		Offset:         req.Offset,
+		DelegationType: req.DelegationType,
+		ChainID:        req.ChainID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("s.getEnrichedDelegates: %w", err)
+	}
+
+	items := DelegatesWrapper{
+		DaoID:          req.DaoID,
+		Delegates:      delegates,
+		DelegationType: req.DelegationType,
+		ChainID:        req.ChainID,
+		Total:          total,
+	}
+
+	return &GetDelegatesMixedResponse{
+		List:  []DelegatesWrapper{items},
+		Total: total,
+	}, nil
+}
+
+func (s *Service) getDelegatorsMixed(ctx context.Context, req GetDelegatesMixedRequest) (*GetDelegatesMixedResponse, error) {
+	daoEntity, err := s.daoProvider.GetByID(req.DaoID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get dao: %w", err)
+	}
+
+	// fallback logic for recognized delegation types
+	if req.DelegationType == DelegationTypeUnrecognized {
+		strategySD := daoEntity.GetStrategyByName(dao.StrategyNameSplitDelegation)
+		strategyErc20 := daoEntity.GetStrategyByName(dao.StrategyNameErc20Votes)
+
+		switch {
+		case strategySD != nil:
+			req.DelegationType = DelegationTypeSplitDelegation
+		case strategyErc20 != nil:
+			req.DelegationType = DelegationTypeERC20Votes
+			req.ChainID = &strategyErc20.Network
+		default:
+			return nil, fmt.Errorf("wrong delegation strategy: %s", daoEntity.OriginalID)
+		}
+	}
+
+	delegates, total, err := s.getEnrichedDelegators(ctx, GetDelegatesRequest{
+		DaoID:          req.DaoID,
+		QueryAccounts:  req.QueryAccounts,
+		Sort:           req.Sort,
+		Limit:          req.Limit,
+		Offset:         req.Offset,
+		DelegationType: req.DelegationType,
+		ChainID:        req.ChainID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("s.getEnrichedDelegators: %w", err)
+	}
+
+	items := DelegatesWrapper{
+		DaoID:          req.DaoID,
+		Delegates:      delegates,
+		DelegationType: req.DelegationType,
+		ChainID:        req.ChainID,
+		Total:          total,
+	}
+
+	return &GetDelegatesMixedResponse{
+		List:  []DelegatesWrapper{items},
+		Total: total,
+	}, nil
 }
 
 // getDelegatorsCnt returns count of delegators based on address

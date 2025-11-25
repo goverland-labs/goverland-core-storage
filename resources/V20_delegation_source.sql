@@ -77,10 +77,11 @@ create table erc20_delegates
     log_index       integer,
     represented_cnt integer        not null default 0,
     created_at      timestamp               default now(),
-    updated_at      timestamp               default now(),
-    constraint idx_unique_erc20_delegates
-        unique (address, dao_id, chain_id)
+    updated_at      timestamp               default now()
 );
+
+CREATE UNIQUE INDEX idx_unique_erc20_delegates
+    ON erc20_delegates (lower(address), dao_id, chain_id);
 
 CREATE INDEX idx_erc20_delegates_dao_chain
     ON erc20_delegates (dao_id, chain_id);

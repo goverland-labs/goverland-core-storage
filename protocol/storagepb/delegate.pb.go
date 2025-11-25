@@ -1391,14 +1391,15 @@ func (x *GetDelegatorsByDaoResponse) GetTotalCount() int32 {
 }
 
 type GetDelegatorsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DaoId         string                 `protobuf:"bytes,1,opt,name=dao_id,json=daoId,proto3" json:"dao_id,omitempty"`
-	ChainId       string                 `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	Address       string                 `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	Limit         uint32                 `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
-	Offset        *uint32                `protobuf:"varint,5,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	DaoId          string                 `protobuf:"bytes,1,opt,name=dao_id,json=daoId,proto3" json:"dao_id,omitempty"`
+	ChainId        string                 `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	Address        string                 `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Limit          uint32                 `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset         *uint32                `protobuf:"varint,5,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
+	DelegationType DelegationType         `protobuf:"varint,6,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GetDelegatorsRequest) Reset() {
@@ -1466,6 +1467,13 @@ func (x *GetDelegatorsRequest) GetOffset() uint32 {
 	return 0
 }
 
+func (x *GetDelegatorsRequest) GetDelegationType() DelegationType {
+	if x != nil {
+		return x.DelegationType
+	}
+	return DelegationType_DELEGATION_TYPE_UNSPECIFIED
+}
+
 type GetDelegatorsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// List of delegators
@@ -1518,6 +1526,829 @@ func (x *GetDelegatorsResponse) GetTotalCount() int32 {
 		return x.TotalCount
 	}
 	return 0
+}
+
+// V2 implementation
+type GetDelegatesV2Request struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	DaoId          string                 `protobuf:"bytes,1,opt,name=dao_id,json=daoId,proto3" json:"dao_id,omitempty"`
+	QueryAccounts  []string               `protobuf:"bytes,2,rep,name=query_accounts,json=queryAccounts,proto3" json:"query_accounts,omitempty"`
+	Sort           *string                `protobuf:"bytes,3,opt,name=sort,proto3,oneof" json:"sort,omitempty"`
+	Limit          int32                  `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset         int32                  `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
+	DelegationType DelegationType         `protobuf:"varint,6,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	ChainId        *string                `protobuf:"bytes,7,opt,name=chain_id,json=chainId,proto3,oneof" json:"chain_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetDelegatesV2Request) Reset() {
+	*x = GetDelegatesV2Request{}
+	mi := &file_storagepb_delegate_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDelegatesV2Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDelegatesV2Request) ProtoMessage() {}
+
+func (x *GetDelegatesV2Request) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDelegatesV2Request.ProtoReflect.Descriptor instead.
+func (*GetDelegatesV2Request) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetDelegatesV2Request) GetDaoId() string {
+	if x != nil {
+		return x.DaoId
+	}
+	return ""
+}
+
+func (x *GetDelegatesV2Request) GetQueryAccounts() []string {
+	if x != nil {
+		return x.QueryAccounts
+	}
+	return nil
+}
+
+func (x *GetDelegatesV2Request) GetSort() string {
+	if x != nil && x.Sort != nil {
+		return *x.Sort
+	}
+	return ""
+}
+
+func (x *GetDelegatesV2Request) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetDelegatesV2Request) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *GetDelegatesV2Request) GetDelegationType() DelegationType {
+	if x != nil {
+		return x.DelegationType
+	}
+	return DelegationType_DELEGATION_TYPE_UNSPECIFIED
+}
+
+func (x *GetDelegatesV2Request) GetChainId() string {
+	if x != nil && x.ChainId != nil {
+		return *x.ChainId
+	}
+	return ""
+}
+
+type TokenValue struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Value         string                 `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Decimals      int32                  `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TokenValue) Reset() {
+	*x = TokenValue{}
+	mi := &file_storagepb_delegate_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TokenValue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TokenValue) ProtoMessage() {}
+
+func (x *TokenValue) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TokenValue.ProtoReflect.Descriptor instead.
+func (*TokenValue) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *TokenValue) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+func (x *TokenValue) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *TokenValue) GetDecimals() int32 {
+	if x != nil {
+		return x.Decimals
+	}
+	return 0
+}
+
+// Unified structure for delegation entry (split-delegation/erc20-votes)
+type DelegateEntryV2 struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The delegation address
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// Resolved ens name
+	EnsName        string `protobuf:"bytes,2,opt,name=ens_name,json=ensName,proto3" json:"ens_name,omitempty"`
+	DelegatorCount *int32 `protobuf:"varint,3,opt,name=delegator_count,json=delegatorCount,proto3,oneof" json:"delegator_count,omitempty"`
+	// Percentage of delegation in basis points
+	PercentOfDelegators *float64 `protobuf:"fixed64,4,opt,name=percent_of_delegators,json=percentOfDelegators,proto3,oneof" json:"percent_of_delegators,omitempty"`
+	// Percentage of voting power in basis points
+	PercentOfVotingPower *float64 `protobuf:"fixed64,5,opt,name=percent_of_voting_power,json=percentOfVotingPower,proto3,oneof" json:"percent_of_voting_power,omitempty"`
+	// Text description
+	About *string `protobuf:"bytes,6,opt,name=about,proto3,oneof" json:"about,omitempty"`
+	// Text description
+	Statement *string `protobuf:"bytes,7,opt,name=statement,proto3,oneof" json:"statement,omitempty"`
+	// Total votes in our DB
+	VotesCount *int32 `protobuf:"varint,8,opt,name=votes_count,json=votesCount,proto3,oneof" json:"votes_count,omitempty"`
+	// Total proposals in our DB
+	CreatedProposalsCount *int32 `protobuf:"varint,9,opt,name=created_proposals_count,json=createdProposalsCount,proto3,oneof" json:"created_proposals_count,omitempty"`
+	// Delegation value is different for delegation types
+	// for split-delegation
+	VotingPower *float64 `protobuf:"fixed64,10,opt,name=voting_power,json=votingPower,proto3,oneof" json:"voting_power,omitempty"`
+	// for erc20-votes
+	TokenValue *TokenValue `protobuf:"bytes,11,opt,name=token_value,json=tokenValue,proto3,oneof" json:"token_value,omitempty"`
+	// Expires at date. If 0 the expiration is not set
+	Expiration    *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=expiration,proto3,oneof" json:"expiration,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DelegateEntryV2) Reset() {
+	*x = DelegateEntryV2{}
+	mi := &file_storagepb_delegate_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DelegateEntryV2) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DelegateEntryV2) ProtoMessage() {}
+
+func (x *DelegateEntryV2) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DelegateEntryV2.ProtoReflect.Descriptor instead.
+func (*DelegateEntryV2) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *DelegateEntryV2) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *DelegateEntryV2) GetEnsName() string {
+	if x != nil {
+		return x.EnsName
+	}
+	return ""
+}
+
+func (x *DelegateEntryV2) GetDelegatorCount() int32 {
+	if x != nil && x.DelegatorCount != nil {
+		return *x.DelegatorCount
+	}
+	return 0
+}
+
+func (x *DelegateEntryV2) GetPercentOfDelegators() float64 {
+	if x != nil && x.PercentOfDelegators != nil {
+		return *x.PercentOfDelegators
+	}
+	return 0
+}
+
+func (x *DelegateEntryV2) GetPercentOfVotingPower() float64 {
+	if x != nil && x.PercentOfVotingPower != nil {
+		return *x.PercentOfVotingPower
+	}
+	return 0
+}
+
+func (x *DelegateEntryV2) GetAbout() string {
+	if x != nil && x.About != nil {
+		return *x.About
+	}
+	return ""
+}
+
+func (x *DelegateEntryV2) GetStatement() string {
+	if x != nil && x.Statement != nil {
+		return *x.Statement
+	}
+	return ""
+}
+
+func (x *DelegateEntryV2) GetVotesCount() int32 {
+	if x != nil && x.VotesCount != nil {
+		return *x.VotesCount
+	}
+	return 0
+}
+
+func (x *DelegateEntryV2) GetCreatedProposalsCount() int32 {
+	if x != nil && x.CreatedProposalsCount != nil {
+		return *x.CreatedProposalsCount
+	}
+	return 0
+}
+
+func (x *DelegateEntryV2) GetVotingPower() float64 {
+	if x != nil && x.VotingPower != nil {
+		return *x.VotingPower
+	}
+	return 0
+}
+
+func (x *DelegateEntryV2) GetTokenValue() *TokenValue {
+	if x != nil {
+		return x.TokenValue
+	}
+	return nil
+}
+
+func (x *DelegateEntryV2) GetExpiration() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Expiration
+	}
+	return nil
+}
+
+type DelegatesWrapper struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Dao identified
+	DaoId string `protobuf:"bytes,1,opt,name=dao_id,json=daoId,proto3" json:"dao_id,omitempty"`
+	// Delegation type
+	DelegationType DelegationType `protobuf:"varint,2,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	// Chain ID if provided (empty for split-delegation)
+	ChainId *string `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3,oneof" json:"chain_id,omitempty"`
+	// List of delegates
+	Delegates []*DelegateEntryV2 `protobuf:"bytes,4,rep,name=delegates,proto3" json:"delegates,omitempty"`
+	// Total count of delegates
+	TotalCnt      int32 `protobuf:"varint,5,opt,name=total_cnt,json=totalCnt,proto3" json:"total_cnt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DelegatesWrapper) Reset() {
+	*x = DelegatesWrapper{}
+	mi := &file_storagepb_delegate_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DelegatesWrapper) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DelegatesWrapper) ProtoMessage() {}
+
+func (x *DelegatesWrapper) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DelegatesWrapper.ProtoReflect.Descriptor instead.
+func (*DelegatesWrapper) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *DelegatesWrapper) GetDaoId() string {
+	if x != nil {
+		return x.DaoId
+	}
+	return ""
+}
+
+func (x *DelegatesWrapper) GetDelegationType() DelegationType {
+	if x != nil {
+		return x.DelegationType
+	}
+	return DelegationType_DELEGATION_TYPE_UNSPECIFIED
+}
+
+func (x *DelegatesWrapper) GetChainId() string {
+	if x != nil && x.ChainId != nil {
+		return *x.ChainId
+	}
+	return ""
+}
+
+func (x *DelegatesWrapper) GetDelegates() []*DelegateEntryV2 {
+	if x != nil {
+		return x.Delegates
+	}
+	return nil
+}
+
+func (x *DelegatesWrapper) GetTotalCnt() int32 {
+	if x != nil {
+		return x.TotalCnt
+	}
+	return 0
+}
+
+type GetDelegatesV2Response struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// List of delegates grouped by specific delegation type and chain_id
+	List []*DelegatesWrapper `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	// Total count of delegates from all lists
+	TotalCnt      int32 `protobuf:"varint,4,opt,name=total_cnt,json=totalCnt,proto3" json:"total_cnt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDelegatesV2Response) Reset() {
+	*x = GetDelegatesV2Response{}
+	mi := &file_storagepb_delegate_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDelegatesV2Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDelegatesV2Response) ProtoMessage() {}
+
+func (x *GetDelegatesV2Response) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDelegatesV2Response.ProtoReflect.Descriptor instead.
+func (*GetDelegatesV2Response) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *GetDelegatesV2Response) GetList() []*DelegatesWrapper {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+func (x *GetDelegatesV2Response) GetTotalCnt() int32 {
+	if x != nil {
+		return x.TotalCnt
+	}
+	return 0
+}
+
+type GetDelegatorsV2Request struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	DaoId          string                 `protobuf:"bytes,1,opt,name=dao_id,json=daoId,proto3" json:"dao_id,omitempty"`
+	DelegationType DelegationType         `protobuf:"varint,2,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	ChainId        string                 `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	Address        string                 `protobuf:"bytes,4,opt,name=address,proto3" json:"address,omitempty"`
+	Limit          uint32                 `protobuf:"varint,5,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset         *uint32                `protobuf:"varint,6,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetDelegatorsV2Request) Reset() {
+	*x = GetDelegatorsV2Request{}
+	mi := &file_storagepb_delegate_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDelegatorsV2Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDelegatorsV2Request) ProtoMessage() {}
+
+func (x *GetDelegatorsV2Request) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDelegatorsV2Request.ProtoReflect.Descriptor instead.
+func (*GetDelegatorsV2Request) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *GetDelegatorsV2Request) GetDaoId() string {
+	if x != nil {
+		return x.DaoId
+	}
+	return ""
+}
+
+func (x *GetDelegatorsV2Request) GetDelegationType() DelegationType {
+	if x != nil {
+		return x.DelegationType
+	}
+	return DelegationType_DELEGATION_TYPE_UNSPECIFIED
+}
+
+func (x *GetDelegatorsV2Request) GetChainId() string {
+	if x != nil {
+		return x.ChainId
+	}
+	return ""
+}
+
+func (x *GetDelegatorsV2Request) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *GetDelegatorsV2Request) GetLimit() uint32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetDelegatorsV2Request) GetOffset() uint32 {
+	if x != nil && x.Offset != nil {
+		return *x.Offset
+	}
+	return 0
+}
+
+type GetDelegatorsV2Response struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// List of delegators
+	List []*DelegatesWrapper `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	// Total count of delegates from all lists
+	TotalCnt      int32 `protobuf:"varint,2,opt,name=total_cnt,json=totalCnt,proto3" json:"total_cnt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDelegatorsV2Response) Reset() {
+	*x = GetDelegatorsV2Response{}
+	mi := &file_storagepb_delegate_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDelegatorsV2Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDelegatorsV2Response) ProtoMessage() {}
+
+func (x *GetDelegatorsV2Response) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDelegatorsV2Response.ProtoReflect.Descriptor instead.
+func (*GetDelegatorsV2Response) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *GetDelegatorsV2Response) GetList() []*DelegatesWrapper {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+func (x *GetDelegatorsV2Response) GetTotalCnt() int32 {
+	if x != nil {
+		return x.TotalCnt
+	}
+	return 0
+}
+
+type GetTopDelegatesV2Request struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The account address that initiates the delegation
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// specific dao_id for filtering
+	DaoId *string `protobuf:"bytes,2,opt,name=dao_id,json=daoId,proto3,oneof" json:"dao_id,omitempty"`
+	// Which delegation type used
+	DelegationType DelegationType `protobuf:"varint,3,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	// In which chain
+	ChainId       *string `protobuf:"bytes,4,opt,name=chain_id,json=chainId,proto3,oneof" json:"chain_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTopDelegatesV2Request) Reset() {
+	*x = GetTopDelegatesV2Request{}
+	mi := &file_storagepb_delegate_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTopDelegatesV2Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTopDelegatesV2Request) ProtoMessage() {}
+
+func (x *GetTopDelegatesV2Request) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTopDelegatesV2Request.ProtoReflect.Descriptor instead.
+func (*GetTopDelegatesV2Request) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *GetTopDelegatesV2Request) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *GetTopDelegatesV2Request) GetDaoId() string {
+	if x != nil && x.DaoId != nil {
+		return *x.DaoId
+	}
+	return ""
+}
+
+func (x *GetTopDelegatesV2Request) GetDelegationType() DelegationType {
+	if x != nil {
+		return x.DelegationType
+	}
+	return DelegationType_DELEGATION_TYPE_UNSPECIFIED
+}
+
+func (x *GetTopDelegatesV2Request) GetChainId() string {
+	if x != nil && x.ChainId != nil {
+		return *x.ChainId
+	}
+	return ""
+}
+
+type GetTopDelegatesV2Response struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Total count of delegates from all lists
+	TotalCnt int32 `protobuf:"varint,1,opt,name=total_cnt,json=totalCnt,proto3" json:"total_cnt,omitempty"`
+	// List of delegates grouped by dao, delegation_type and chain_id and sorted by popularity index
+	List          []*DelegatesWrapper `protobuf:"bytes,2,rep,name=list,proto3" json:"list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTopDelegatesV2Response) Reset() {
+	*x = GetTopDelegatesV2Response{}
+	mi := &file_storagepb_delegate_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTopDelegatesV2Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTopDelegatesV2Response) ProtoMessage() {}
+
+func (x *GetTopDelegatesV2Response) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTopDelegatesV2Response.ProtoReflect.Descriptor instead.
+func (*GetTopDelegatesV2Response) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GetTopDelegatesV2Response) GetTotalCnt() int32 {
+	if x != nil {
+		return x.TotalCnt
+	}
+	return 0
+}
+
+func (x *GetTopDelegatesV2Response) GetList() []*DelegatesWrapper {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+type GetTopDelegatorsV2Request struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The account address that initiates the delegation
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// specific dao_id for filtering
+	DaoId *string `protobuf:"bytes,2,opt,name=dao_id,json=daoId,proto3,oneof" json:"dao_id,omitempty"`
+	// Which delegation type used
+	DelegationType DelegationType `protobuf:"varint,3,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	// In which chain
+	ChainId       *string `protobuf:"bytes,4,opt,name=chain_id,json=chainId,proto3,oneof" json:"chain_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTopDelegatorsV2Request) Reset() {
+	*x = GetTopDelegatorsV2Request{}
+	mi := &file_storagepb_delegate_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTopDelegatorsV2Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTopDelegatorsV2Request) ProtoMessage() {}
+
+func (x *GetTopDelegatorsV2Request) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTopDelegatorsV2Request.ProtoReflect.Descriptor instead.
+func (*GetTopDelegatorsV2Request) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetTopDelegatorsV2Request) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *GetTopDelegatorsV2Request) GetDaoId() string {
+	if x != nil && x.DaoId != nil {
+		return *x.DaoId
+	}
+	return ""
+}
+
+func (x *GetTopDelegatorsV2Request) GetDelegationType() DelegationType {
+	if x != nil {
+		return x.DelegationType
+	}
+	return DelegationType_DELEGATION_TYPE_UNSPECIFIED
+}
+
+func (x *GetTopDelegatorsV2Request) GetChainId() string {
+	if x != nil && x.ChainId != nil {
+		return *x.ChainId
+	}
+	return ""
+}
+
+type GetTopDelegatorsV2Response struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Total count of delegates from all lists
+	TotalCnt int32 `protobuf:"varint,1,opt,name=total_cnt,json=totalCnt,proto3" json:"total_cnt,omitempty"`
+	// List of delegates grouped by dao, delegation_type and chain_id and sorted by popularity index
+	List          []*DelegatesWrapper `protobuf:"bytes,2,rep,name=list,proto3" json:"list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTopDelegatorsV2Response) Reset() {
+	*x = GetTopDelegatorsV2Response{}
+	mi := &file_storagepb_delegate_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTopDelegatorsV2Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTopDelegatorsV2Response) ProtoMessage() {}
+
+func (x *GetTopDelegatorsV2Response) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_delegate_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTopDelegatorsV2Response.ProtoReflect.Descriptor instead.
+func (*GetTopDelegatorsV2Response) Descriptor() ([]byte, []int) {
+	return file_storagepb_delegate_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *GetTopDelegatorsV2Response) GetTotalCnt() int32 {
+	if x != nil {
+		return x.TotalCnt
+	}
+	return 0
+}
+
+func (x *GetTopDelegatorsV2Response) GetList() []*DelegatesWrapper {
+	if x != nil {
+		return x.List
+	}
+	return nil
 }
 
 var File_storagepb_delegate_proto protoreflect.FileDescriptor
@@ -1633,24 +2464,110 @@ const file_storagepb_delegate_proto_rawDesc = "" +
 	"\x1aGetDelegatorsByDaoResponse\x120\n" +
 	"\x04list\x18\x01 \x03(\v2\x1c.storagepb.DelegationDetailsR\x04list\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
-	"totalCount\"\xa0\x01\n" +
+	"totalCount\"\xe4\x01\n" +
 	"\x14GetDelegatorsRequest\x12\x15\n" +
 	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\x12\x19\n" +
 	"\bchain_id\x18\x02 \x01(\tR\achainId\x12\x18\n" +
 	"\aaddress\x18\x03 \x01(\tR\aaddress\x12\x14\n" +
 	"\x05limit\x18\x04 \x01(\rR\x05limit\x12\x1b\n" +
-	"\x06offset\x18\x05 \x01(\rH\x00R\x06offset\x88\x01\x01B\t\n" +
+	"\x06offset\x18\x05 \x01(\rH\x00R\x06offset\x88\x01\x01\x12B\n" +
+	"\x0fdelegation_type\x18\x06 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationTypeB\t\n" +
 	"\a_offset\"g\n" +
 	"\x15GetDelegatorsResponse\x12-\n" +
 	"\x04list\x18\x01 \x03(\v2\x19.storagepb.DelegatorEntryR\x04list\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
-	"totalCount*\xba\x01\n" +
+	"totalCount\"\x96\x02\n" +
+	"\x15GetDelegatesV2Request\x12\x15\n" +
+	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\x12%\n" +
+	"\x0equery_accounts\x18\x02 \x03(\tR\rqueryAccounts\x12\x17\n" +
+	"\x04sort\x18\x03 \x01(\tH\x00R\x04sort\x88\x01\x01\x12\x14\n" +
+	"\x05limit\x18\x04 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x05 \x01(\x05R\x06offset\x12B\n" +
+	"\x0fdelegation_type\x18\x06 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x1e\n" +
+	"\bchain_id\x18\a \x01(\tH\x01R\achainId\x88\x01\x01B\a\n" +
+	"\x05_sortB\v\n" +
+	"\t_chain_id\"V\n" +
+	"\n" +
+	"TokenValue\x12\x14\n" +
+	"\x05value\x18\x01 \x01(\tR\x05value\x12\x16\n" +
+	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x1a\n" +
+	"\bdecimals\x18\x03 \x01(\x05R\bdecimals\"\xee\x05\n" +
+	"\x0fDelegateEntryV2\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x19\n" +
+	"\bens_name\x18\x02 \x01(\tR\aensName\x12,\n" +
+	"\x0fdelegator_count\x18\x03 \x01(\x05H\x00R\x0edelegatorCount\x88\x01\x01\x127\n" +
+	"\x15percent_of_delegators\x18\x04 \x01(\x01H\x01R\x13percentOfDelegators\x88\x01\x01\x12:\n" +
+	"\x17percent_of_voting_power\x18\x05 \x01(\x01H\x02R\x14percentOfVotingPower\x88\x01\x01\x12\x19\n" +
+	"\x05about\x18\x06 \x01(\tH\x03R\x05about\x88\x01\x01\x12!\n" +
+	"\tstatement\x18\a \x01(\tH\x04R\tstatement\x88\x01\x01\x12$\n" +
+	"\vvotes_count\x18\b \x01(\x05H\x05R\n" +
+	"votesCount\x88\x01\x01\x12;\n" +
+	"\x17created_proposals_count\x18\t \x01(\x05H\x06R\x15createdProposalsCount\x88\x01\x01\x12&\n" +
+	"\fvoting_power\x18\n" +
+	" \x01(\x01H\aR\vvotingPower\x88\x01\x01\x12;\n" +
+	"\vtoken_value\x18\v \x01(\v2\x15.storagepb.TokenValueH\bR\n" +
+	"tokenValue\x88\x01\x01\x12?\n" +
+	"\n" +
+	"expiration\x18\f \x01(\v2\x1a.google.protobuf.TimestampH\tR\n" +
+	"expiration\x88\x01\x01B\x12\n" +
+	"\x10_delegator_countB\x18\n" +
+	"\x16_percent_of_delegatorsB\x1a\n" +
+	"\x18_percent_of_voting_powerB\b\n" +
+	"\x06_aboutB\f\n" +
+	"\n" +
+	"_statementB\x0e\n" +
+	"\f_votes_countB\x1a\n" +
+	"\x18_created_proposals_countB\x0f\n" +
+	"\r_voting_powerB\x0e\n" +
+	"\f_token_valueB\r\n" +
+	"\v_expiration\"\xf1\x01\n" +
+	"\x10DelegatesWrapper\x12\x15\n" +
+	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\x12B\n" +
+	"\x0fdelegation_type\x18\x02 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x1e\n" +
+	"\bchain_id\x18\x03 \x01(\tH\x00R\achainId\x88\x01\x01\x128\n" +
+	"\tdelegates\x18\x04 \x03(\v2\x1a.storagepb.DelegateEntryV2R\tdelegates\x12\x1b\n" +
+	"\ttotal_cnt\x18\x05 \x01(\x05R\btotalCntB\v\n" +
+	"\t_chain_id\"f\n" +
+	"\x16GetDelegatesV2Response\x12/\n" +
+	"\x04list\x18\x01 \x03(\v2\x1b.storagepb.DelegatesWrapperR\x04list\x12\x1b\n" +
+	"\ttotal_cnt\x18\x04 \x01(\x05R\btotalCnt\"\xe6\x01\n" +
+	"\x16GetDelegatorsV2Request\x12\x15\n" +
+	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\x12B\n" +
+	"\x0fdelegation_type\x18\x02 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x19\n" +
+	"\bchain_id\x18\x03 \x01(\tR\achainId\x12\x18\n" +
+	"\aaddress\x18\x04 \x01(\tR\aaddress\x12\x14\n" +
+	"\x05limit\x18\x05 \x01(\rR\x05limit\x12\x1b\n" +
+	"\x06offset\x18\x06 \x01(\rH\x00R\x06offset\x88\x01\x01B\t\n" +
+	"\a_offset\"g\n" +
+	"\x17GetDelegatorsV2Response\x12/\n" +
+	"\x04list\x18\x01 \x03(\v2\x1b.storagepb.DelegatesWrapperR\x04list\x12\x1b\n" +
+	"\ttotal_cnt\x18\x02 \x01(\x05R\btotalCnt\"\xcc\x01\n" +
+	"\x18GetTopDelegatesV2Request\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x1a\n" +
+	"\x06dao_id\x18\x02 \x01(\tH\x00R\x05daoId\x88\x01\x01\x12B\n" +
+	"\x0fdelegation_type\x18\x03 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x1e\n" +
+	"\bchain_id\x18\x04 \x01(\tH\x01R\achainId\x88\x01\x01B\t\n" +
+	"\a_dao_idB\v\n" +
+	"\t_chain_id\"i\n" +
+	"\x19GetTopDelegatesV2Response\x12\x1b\n" +
+	"\ttotal_cnt\x18\x01 \x01(\x05R\btotalCnt\x12/\n" +
+	"\x04list\x18\x02 \x03(\v2\x1b.storagepb.DelegatesWrapperR\x04list\"\xcd\x01\n" +
+	"\x19GetTopDelegatorsV2Request\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x1a\n" +
+	"\x06dao_id\x18\x02 \x01(\tH\x00R\x05daoId\x88\x01\x01\x12B\n" +
+	"\x0fdelegation_type\x18\x03 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x1e\n" +
+	"\bchain_id\x18\x04 \x01(\tH\x01R\achainId\x88\x01\x01B\t\n" +
+	"\a_dao_idB\v\n" +
+	"\t_chain_id\"j\n" +
+	"\x1aGetTopDelegatorsV2Response\x12\x1b\n" +
+	"\ttotal_cnt\x18\x01 \x01(\x05R\btotalCnt\x12/\n" +
+	"\x04list\x18\x02 \x03(\v2\x1b.storagepb.DelegatesWrapperR\x04list*\xba\x01\n" +
 	"\x0eDelegationType\x12\x1f\n" +
 	"\x1bDELEGATION_TYPE_UNSPECIFIED\x10\x00\x12$\n" +
 	" DELEGATION_TYPE_SPLIT_DELEGATION\x10\x01\x12\x1e\n" +
 	"\x1aDELEGATION_TYPE_DELEGATION\x10\x02\x12\x1f\n" +
 	"\x1bDELEGATION_TYPE_ERC20_VOTES\x10\x03\x12 \n" +
-	"\x1cDELEGATION_TYPE_UNRECOGNIZED\x10\x042\xf5\x05\n" +
+	"\x1cDELEGATION_TYPE_UNRECOGNIZED\x10\x042\xe9\b\n" +
 	"\bDelegate\x12O\n" +
 	"\fGetDelegates\x12\x1e.storagepb.GetDelegatesRequest\x1a\x1f.storagepb.GetDelegatesResponse\x12R\n" +
 	"\rGetDelegators\x12\x1f.storagepb.GetDelegatorsRequest\x1a .storagepb.GetDelegatorsResponse\x12a\n" +
@@ -1659,7 +2576,11 @@ const file_storagepb_delegate_proto_rawDesc = "" +
 	"\x10GetTopDelegators\x12\".storagepb.GetTopDelegatorsRequest\x1a#.storagepb.GetTopDelegatorsResponse\x12g\n" +
 	"\x14GetDelegationSummary\x12&.storagepb.GetDelegationSummaryRequest\x1a'.storagepb.GetDelegationSummaryResponse\x12^\n" +
 	"\x11GetDelegatesByDao\x12#.storagepb.GetDelegatesByDaoRequest\x1a$.storagepb.GetDelegatesByDaoResponse\x12a\n" +
-	"\x12GetDelegatorsByDao\x12$.storagepb.GetDelegatorsByDaoRequest\x1a%.storagepb.GetDelegatorsByDaoResponseB\rZ\v.;storagepbb\x06proto3"
+	"\x12GetDelegatorsByDao\x12$.storagepb.GetDelegatorsByDaoRequest\x1a%.storagepb.GetDelegatorsByDaoResponse\x12U\n" +
+	"\x0eGetDelegatesV2\x12 .storagepb.GetDelegatesV2Request\x1a!.storagepb.GetDelegatesV2Response\x12X\n" +
+	"\x0fGetDelegatorsV2\x12!.storagepb.GetDelegatorsV2Request\x1a\".storagepb.GetDelegatorsV2Response\x12^\n" +
+	"\x11GetTopDelegatesV2\x12#.storagepb.GetTopDelegatesV2Request\x1a$.storagepb.GetTopDelegatesV2Response\x12a\n" +
+	"\x12GetTopDelegatorsV2\x12$.storagepb.GetTopDelegatorsV2Request\x1a%.storagepb.GetTopDelegatorsV2ResponseB\rZ\v.;storagepbb\x06proto3"
 
 var (
 	file_storagepb_delegate_proto_rawDescOnce sync.Once
@@ -1674,7 +2595,7 @@ func file_storagepb_delegate_proto_rawDescGZIP() []byte {
 }
 
 var file_storagepb_delegate_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_storagepb_delegate_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_storagepb_delegate_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_storagepb_delegate_proto_goTypes = []any{
 	(DelegationType)(0),                  // 0: storagepb.DelegationType
 	(*GetDelegatesRequest)(nil),          // 1: storagepb.GetDelegatesRequest
@@ -1699,8 +2620,19 @@ var file_storagepb_delegate_proto_goTypes = []any{
 	(*GetDelegatorsByDaoResponse)(nil),   // 20: storagepb.GetDelegatorsByDaoResponse
 	(*GetDelegatorsRequest)(nil),         // 21: storagepb.GetDelegatorsRequest
 	(*GetDelegatorsResponse)(nil),        // 22: storagepb.GetDelegatorsResponse
-	(*timestamppb.Timestamp)(nil),        // 23: google.protobuf.Timestamp
-	(*DaoInfo)(nil),                      // 24: storagepb.DaoInfo
+	(*GetDelegatesV2Request)(nil),        // 23: storagepb.GetDelegatesV2Request
+	(*TokenValue)(nil),                   // 24: storagepb.TokenValue
+	(*DelegateEntryV2)(nil),              // 25: storagepb.DelegateEntryV2
+	(*DelegatesWrapper)(nil),             // 26: storagepb.DelegatesWrapper
+	(*GetDelegatesV2Response)(nil),       // 27: storagepb.GetDelegatesV2Response
+	(*GetDelegatorsV2Request)(nil),       // 28: storagepb.GetDelegatorsV2Request
+	(*GetDelegatorsV2Response)(nil),      // 29: storagepb.GetDelegatorsV2Response
+	(*GetTopDelegatesV2Request)(nil),     // 30: storagepb.GetTopDelegatesV2Request
+	(*GetTopDelegatesV2Response)(nil),    // 31: storagepb.GetTopDelegatesV2Response
+	(*GetTopDelegatorsV2Request)(nil),    // 32: storagepb.GetTopDelegatorsV2Request
+	(*GetTopDelegatorsV2Response)(nil),   // 33: storagepb.GetTopDelegatorsV2Response
+	(*timestamppb.Timestamp)(nil),        // 34: google.protobuf.Timestamp
+	(*DaoInfo)(nil),                      // 35: storagepb.DaoInfo
 }
 var file_storagepb_delegate_proto_depIdxs = []int32{
 	0,  // 0: storagepb.GetDelegatesRequest.delegation_type:type_name -> storagepb.DelegationType
@@ -1708,38 +2640,59 @@ var file_storagepb_delegate_proto_depIdxs = []int32{
 	0,  // 2: storagepb.DelegateEntry.delegation_type:type_name -> storagepb.DelegationType
 	0,  // 3: storagepb.GetDelegateProfileRequest.delegation_type:type_name -> storagepb.DelegationType
 	7,  // 4: storagepb.GetDelegateProfileResponse.delegates:type_name -> storagepb.ProfileDelegateItem
-	23, // 5: storagepb.GetDelegateProfileResponse.expiration:type_name -> google.protobuf.Timestamp
-	23, // 6: storagepb.DelegationDetails.expiration:type_name -> google.protobuf.Timestamp
-	24, // 7: storagepb.DelegatesSummary.dao:type_name -> storagepb.DaoInfo
+	34, // 5: storagepb.GetDelegateProfileResponse.expiration:type_name -> google.protobuf.Timestamp
+	34, // 6: storagepb.DelegationDetails.expiration:type_name -> google.protobuf.Timestamp
+	35, // 7: storagepb.DelegatesSummary.dao:type_name -> storagepb.DaoInfo
 	9,  // 8: storagepb.DelegatesSummary.list:type_name -> storagepb.DelegationDetails
 	10, // 9: storagepb.GetTopDelegatesResponse.list:type_name -> storagepb.DelegatesSummary
-	24, // 10: storagepb.DelegatorSummary.dao:type_name -> storagepb.DaoInfo
+	35, // 10: storagepb.DelegatorSummary.dao:type_name -> storagepb.DaoInfo
 	9,  // 11: storagepb.DelegatorSummary.list:type_name -> storagepb.DelegationDetails
 	13, // 12: storagepb.GetTopDelegatorsResponse.list:type_name -> storagepb.DelegatorSummary
 	9,  // 13: storagepb.GetDelegatesByDaoResponse.list:type_name -> storagepb.DelegationDetails
 	9,  // 14: storagepb.GetDelegatorsByDaoResponse.list:type_name -> storagepb.DelegationDetails
-	4,  // 15: storagepb.GetDelegatorsResponse.list:type_name -> storagepb.DelegatorEntry
-	1,  // 16: storagepb.Delegate.GetDelegates:input_type -> storagepb.GetDelegatesRequest
-	21, // 17: storagepb.Delegate.GetDelegators:input_type -> storagepb.GetDelegatorsRequest
-	5,  // 18: storagepb.Delegate.GetDelegateProfile:input_type -> storagepb.GetDelegateProfileRequest
-	8,  // 19: storagepb.Delegate.GetTopDelegates:input_type -> storagepb.GetTopDelegatesRequest
-	12, // 20: storagepb.Delegate.GetTopDelegators:input_type -> storagepb.GetTopDelegatorsRequest
-	15, // 21: storagepb.Delegate.GetDelegationSummary:input_type -> storagepb.GetDelegationSummaryRequest
-	17, // 22: storagepb.Delegate.GetDelegatesByDao:input_type -> storagepb.GetDelegatesByDaoRequest
-	19, // 23: storagepb.Delegate.GetDelegatorsByDao:input_type -> storagepb.GetDelegatorsByDaoRequest
-	2,  // 24: storagepb.Delegate.GetDelegates:output_type -> storagepb.GetDelegatesResponse
-	22, // 25: storagepb.Delegate.GetDelegators:output_type -> storagepb.GetDelegatorsResponse
-	6,  // 26: storagepb.Delegate.GetDelegateProfile:output_type -> storagepb.GetDelegateProfileResponse
-	11, // 27: storagepb.Delegate.GetTopDelegates:output_type -> storagepb.GetTopDelegatesResponse
-	14, // 28: storagepb.Delegate.GetTopDelegators:output_type -> storagepb.GetTopDelegatorsResponse
-	16, // 29: storagepb.Delegate.GetDelegationSummary:output_type -> storagepb.GetDelegationSummaryResponse
-	18, // 30: storagepb.Delegate.GetDelegatesByDao:output_type -> storagepb.GetDelegatesByDaoResponse
-	20, // 31: storagepb.Delegate.GetDelegatorsByDao:output_type -> storagepb.GetDelegatorsByDaoResponse
-	24, // [24:32] is the sub-list for method output_type
-	16, // [16:24] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	0,  // 15: storagepb.GetDelegatorsRequest.delegation_type:type_name -> storagepb.DelegationType
+	4,  // 16: storagepb.GetDelegatorsResponse.list:type_name -> storagepb.DelegatorEntry
+	0,  // 17: storagepb.GetDelegatesV2Request.delegation_type:type_name -> storagepb.DelegationType
+	24, // 18: storagepb.DelegateEntryV2.token_value:type_name -> storagepb.TokenValue
+	34, // 19: storagepb.DelegateEntryV2.expiration:type_name -> google.protobuf.Timestamp
+	0,  // 20: storagepb.DelegatesWrapper.delegation_type:type_name -> storagepb.DelegationType
+	25, // 21: storagepb.DelegatesWrapper.delegates:type_name -> storagepb.DelegateEntryV2
+	26, // 22: storagepb.GetDelegatesV2Response.list:type_name -> storagepb.DelegatesWrapper
+	0,  // 23: storagepb.GetDelegatorsV2Request.delegation_type:type_name -> storagepb.DelegationType
+	26, // 24: storagepb.GetDelegatorsV2Response.list:type_name -> storagepb.DelegatesWrapper
+	0,  // 25: storagepb.GetTopDelegatesV2Request.delegation_type:type_name -> storagepb.DelegationType
+	26, // 26: storagepb.GetTopDelegatesV2Response.list:type_name -> storagepb.DelegatesWrapper
+	0,  // 27: storagepb.GetTopDelegatorsV2Request.delegation_type:type_name -> storagepb.DelegationType
+	26, // 28: storagepb.GetTopDelegatorsV2Response.list:type_name -> storagepb.DelegatesWrapper
+	1,  // 29: storagepb.Delegate.GetDelegates:input_type -> storagepb.GetDelegatesRequest
+	21, // 30: storagepb.Delegate.GetDelegators:input_type -> storagepb.GetDelegatorsRequest
+	5,  // 31: storagepb.Delegate.GetDelegateProfile:input_type -> storagepb.GetDelegateProfileRequest
+	8,  // 32: storagepb.Delegate.GetTopDelegates:input_type -> storagepb.GetTopDelegatesRequest
+	12, // 33: storagepb.Delegate.GetTopDelegators:input_type -> storagepb.GetTopDelegatorsRequest
+	15, // 34: storagepb.Delegate.GetDelegationSummary:input_type -> storagepb.GetDelegationSummaryRequest
+	17, // 35: storagepb.Delegate.GetDelegatesByDao:input_type -> storagepb.GetDelegatesByDaoRequest
+	19, // 36: storagepb.Delegate.GetDelegatorsByDao:input_type -> storagepb.GetDelegatorsByDaoRequest
+	23, // 37: storagepb.Delegate.GetDelegatesV2:input_type -> storagepb.GetDelegatesV2Request
+	28, // 38: storagepb.Delegate.GetDelegatorsV2:input_type -> storagepb.GetDelegatorsV2Request
+	30, // 39: storagepb.Delegate.GetTopDelegatesV2:input_type -> storagepb.GetTopDelegatesV2Request
+	32, // 40: storagepb.Delegate.GetTopDelegatorsV2:input_type -> storagepb.GetTopDelegatorsV2Request
+	2,  // 41: storagepb.Delegate.GetDelegates:output_type -> storagepb.GetDelegatesResponse
+	22, // 42: storagepb.Delegate.GetDelegators:output_type -> storagepb.GetDelegatorsResponse
+	6,  // 43: storagepb.Delegate.GetDelegateProfile:output_type -> storagepb.GetDelegateProfileResponse
+	11, // 44: storagepb.Delegate.GetTopDelegates:output_type -> storagepb.GetTopDelegatesResponse
+	14, // 45: storagepb.Delegate.GetTopDelegators:output_type -> storagepb.GetTopDelegatorsResponse
+	16, // 46: storagepb.Delegate.GetDelegationSummary:output_type -> storagepb.GetDelegationSummaryResponse
+	18, // 47: storagepb.Delegate.GetDelegatesByDao:output_type -> storagepb.GetDelegatesByDaoResponse
+	20, // 48: storagepb.Delegate.GetDelegatorsByDao:output_type -> storagepb.GetDelegatorsByDaoResponse
+	27, // 49: storagepb.Delegate.GetDelegatesV2:output_type -> storagepb.GetDelegatesV2Response
+	29, // 50: storagepb.Delegate.GetDelegatorsV2:output_type -> storagepb.GetDelegatorsV2Response
+	31, // 51: storagepb.Delegate.GetTopDelegatesV2:output_type -> storagepb.GetTopDelegatesV2Response
+	33, // 52: storagepb.Delegate.GetTopDelegatorsV2:output_type -> storagepb.GetTopDelegatorsV2Response
+	41, // [41:53] is the sub-list for method output_type
+	29, // [29:41] is the sub-list for method input_type
+	29, // [29:29] is the sub-list for extension type_name
+	29, // [29:29] is the sub-list for extension extendee
+	0,  // [0:29] is the sub-list for field type_name
 }
 
 func init() { file_storagepb_delegate_proto_init() }
@@ -1754,13 +2707,19 @@ func file_storagepb_delegate_proto_init() {
 	file_storagepb_delegate_proto_msgTypes[16].OneofWrappers = []any{}
 	file_storagepb_delegate_proto_msgTypes[18].OneofWrappers = []any{}
 	file_storagepb_delegate_proto_msgTypes[20].OneofWrappers = []any{}
+	file_storagepb_delegate_proto_msgTypes[22].OneofWrappers = []any{}
+	file_storagepb_delegate_proto_msgTypes[24].OneofWrappers = []any{}
+	file_storagepb_delegate_proto_msgTypes[25].OneofWrappers = []any{}
+	file_storagepb_delegate_proto_msgTypes[27].OneofWrappers = []any{}
+	file_storagepb_delegate_proto_msgTypes[29].OneofWrappers = []any{}
+	file_storagepb_delegate_proto_msgTypes[31].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_storagepb_delegate_proto_rawDesc), len(file_storagepb_delegate_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   22,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

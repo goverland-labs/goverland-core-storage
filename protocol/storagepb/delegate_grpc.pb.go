@@ -27,6 +27,10 @@ const (
 	Delegate_GetDelegationSummary_FullMethodName = "/storagepb.Delegate/GetDelegationSummary"
 	Delegate_GetDelegatesByDao_FullMethodName    = "/storagepb.Delegate/GetDelegatesByDao"
 	Delegate_GetDelegatorsByDao_FullMethodName   = "/storagepb.Delegate/GetDelegatorsByDao"
+	Delegate_GetDelegatesV2_FullMethodName       = "/storagepb.Delegate/GetDelegatesV2"
+	Delegate_GetDelegatorsV2_FullMethodName      = "/storagepb.Delegate/GetDelegatorsV2"
+	Delegate_GetTopDelegatesV2_FullMethodName    = "/storagepb.Delegate/GetTopDelegatesV2"
+	Delegate_GetTopDelegatorsV2_FullMethodName   = "/storagepb.Delegate/GetTopDelegatorsV2"
 )
 
 // DelegateClient is the client API for Delegate service.
@@ -48,6 +52,15 @@ type DelegateClient interface {
 	GetDelegatesByDao(ctx context.Context, in *GetDelegatesByDaoRequest, opts ...grpc.CallOption) (*GetDelegatesByDaoResponse, error)
 	// GetDelegatorsByDao returns list of delegations based on internal data filtered by params
 	GetDelegatorsByDao(ctx context.Context, in *GetDelegatorsByDaoRequest, opts ...grpc.CallOption) (*GetDelegatorsByDaoResponse, error)
+	// Version 2: separated getting split-delegation + erc20, etc
+	// GetDelegatesV2 returns list of delegates based on internal data filtered by params
+	GetDelegatesV2(ctx context.Context, in *GetDelegatesV2Request, opts ...grpc.CallOption) (*GetDelegatesV2Response, error)
+	// GetDelegatorsV2 returns list of delegators based on internal data filtered by params
+	GetDelegatorsV2(ctx context.Context, in *GetDelegatorsV2Request, opts ...grpc.CallOption) (*GetDelegatorsV2Response, error)
+	// GetTopDelegatesV2 returns list of first 5 addresses of delegations based on internal data grouped by dao
+	GetTopDelegatesV2(ctx context.Context, in *GetTopDelegatesV2Request, opts ...grpc.CallOption) (*GetTopDelegatesV2Response, error)
+	// GetTopDelegatorsV2 returns list of first 5 addresses of delegators based on internal data grouped by dao
+	GetTopDelegatorsV2(ctx context.Context, in *GetTopDelegatorsV2Request, opts ...grpc.CallOption) (*GetTopDelegatorsV2Response, error)
 }
 
 type delegateClient struct {
@@ -138,6 +151,46 @@ func (c *delegateClient) GetDelegatorsByDao(ctx context.Context, in *GetDelegato
 	return out, nil
 }
 
+func (c *delegateClient) GetDelegatesV2(ctx context.Context, in *GetDelegatesV2Request, opts ...grpc.CallOption) (*GetDelegatesV2Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDelegatesV2Response)
+	err := c.cc.Invoke(ctx, Delegate_GetDelegatesV2_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *delegateClient) GetDelegatorsV2(ctx context.Context, in *GetDelegatorsV2Request, opts ...grpc.CallOption) (*GetDelegatorsV2Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDelegatorsV2Response)
+	err := c.cc.Invoke(ctx, Delegate_GetDelegatorsV2_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *delegateClient) GetTopDelegatesV2(ctx context.Context, in *GetTopDelegatesV2Request, opts ...grpc.CallOption) (*GetTopDelegatesV2Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTopDelegatesV2Response)
+	err := c.cc.Invoke(ctx, Delegate_GetTopDelegatesV2_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *delegateClient) GetTopDelegatorsV2(ctx context.Context, in *GetTopDelegatorsV2Request, opts ...grpc.CallOption) (*GetTopDelegatorsV2Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTopDelegatorsV2Response)
+	err := c.cc.Invoke(ctx, Delegate_GetTopDelegatorsV2_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DelegateServer is the server API for Delegate service.
 // All implementations must embed UnimplementedDelegateServer
 // for forward compatibility.
@@ -157,6 +210,15 @@ type DelegateServer interface {
 	GetDelegatesByDao(context.Context, *GetDelegatesByDaoRequest) (*GetDelegatesByDaoResponse, error)
 	// GetDelegatorsByDao returns list of delegations based on internal data filtered by params
 	GetDelegatorsByDao(context.Context, *GetDelegatorsByDaoRequest) (*GetDelegatorsByDaoResponse, error)
+	// Version 2: separated getting split-delegation + erc20, etc
+	// GetDelegatesV2 returns list of delegates based on internal data filtered by params
+	GetDelegatesV2(context.Context, *GetDelegatesV2Request) (*GetDelegatesV2Response, error)
+	// GetDelegatorsV2 returns list of delegators based on internal data filtered by params
+	GetDelegatorsV2(context.Context, *GetDelegatorsV2Request) (*GetDelegatorsV2Response, error)
+	// GetTopDelegatesV2 returns list of first 5 addresses of delegations based on internal data grouped by dao
+	GetTopDelegatesV2(context.Context, *GetTopDelegatesV2Request) (*GetTopDelegatesV2Response, error)
+	// GetTopDelegatorsV2 returns list of first 5 addresses of delegators based on internal data grouped by dao
+	GetTopDelegatorsV2(context.Context, *GetTopDelegatorsV2Request) (*GetTopDelegatorsV2Response, error)
 	mustEmbedUnimplementedDelegateServer()
 }
 
@@ -190,6 +252,18 @@ func (UnimplementedDelegateServer) GetDelegatesByDao(context.Context, *GetDelega
 }
 func (UnimplementedDelegateServer) GetDelegatorsByDao(context.Context, *GetDelegatorsByDaoRequest) (*GetDelegatorsByDaoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegatorsByDao not implemented")
+}
+func (UnimplementedDelegateServer) GetDelegatesV2(context.Context, *GetDelegatesV2Request) (*GetDelegatesV2Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegatesV2 not implemented")
+}
+func (UnimplementedDelegateServer) GetDelegatorsV2(context.Context, *GetDelegatorsV2Request) (*GetDelegatorsV2Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegatorsV2 not implemented")
+}
+func (UnimplementedDelegateServer) GetTopDelegatesV2(context.Context, *GetTopDelegatesV2Request) (*GetTopDelegatesV2Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopDelegatesV2 not implemented")
+}
+func (UnimplementedDelegateServer) GetTopDelegatorsV2(context.Context, *GetTopDelegatorsV2Request) (*GetTopDelegatorsV2Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopDelegatorsV2 not implemented")
 }
 func (UnimplementedDelegateServer) mustEmbedUnimplementedDelegateServer() {}
 func (UnimplementedDelegateServer) testEmbeddedByValue()                  {}
@@ -356,6 +430,78 @@ func _Delegate_GetDelegatorsByDao_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Delegate_GetDelegatesV2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDelegatesV2Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetDelegatesV2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetDelegatesV2_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetDelegatesV2(ctx, req.(*GetDelegatesV2Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Delegate_GetDelegatorsV2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDelegatorsV2Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetDelegatorsV2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetDelegatorsV2_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetDelegatorsV2(ctx, req.(*GetDelegatorsV2Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Delegate_GetTopDelegatesV2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopDelegatesV2Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetTopDelegatesV2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetTopDelegatesV2_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetTopDelegatesV2(ctx, req.(*GetTopDelegatesV2Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Delegate_GetTopDelegatorsV2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopDelegatorsV2Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DelegateServer).GetTopDelegatorsV2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delegate_GetTopDelegatorsV2_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DelegateServer).GetTopDelegatorsV2(ctx, req.(*GetTopDelegatorsV2Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Delegate_ServiceDesc is the grpc.ServiceDesc for Delegate service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -394,6 +540,22 @@ var Delegate_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDelegatorsByDao",
 			Handler:    _Delegate_GetDelegatorsByDao_Handler,
+		},
+		{
+			MethodName: "GetDelegatesV2",
+			Handler:    _Delegate_GetDelegatesV2_Handler,
+		},
+		{
+			MethodName: "GetDelegatorsV2",
+			Handler:    _Delegate_GetDelegatorsV2_Handler,
+		},
+		{
+			MethodName: "GetTopDelegatesV2",
+			Handler:    _Delegate_GetTopDelegatesV2_Handler,
+		},
+		{
+			MethodName: "GetTopDelegatorsV2",
+			Handler:    _Delegate_GetTopDelegatorsV2_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
