@@ -2,6 +2,7 @@ package delegate
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -175,10 +176,119 @@ func (s *Server) GetDelegatorsV2(ctx context.Context, req *proto.GetDelegatorsV2
 	}, nil
 }
 
-func (s *Server) GetTopDelegatesV2(ctx context.Context, request *proto.GetTopDelegatesV2Request) (*proto.GetTopDelegatesV2Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopDelegatesV2 not implemented")
+func (s *Server) GetTopDelegatesV2(ctx context.Context, req *proto.GetTopDelegatesV2Request) (*proto.GetTopDelegatesV2Response, error) {
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	// delegations [dao_id: [summary, ...]]
+	//delegations, err := s.sp.getTopDelegates(ctx, req.GetAddress())
+	//if err != nil {
+	//	return nil, status.Error(codes.Internal, "failed to get delegations")
+	//}
+	//
+	//if len(delegations) == 0 {
+	//	return &storagepb.GetTopDelegatesResponse{}, nil
+	//}
+	//
+	//daoIDs := slices.Collect(maps.Keys(delegations))
+	//daoList, err := s.ds.GetByFilters([]dao.Filter{
+	//	dao.DaoIDsFilter{DaoIDs: daoIDs},
+	//})
+	//if err != nil {
+	//	return nil, status.Error(codes.Internal, "failed to get dao info")
+	//}
+	//
+	//addresses := make([]string, 0, len(delegations))
+	//for _, d := range delegations {
+	//	for _, info := range d {
+	//		addresses = append(addresses, info.AddressTo)
+	//	}
+	//}
+	//ensNames, err := s.sp.resolveAddressesName(addresses)
+	//if err != nil {
+	//	return nil, status.Error(codes.Internal, "failed to resolve ens names")
+	//}
+	//
+	//response := &storagepb.GetTopDelegatesResponse{
+	//	List: make([]*storagepb.DelegatesSummary, 0, len(delegations)),
+	//}
+	//
+	//delegationsCnt := 0
+	//for _, di := range daoList.Daos {
+	//	list, ok := delegations[di.ID.String()]
+	//	if !ok {
+	//		log.Warn().Msgf("dao info not found: %s", di.ID.String())
+	//		continue
+	//	}
+	//
+	//	delegationsCnt += len(list)
+	//	var delegatesInDao int32 = 0
+	//	dl := make([]*storagepb.DelegationDetails, 0, len(list))
+	//	for _, d := range list {
+	//		var expires *timestamppb.Timestamp
+	//		if d.ExpiresAt != 0 {
+	//			expires = timestamppb.New(time.Unix(d.ExpiresAt, 0))
+	//		}
+	//
+	//		dl = append(dl, &storagepb.DelegationDetails{
+	//			Address:             d.AddressTo,
+	//			EnsName:             ensNames[d.AddressTo],
+	//			PercentOfDelegators: int32(d.Weight),
+	//			Expiration:          expires,
+	//		})
+	//	}
+	//	if len(list) > 0 {
+	//		delegatesInDao += int32(list[0].MaxCnt)
+	//	}
+	//
+	//	response.List = append(response.List, &storagepb.DelegatesSummary{
+	//		Dao:        dao.ConvertDaoToAPI(&di),
+	//		List:       dl,
+	//		TotalCount: delegatesInDao,
+	//	})
+	//}
+	//
+	//response.TotalDelegatesCount = int32(delegationsCnt)
+
+	return nil, errors.New("implement me")
 }
 
-func (s *Server) GetTopDelegatorsV2(ctx context.Context, request *proto.GetTopDelegatorsV2Request) (*proto.GetTopDelegatorsV2Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopDelegatorsV2 not implemented")
+func (s *Server) GetTopDelegatorsV2(ctx context.Context, req *proto.GetTopDelegatorsV2Request) (*proto.GetTopDelegatorsV2Response, error) {
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	resp, err := s.sp.getTopDelegatorsMixed(ctx, req.GetAddress(), req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get delegators")
+	}
+
+	if len(resp.List) == 0 {
+		return &proto.GetTopDelegatorsV2Response{}, nil
+	}
+
+	list := make([]*proto.DelegatesWrapper, 0, len(resp.List))
+	var totalCnt int32
+	for _, info := range resp.List {
+		delegates := make([]*proto.DelegateEntryV2, 0, len(info.Delegates))
+		for _, d := range info.Delegates {
+			delegates = append(delegates, convertDelegateToProto(d, info.DelegationType))
+		}
+
+		list = append(list, &proto.DelegatesWrapper{
+			DaoId:          info.DaoID.String(),
+			DelegationType: convertDelegationTypeToProto(info.DelegationType),
+			ChainId:        info.ChainID,
+			Delegates:      delegates,
+			TotalCnt:       info.Total,
+		})
+
+		totalCnt += info.Total
+	}
+
+	return &proto.GetTopDelegatorsV2Response{
+		List:     list,
+		TotalCnt: totalCnt,
+	}, nil
 }

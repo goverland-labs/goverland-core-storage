@@ -55,6 +55,16 @@ type GetDelegatesMixedResponse struct {
 	Total int32
 }
 
+type GetTopDelegatorsMixedResponse struct {
+	List  []DelegatesWrapper
+	Total int32
+}
+
+type GetTopDelegatesMixedResponse struct {
+	List  []DelegatesWrapper
+	Total int32
+}
+
 type Delegate struct {
 	Address               string
 	ENSName               string
@@ -66,6 +76,17 @@ type Delegate struct {
 	Statement             string
 	VotesCount            int32
 	CreatedProposalsCount int32
+	ExpiresAt             *time.Time
+}
+
+type MixedRaw struct {
+	Address        string
+	DelegatorCount int32
+	VotingPower    float64
+	ExpiresAt      *time.Time
+	DaoID          uuid.UUID
+	DelegationType DelegationType
+	ChainID        *string
 }
 
 type GetDelegateProfileRequest struct {
