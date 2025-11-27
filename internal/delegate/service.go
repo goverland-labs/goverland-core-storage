@@ -1010,6 +1010,68 @@ func (s *Service) getTopDelegatorsMixed(_ context.Context, address, daoID string
 	return resp, nil
 }
 
+// getTopDelegators returns list of first 5 delegators grouped by dao
+func (s *Service) getTopDelegatesMixed(_ context.Context, address, daoID string) (*GetTopDelegatesMixedResponse, error) {
+	limitPerDao := 5
+	delegators, err := s.repo.GetTopDelegatesMixed(address, daoID, limitPerDao)
+	if err != nil {
+		return nil, fmt.Errorf("repo.GetTopDelegatorsByAddress: %w", err)
+	}
+
+	// grouped by dao, delegation_type, chain_id
+	grouped := make(map[string][]MixedRaw, len(delegators))
+	for _, info := range delegators {
+		var chainID string
+		if info.ChainID != nil {
+			chainID = *info.ChainID
+		}
+		key := fmt.Sprintf("%s_%s_%s", info.DaoID, info.DelegationType, chainID)
+		if _, ok := grouped[key]; !ok {
+			grouped[key] = make([]MixedRaw, 0, limitPerDao)
+		}
+
+		grouped[key] = append(grouped[key], info)
+	}
+
+	resp := &GetTopDelegatesMixedResponse{
+		List:  make([]DelegatesWrapper, 0, len(grouped)),
+		Total: 0,
+	}
+
+	for _, list := range grouped {
+		respAddresses := make([]string, 0, len(list))
+		for _, d := range list {
+			respAddresses = append(respAddresses, d.Address)
+		}
+		ensNames, err := s.resolveAddressesName(respAddresses)
+		if err != nil {
+			return nil, fmt.Errorf("s.resolveAddressesName: %w", err)
+		}
+
+		delegates := make([]Delegate, 0, len(list))
+		for _, info := range list {
+			delegates = append(delegates, Delegate{
+				Address:     info.Address,
+				ENSName:     ensNames[info.Address],
+				VotingPower: info.VotingPower,
+				ExpiresAt:   info.ExpiresAt,
+			})
+		}
+
+		wrapper := DelegatesWrapper{
+			DaoID:          list[0].DaoID,
+			DelegationType: list[0].DelegationType,
+			ChainID:        list[0].ChainID,
+			Total:          list[0].DelegatorCount,
+			Delegates:      delegates,
+		}
+
+		resp.List = append(resp.List, wrapper)
+	}
+
+	return resp, nil
+}
+
 func (s *Service) getEnrichedDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
 	delegates, total, err := s.getRawDelegates(ctx, GetDelegatesRequest{
 		DaoID:          req.DaoID,

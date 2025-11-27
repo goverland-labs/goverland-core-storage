@@ -337,6 +337,84 @@ func (r *Repo) GetTopDelegatorsMixed(address, daoID string, limit int) ([]MixedR
 	return results, nil
 }
 
+// GetTopDelegatesMixed returns list of delegates grouped by delegation type, chain_id and joined with erc20 tables
+func (r *Repo) GetTopDelegatesMixed(address, daoID string, limit int) ([]MixedRaw, error) {
+	rows, err := r.db.
+		Raw(`
+			WITH ds AS (
+				SELECT
+					d.dao_id,
+					d.address_to,
+					d.type AS delegation_type,
+					d.chain_id,
+					TO_TIMESTAMP(d.expires_at) AS expires_at,
+					COALESCE(ed.vp, d.voting_power, 0) AS effective_vp
+				FROM storage.delegates_summary d
+				LEFT JOIN storage.erc20_delegates ed
+					ON lower(ed.address) = lower(d.address_from)
+				   AND ed.dao_id = d.dao_id::uuid
+				   AND ed.chain_id = d.chain_id
+				WHERE lower(d.address_from) = lower(?)
+				  AND (?::text = '' OR d.dao_id = ?)
+			),
+			
+			ranked AS (
+				SELECT
+					*,
+					ROW_NUMBER() OVER (
+						PARTITION BY dao_id, delegation_type, chain_id
+						ORDER BY effective_vp DESC NULLS LAST
+					) AS rn,
+					COUNT(*) OVER (
+						PARTITION BY dao_id, delegation_type, chain_id
+					) AS group_size
+				FROM ds
+			)
+			
+			SELECT
+				dao_id,
+				address_to AS address,
+				delegation_type,
+				chain_id,
+				effective_vp AS voting_power,
+				expires_at,
+				group_size
+			FROM ranked
+			WHERE rn <= ?
+			ORDER BY dao_id, delegation_type, chain_id, rn;
+		  `,
+			address,
+			daoID,
+			daoID,
+			limit,
+		).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf("raw exec: %w", err)
+	}
+	defer rows.Close()
+
+	var results []MixedRaw
+	for rows.Next() {
+		var row MixedRaw
+		if err = rows.Scan(
+			&row.DaoID,
+			&row.Address,
+			&row.DelegationType,
+			&row.ChainID,
+			&row.VotingPower,
+			&row.ExpiresAt,
+			&row.DelegatorCount,
+		); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		results = append(results, row)
+	}
+
+	return results, nil
+}
+
 func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, error) {
 	rows, err := r.db.
 		Raw(`

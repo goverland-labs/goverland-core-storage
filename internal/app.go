@@ -351,9 +351,9 @@ func (a *Application) initVote(nc *nats.Conn, pb *natsclient.Publisher) error {
 
 func (a *Application) initStats() {
 	a.statsService = stats.NewService(a.daoRepo, a.proposalRepo)
-	//cw := stats.NewCalcTotalsWorker(a.statsService)
+	cw := stats.NewCalcTotalsWorker(a.statsService)
 
-	//a.manager.AddWorker(process.NewCallbackWorker("calc-totals", cw.Start))
+	a.manager.AddWorker(process.NewCallbackWorker("calc-totals", cw.Start))
 }
 
 func (a *Application) initAPI() error {
