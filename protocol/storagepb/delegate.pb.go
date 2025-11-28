@@ -1965,10 +1965,10 @@ type GetDelegatorsV2Request struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	DaoId          string                 `protobuf:"bytes,1,opt,name=dao_id,json=daoId,proto3" json:"dao_id,omitempty"`
 	QueryAccounts  []string               `protobuf:"bytes,2,rep,name=query_accounts,json=queryAccounts,proto3" json:"query_accounts,omitempty"`
-	DelegationType DelegationType         `protobuf:"varint,3,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
-	ChainId        string                 `protobuf:"bytes,4,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	Limit          uint32                 `protobuf:"varint,5,opt,name=limit,proto3" json:"limit,omitempty"`
-	Offset         *uint32                `protobuf:"varint,6,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
+	Limit          int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset         int32                  `protobuf:"varint,4,opt,name=offset,proto3" json:"offset,omitempty"`
+	DelegationType DelegationType         `protobuf:"varint,5,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	ChainId        *string                `protobuf:"bytes,6,opt,name=chain_id,json=chainId,proto3,oneof" json:"chain_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -2017,6 +2017,20 @@ func (x *GetDelegatorsV2Request) GetQueryAccounts() []string {
 	return nil
 }
 
+func (x *GetDelegatorsV2Request) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetDelegatorsV2Request) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
 func (x *GetDelegatorsV2Request) GetDelegationType() DelegationType {
 	if x != nil {
 		return x.DelegationType
@@ -2025,24 +2039,10 @@ func (x *GetDelegatorsV2Request) GetDelegationType() DelegationType {
 }
 
 func (x *GetDelegatorsV2Request) GetChainId() string {
-	if x != nil {
-		return x.ChainId
+	if x != nil && x.ChainId != nil {
+		return *x.ChainId
 	}
 	return ""
-}
-
-func (x *GetDelegatorsV2Request) GetLimit() uint32 {
-	if x != nil {
-		return x.Limit
-	}
-	return 0
-}
-
-func (x *GetDelegatorsV2Request) GetOffset() uint32 {
-	if x != nil && x.Offset != nil {
-		return *x.Offset
-	}
-	return 0
 }
 
 type GetDelegatorsV2Response struct {
@@ -2530,15 +2530,15 @@ const file_storagepb_delegate_proto_rawDesc = "" +
 	"\t_chain_id\"f\n" +
 	"\x16GetDelegatesV2Response\x12/\n" +
 	"\x04list\x18\x01 \x03(\v2\x1b.storagepb.DelegatesWrapperR\x04list\x12\x1b\n" +
-	"\ttotal_cnt\x18\x04 \x01(\x05R\btotalCnt\"\xf3\x01\n" +
+	"\ttotal_cnt\x18\x04 \x01(\x05R\btotalCnt\"\xf5\x01\n" +
 	"\x16GetDelegatorsV2Request\x12\x15\n" +
 	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\x12%\n" +
-	"\x0equery_accounts\x18\x02 \x03(\tR\rqueryAccounts\x12B\n" +
-	"\x0fdelegation_type\x18\x03 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x19\n" +
-	"\bchain_id\x18\x04 \x01(\tR\achainId\x12\x14\n" +
-	"\x05limit\x18\x05 \x01(\rR\x05limit\x12\x1b\n" +
-	"\x06offset\x18\x06 \x01(\rH\x00R\x06offset\x88\x01\x01B\t\n" +
-	"\a_offset\"g\n" +
+	"\x0equery_accounts\x18\x02 \x03(\tR\rqueryAccounts\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x04 \x01(\x05R\x06offset\x12B\n" +
+	"\x0fdelegation_type\x18\x05 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x1e\n" +
+	"\bchain_id\x18\x06 \x01(\tH\x00R\achainId\x88\x01\x01B\v\n" +
+	"\t_chain_id\"g\n" +
 	"\x17GetDelegatorsV2Response\x12/\n" +
 	"\x04list\x18\x01 \x03(\v2\x1b.storagepb.DelegatesWrapperR\x04list\x12\x1b\n" +
 	"\ttotal_cnt\x18\x02 \x01(\x05R\btotalCnt\"\xcc\x01\n" +

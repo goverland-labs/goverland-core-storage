@@ -131,17 +131,12 @@ func (s *Server) GetDelegatorsV2(ctx context.Context, req *proto.GetDelegatorsV2
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
 	}
 
-	var chainID *string
-	if req.GetChainId() != "" {
-		chainID = &req.ChainId
-	}
-
 	delegatesResponse, err := s.sp.getDelegatorsMixed(ctx, GetDelegatesMixedRequest{
 		DaoID:          daoID,
 		QueryAccounts:  req.GetQueryAccounts(),
 		Limit:          int(req.GetLimit()),
 		Offset:         int(req.GetOffset()),
-		ChainID:        chainID,
+		ChainID:        req.ChainId,
 		DelegationType: convertDelegationType(req.GetDelegationType()),
 	})
 	if err != nil {
