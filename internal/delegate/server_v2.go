@@ -122,18 +122,13 @@ func convertDelegationTypeToProto(dt DelegationType) proto.DelegationType {
 }
 
 func (s *Server) GetDelegatorsV2(ctx context.Context, req *proto.GetDelegatorsV2Request) (*proto.GetDelegatorsV2Response, error) {
-	if req.GetAddress() == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	if req.GetDaoId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
 
 	daoID, err := uuid.Parse(req.GetDaoId())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
-	}
-
-	var queryAccs []string
-	if req.GetAddress() != "" {
-		queryAccs = append(queryAccs, req.GetAddress())
 	}
 
 	var chainID *string
@@ -143,7 +138,7 @@ func (s *Server) GetDelegatorsV2(ctx context.Context, req *proto.GetDelegatorsV2
 
 	delegatesResponse, err := s.sp.getDelegatorsMixed(ctx, GetDelegatesMixedRequest{
 		DaoID:          daoID,
-		QueryAccounts:  queryAccs,
+		QueryAccounts:  req.GetQueryAccounts(),
 		Limit:          int(req.GetLimit()),
 		Offset:         int(req.GetOffset()),
 		ChainID:        chainID,

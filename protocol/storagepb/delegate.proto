@@ -283,9 +283,9 @@ message GetDelegatesV2Response {
 
 message GetDelegatorsV2Request {
   string dao_id = 1;
-  DelegationType delegation_type = 2;
-  string chain_id = 3;
-  string address = 4;
+  repeated string query_accounts = 2;
+  DelegationType delegation_type = 3;
+  string chain_id = 4;
   uint32 limit = 5;
   optional uint32 offset = 6;
 }

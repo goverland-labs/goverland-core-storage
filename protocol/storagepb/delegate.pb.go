@@ -1964,9 +1964,9 @@ func (x *GetDelegatesV2Response) GetTotalCnt() int32 {
 type GetDelegatorsV2Request struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	DaoId          string                 `protobuf:"bytes,1,opt,name=dao_id,json=daoId,proto3" json:"dao_id,omitempty"`
-	DelegationType DelegationType         `protobuf:"varint,2,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
-	ChainId        string                 `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	Address        string                 `protobuf:"bytes,4,opt,name=address,proto3" json:"address,omitempty"`
+	QueryAccounts  []string               `protobuf:"bytes,2,rep,name=query_accounts,json=queryAccounts,proto3" json:"query_accounts,omitempty"`
+	DelegationType DelegationType         `protobuf:"varint,3,opt,name=delegation_type,json=delegationType,proto3,enum=storagepb.DelegationType" json:"delegation_type,omitempty"`
+	ChainId        string                 `protobuf:"bytes,4,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	Limit          uint32                 `protobuf:"varint,5,opt,name=limit,proto3" json:"limit,omitempty"`
 	Offset         *uint32                `protobuf:"varint,6,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
 	unknownFields  protoimpl.UnknownFields
@@ -2010,6 +2010,13 @@ func (x *GetDelegatorsV2Request) GetDaoId() string {
 	return ""
 }
 
+func (x *GetDelegatorsV2Request) GetQueryAccounts() []string {
+	if x != nil {
+		return x.QueryAccounts
+	}
+	return nil
+}
+
 func (x *GetDelegatorsV2Request) GetDelegationType() DelegationType {
 	if x != nil {
 		return x.DelegationType
@@ -2020,13 +2027,6 @@ func (x *GetDelegatorsV2Request) GetDelegationType() DelegationType {
 func (x *GetDelegatorsV2Request) GetChainId() string {
 	if x != nil {
 		return x.ChainId
-	}
-	return ""
-}
-
-func (x *GetDelegatorsV2Request) GetAddress() string {
-	if x != nil {
-		return x.Address
 	}
 	return ""
 }
@@ -2530,12 +2530,12 @@ const file_storagepb_delegate_proto_rawDesc = "" +
 	"\t_chain_id\"f\n" +
 	"\x16GetDelegatesV2Response\x12/\n" +
 	"\x04list\x18\x01 \x03(\v2\x1b.storagepb.DelegatesWrapperR\x04list\x12\x1b\n" +
-	"\ttotal_cnt\x18\x04 \x01(\x05R\btotalCnt\"\xe6\x01\n" +
+	"\ttotal_cnt\x18\x04 \x01(\x05R\btotalCnt\"\xf3\x01\n" +
 	"\x16GetDelegatorsV2Request\x12\x15\n" +
-	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\x12B\n" +
-	"\x0fdelegation_type\x18\x02 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x19\n" +
-	"\bchain_id\x18\x03 \x01(\tR\achainId\x12\x18\n" +
-	"\aaddress\x18\x04 \x01(\tR\aaddress\x12\x14\n" +
+	"\x06dao_id\x18\x01 \x01(\tR\x05daoId\x12%\n" +
+	"\x0equery_accounts\x18\x02 \x03(\tR\rqueryAccounts\x12B\n" +
+	"\x0fdelegation_type\x18\x03 \x01(\x0e2\x19.storagepb.DelegationTypeR\x0edelegationType\x12\x19\n" +
+	"\bchain_id\x18\x04 \x01(\tR\achainId\x12\x14\n" +
 	"\x05limit\x18\x05 \x01(\rR\x05limit\x12\x1b\n" +
 	"\x06offset\x18\x06 \x01(\rH\x00R\x06offset\x88\x01\x01B\t\n" +
 	"\a_offset\"g\n" +
