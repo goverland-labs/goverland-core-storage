@@ -168,7 +168,8 @@ func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequ
 
 	var searchAddress *string
 	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 {
-		searchAddress = &req.QueryAccounts[0]
+		address := strings.ToLower(req.QueryAccounts[0])
+		searchAddress = &address
 	}
 	delegates, err := s.repo.GetErc20DelegatesInfo(ctx, req.DaoID, chainID, searchAddress, req.Limit, req.Offset)
 	if err != nil {
