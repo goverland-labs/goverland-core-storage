@@ -679,15 +679,17 @@ func (r *Repo) GetErc20DelegatesInfo(
 			),
 			real_delegates AS (
 				SELECT 
-					DISTINCT ds.address_to AS address
+					DISTINCT ds.address_to AS address,
+					COUNT(DISTINCT ds.address_from) represented_cnt
 				FROM delegates_summary ds
 				WHERE ds.dao_id = ?
 				  AND ds.chain_id = ?
+				GROUP BY ds.address_to
 			)
 			SELECT
 				d.address,
-				d.represented_cnt AS delegator_count,
-				ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
+				rd.represented_cnt AS delegator_count,
+				ROUND(rd.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
 				d.vp AS voting_power,
 				ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
 			FROM storage.erc20_delegates d
@@ -732,11 +734,12 @@ func (r *Repo) GetErc20DelegatorsInfo(
 				FROM delegates_summary ds
 				WHERE ds.dao_id = ?
 				  AND ds.chain_id = ?
+ 				  AND (?::text IS NULL OR lower(ds.address_to) = lower(?))
 			)
 			SELECT
 				d.address,
-				d.represented_cnt AS delegator_count,
-				ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
+				1 AS delegator_count,
+				ROUND(1::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
 				d.vp AS voting_power,
 				ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
 			FROM storage.erc20_delegates d
@@ -744,11 +747,10 @@ func (r *Repo) GetErc20DelegatorsInfo(
 			CROSS JOIN totals t
 			WHERE d.dao_id = ?
 			  AND d.chain_id = ?
-			  AND (?::text IS NULL OR d.address = ?)
 			ORDER BY d.vp DESC
 			LIMIT ? OFFSET ?;
 
-	`, daoID, chainID, daoID, chainID, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
+	`, daoID, chainID, daoID, chainID, address, address, daoID, chainID, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)
