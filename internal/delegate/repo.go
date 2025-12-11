@@ -710,47 +710,39 @@ func (r *Repo) GetErc20DelegatesInfo(
 	return delegates, nil
 }
 
-func (r *Repo) GetErc20DelegatorsInfo(
+func (r *Repo) GetDelegatorsMixedInfo(
 	_ context.Context,
 	daoID uuid.UUID,
-	chainID string,
+	dt, chainID string,
 	address *string,
 	limit, offset int,
 ) ([]Delegate, error) {
 	var delegates []Delegate
 
 	err := r.db.Raw(`
-			WITH totals AS (
-				SELECT
-					total_delegators,
-					voting_power AS total_voting_power
-				FROM erc20_totals
-				WHERE dao_id = ?
-				  AND chain_id = ?
-			),
-			real_delegates AS (
-				SELECT 
-					DISTINCT ds.address_from AS address
-				FROM delegates_summary ds
-				WHERE ds.dao_id = ?
-				  AND ds.chain_id = ?
- 				  AND (?::text IS NULL OR lower(ds.address_to) = lower(?))
-			)
-			SELECT
-				d.address,
-				1 AS delegator_count,
-				ROUND(1::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
-				d.vp AS voting_power,
-				ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
-			FROM storage.erc20_delegates d
-			JOIN real_delegates rd ON rd.address = d.address
-			CROSS JOIN totals t
-			WHERE d.dao_id = ?
-			  AND d.chain_id = ?
-			ORDER BY d.vp DESC
-			LIMIT ? OFFSET ?;
-
-	`, daoID, chainID, daoID, chainID, address, address, daoID, chainID, limit, offset).Scan(&delegates).Error
+		WITH totals AS (SELECT total_delegators,
+							   voting_power AS total_voting_power
+						FROM erc20_totals
+						WHERE dao_id = ?
+						  AND chain_id = ?)
+		SELECT lower(d.address_from) 				 AS address,
+			   TO_TIMESTAMP(d.expires_at)            AS expires_at,
+			   COALESCE(ed.value, d.voting_power, 0) AS voting_power,
+			   COALESCE(d.weight, 0)                 AS percent_of_voting_power,
+			   COUNT(*) OVER ()                      AS delegator_count
+		FROM storage.delegates_summary d
+				 LEFT JOIN storage.erc20_balances ed
+						   ON lower(ed.address) = lower(d.address_from)
+							   AND ed.dao_id = d.dao_id::uuid
+							   AND ed.chain_id = d.chain_id
+				 LEFT JOIN totals t ON TRUE
+		WHERE d.chain_id = ?
+		  AND d.type = ?
+		  AND d.dao_id = ?
+		  AND (?::text IS NULL OR lower(d.address_to) = lower(?))
+		ORDER BY voting_power DESC
+		LIMIT ? OFFSET ?;
+	`, daoID, chainID, chainID, dt, daoID, address, address, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)

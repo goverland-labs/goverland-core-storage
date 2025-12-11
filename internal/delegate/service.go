@@ -194,17 +194,16 @@ func (s *Service) getInternalDelegators(ctx context.Context, req GetDelegatesReq
 	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 {
 		searchAddress = &req.QueryAccounts[0]
 	}
-	delegates, err := s.repo.GetErc20DelegatorsInfo(ctx, req.DaoID, chainID, searchAddress, req.Limit, req.Offset)
+	delegates, err := s.repo.GetDelegatorsMixedInfo(ctx, req.DaoID, string(req.DelegationType), chainID, searchAddress, req.Limit, req.Offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("s.repo.GetErc20DelegatorsInfo: %w", err)
+		return nil, 0, fmt.Errorf("s.repo.GetDelegatorsMixedInfo: %w", err)
 	}
 
-	total, err := s.repo.GetDelegatesCount(ctx, req.DaoID, chainID)
-	if err != nil {
-		return nil, 0, fmt.Errorf("s.repo.GetDelegatesCount: %w", err)
+	if len(delegates) == 0 {
+		return delegates, 0, nil
 	}
 
-	return delegates, total, nil
+	return delegates, delegates[0].DelegatorCount, nil
 }
 
 func (s *Service) getExternalDelegates(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
