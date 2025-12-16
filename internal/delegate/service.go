@@ -190,11 +190,15 @@ func (s *Service) getInternalDelegators(ctx context.Context, req GetDelegatesReq
 		chainID = *req.ChainID
 	}
 
-	var searchAddress *string
-	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 {
-		searchAddress = &req.QueryAccounts[0]
+	var reqAddress *string
+	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 && req.QueryAccounts[0] != "" {
+		reqAddress = &req.QueryAccounts[0]
 	}
-	delegates, err := s.repo.GetDelegatorsMixedInfo(ctx, req.DaoID, string(req.DelegationType), chainID, searchAddress, req.Limit, req.Offset)
+	var searchAddress *string
+	if req.QueryAccounts != nil && len(req.QueryAccounts) > 1 && req.QueryAccounts[1] != "" {
+		searchAddress = &req.QueryAccounts[1]
+	}
+	delegates, err := s.repo.GetDelegatorsMixedInfo(ctx, req.DaoID, string(req.DelegationType), chainID, reqAddress, searchAddress, req.Limit, req.Offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("s.repo.GetDelegatorsMixedInfo: %w", err)
 	}

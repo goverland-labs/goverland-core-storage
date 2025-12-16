@@ -125,3 +125,6 @@ create table erc20_totals
 
 ALTER TABLE delegates_summary
     ADD COLUMN IF NOT EXISTS log_index integer default 0;
+
+CREATE INDEX idx_delegates_summary_to_dao_chain_from
+    ON delegates_summary (address_to, dao_id, chain_id, address_from);

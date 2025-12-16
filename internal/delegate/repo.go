@@ -714,7 +714,7 @@ func (r *Repo) GetDelegatorsMixedInfo(
 	_ context.Context,
 	daoID uuid.UUID,
 	dt, chainID string,
-	address *string,
+	reqAddress, searchAddress *string,
 	limit, offset int,
 ) ([]Delegate, error) {
 	var delegates []Delegate
@@ -732,7 +732,7 @@ func (r *Repo) GetDelegatorsMixedInfo(
 			   COUNT(*) OVER ()                      AS delegator_count
 		FROM storage.delegates_summary d
 				 LEFT JOIN storage.erc20_balances ed
-						   ON lower(ed.address) = lower(d.address_from)
+						   ON ed.address = d.address_from
 							   AND ed.dao_id = d.dao_id::uuid
 							   AND ed.chain_id = d.chain_id
 				 LEFT JOIN totals t ON TRUE
@@ -740,9 +740,10 @@ func (r *Repo) GetDelegatorsMixedInfo(
 		  AND d.type = ?
 		  AND d.dao_id = ?
 		  AND (?::text IS NULL OR lower(d.address_to) = lower(?))
+		  AND (?::text IS NULL OR lower(d.address_from) = lower(?))
 		ORDER BY voting_power DESC
 		LIMIT ? OFFSET ?;
-	`, daoID, chainID, chainID, dt, daoID, address, address, limit, offset).Scan(&delegates).Error
+	`, daoID, chainID, chainID, dt, daoID, reqAddress, reqAddress, searchAddress, searchAddress, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)
