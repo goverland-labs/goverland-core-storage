@@ -270,12 +270,12 @@ func (r *Repo) GetTopDelegatorsMixed(address, daoID string, limit int) ([]MixedR
 					d.type AS delegation_type,
 					d.chain_id,
 					TO_TIMESTAMP(d.expires_at) AS expires_at,
-					COALESCE(ed.vp, d.voting_power, 0) AS effective_vp
+					COALESCE(ed.value, d.voting_power, 0) AS effective_vp
 				FROM storage.delegates_summary d
-				LEFT JOIN storage.erc20_delegates ed
-					ON lower(ed.address) = lower(d.address_from)
-				   AND ed.dao_id = d.dao_id::uuid
-				   AND ed.chain_id = d.chain_id
+				LEFT JOIN storage.erc20_balances ed
+               		ON ed.address = d.address_from
+                   		AND ed.dao_id = d.dao_id::uuid
+                   		AND ed.chain_id = d.chain_id
 				WHERE lower(d.address_to) = lower(?)
 				  AND (?::text = '' OR d.dao_id = ?)
 			),
