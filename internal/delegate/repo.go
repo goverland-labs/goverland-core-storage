@@ -713,18 +713,13 @@ func (r *Repo) GetErc20DelegatesInfo(
 func (r *Repo) GetDelegatorsMixedInfo(
 	_ context.Context,
 	daoID uuid.UUID,
-	dt, chainID string,
+	dt string, chainID *string,
 	reqAddress, searchAddress *string,
 	limit, offset int,
 ) ([]Delegate, error) {
 	var delegates []Delegate
 
 	err := r.db.Raw(`
-		WITH totals AS (SELECT total_delegators,
-							   voting_power AS total_voting_power
-						FROM erc20_totals
-						WHERE dao_id = ?
-						  AND chain_id = ?)
 		SELECT lower(d.address_from) 				 AS address,
 			   TO_TIMESTAMP(d.expires_at)            AS expires_at,
 			   COALESCE(ed.value, d.voting_power, 0) AS voting_power,
@@ -735,15 +730,14 @@ func (r *Repo) GetDelegatorsMixedInfo(
 						   ON ed.address = d.address_from
 							   AND ed.dao_id = d.dao_id::uuid
 							   AND ed.chain_id = d.chain_id
-				 LEFT JOIN totals t ON TRUE
-		WHERE d.chain_id = ?
+		WHERE (?::text IS NULL OR d.chain_id = ?) 
 		  AND d.type = ?
 		  AND d.dao_id = ?
 		  AND (?::text IS NULL OR lower(d.address_to) = lower(?))
 		  AND (?::text IS NULL OR lower(d.address_from) = lower(?))
 		ORDER BY voting_power DESC
 		LIMIT ? OFFSET ?;
-	`, daoID, chainID, chainID, dt, daoID, reqAddress, reqAddress, searchAddress, searchAddress, limit, offset).Scan(&delegates).Error
+	`, chainID, chainID, dt, daoID, reqAddress, reqAddress, searchAddress, searchAddress, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)
