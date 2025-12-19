@@ -467,7 +467,7 @@ func (r *Repo) GetDelegationByAddress(addressFrom, daoID string) (*Summary, erro
 	var summary *Summary
 
 	err := r.db.
-		Where("dao_id = ? AND address_from = ?", daoID, addressFrom).
+		Where("dao_id = ? AND lower(address_from) = ?", daoID, strings.ToLower(addressFrom)).
 		Order("created_at DESC").
 		First(&summary).Error
 
