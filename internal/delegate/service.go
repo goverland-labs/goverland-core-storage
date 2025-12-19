@@ -263,25 +263,12 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 
 	// get delegate profile based on internal DB
 	if request.DelegationType != DelegationTypeSplitDelegation {
-		info, err := s.GetErc20Delegate(ctx, daoEntity.ID, request.ChainID, request.Address)
-		if err != nil {
-			return GetDelegateProfileResponse{}, fmt.Errorf("s.GetErc20Delegate: %w", err)
-		}
-
-		if info == nil {
-			return GetDelegateProfileResponse{}, nil
-		}
-
-		value, err := strconv.ParseFloat(info.VP, 64)
-		if err != nil {
-			return GetDelegateProfileResponse{}, fmt.Errorf("s.GetErc20Delegate: %w", err)
-		}
-
 		delegate, err := s.repo.GetDelegationByAddress(request.Address, request.DaoID.String())
 		if err != nil {
 			return GetDelegateProfileResponse{}, fmt.Errorf("s.repo.GetDelegationByAddress: %w", err)
 		}
 
+		value := s.GetErc20BalanceByAddress(ctx, request.Address, daoEntity.ID, daoEntity.Network)
 		var delegates []ProfileDelegateItem
 		if delegate != nil {
 			ensNames, err := s.resolveAddressesName([]string{delegate.AddressTo})
@@ -354,6 +341,24 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 		Delegates:            delegates,
 		Expiration:           expiration,
 	}, nil
+}
+
+func (s *Service) GetErc20BalanceByAddress(ctx context.Context, address string, daoID uuid.UUID, chainID string) float64 {
+	info, err := s.repo.GetERC20Balance(ctx, address, daoID, chainID)
+	if err != nil {
+		return 0
+	}
+
+	if info == nil {
+		return 0
+	}
+
+	value, err := strconv.ParseFloat(info.Value, 64)
+	if err != nil {
+		return 0
+	}
+
+	return value
 }
 
 func (s *Service) getDelegationStrategy(daoEntity *dao.Dao) ([]byte, error) {

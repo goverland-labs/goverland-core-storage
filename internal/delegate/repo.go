@@ -838,6 +838,23 @@ func (r *Repo) GetERC20Delegate(
 	return &delegate, err
 }
 
+func (r *Repo) GetERC20Balance(
+	_ context.Context,
+	address string,
+	daoID uuid.UUID,
+	chainID string,
+) (*ERC20Balance, error) {
+	var balance ERC20Balance
+	err := r.db.
+		Where("address = ? AND dao_id = ? AND chain_id = ?", address, daoID, chainID).
+		First(&balance).
+		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &balance, err
+}
+
 func (r *Repo) GetERC20Totals(
 	tx *gorm.DB,
 	daoID uuid.UUID,
