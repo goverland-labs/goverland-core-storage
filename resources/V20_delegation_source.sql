@@ -128,3 +128,6 @@ ALTER TABLE delegates_summary
 
 CREATE INDEX idx_delegates_summary_to_dao_chain_from
     ON delegates_summary (address_to, dao_id, chain_id, address_from);
+
+CREATE INDEX if not exists idx_erc20_event_history_original_dao_id
+    ON erc20_event_history (original_dao_id);

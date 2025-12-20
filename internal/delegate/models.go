@@ -38,7 +38,7 @@ var (
 		},
 		// [28K holders | 272K transactions],
 		strings.ToLower("0xCa14007Eff0dB1f8135f4C25B34De49AB0d42766"): {
-			OriginalID: "starknet.eth",
+			OriginalID: "integration-test.eth", // "starknet.eth" // todo: rollback after testing
 			ChainID:    "1",
 		},
 		// [ 65K holders | 1.3M transactions] ,
