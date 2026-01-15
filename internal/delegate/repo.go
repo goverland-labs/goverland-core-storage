@@ -463,13 +463,19 @@ func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, e
 	return result, nil
 }
 
-func (r *Repo) GetDelegationByAddress(addressFrom, daoID string) (*Summary, error) {
+func (r *Repo) GetDelegationByAddress(req GetDelegateProfileRequest) (*Summary, error) {
 	var summary *Summary
 
-	err := r.db.
-		Where("dao_id = ? AND lower(address_from) = ?", daoID, strings.ToLower(addressFrom)).
-		Order("created_at DESC").
-		First(&summary).Error
+	tx := r.db.
+		Where("dao_id = ?", req.DaoID.String()).
+		Where("lower(address_from) = ?", strings.ToLower(req.Address)).
+		Where("type = ?", req.DelegationType)
+
+	if req.ChainID != "" {
+		tx = tx.Where("chain_id = ?", req.ChainID)
+	}
+
+	err := tx.Order("created_at DESC").First(&summary).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil

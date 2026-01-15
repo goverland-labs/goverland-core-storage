@@ -263,7 +263,7 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 
 	// get delegate profile based on internal DB
 	if request.DelegationType != DelegationTypeSplitDelegation {
-		delegate, err := s.repo.GetDelegationByAddress(request.Address, request.DaoID.String())
+		delegate, err := s.repo.GetDelegationByAddress(request)
 		if err != nil {
 			return GetDelegateProfileResponse{}, fmt.Errorf("s.repo.GetDelegationByAddress: %w", err)
 		}
