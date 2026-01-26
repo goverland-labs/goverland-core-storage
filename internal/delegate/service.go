@@ -171,12 +171,24 @@ func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequ
 		address := strings.ToLower(req.QueryAccounts[0])
 		searchAddress = &address
 	}
-	delegates, err := s.repo.GetErc20DelegatesInfo(ctx, req.DaoID, chainID, searchAddress, req.Limit, req.Offset)
+
+	daoInfo, err := s.daoProvider.GetByID(req.DaoID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("s.daoProvider.GetByID: %w", err)
+	}
+
+	strategy := daoInfo.GetStrategyByName(sourceErc20Votes)
+	token := ""
+	if strategy != nil && chainID == strategy.Network {
+		token = strategy.Params["address"].(string)
+	}
+
+	delegates, err := s.repo.GetErc20DelegatesInfo(ctx, req.DaoID, token, chainID, searchAddress, req.Limit, req.Offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("s.repo.GetErc20DelegatesInfo: %w", err)
 	}
 
-	total, err := s.repo.GetDelegatesCount(ctx, req.DaoID, chainID)
+	total, err := s.repo.GetDelegatesCount(ctx, token, chainID)
 	if err != nil {
 		return nil, 0, fmt.Errorf("s.repo.GetDelegatesCount: %w", err)
 	}
@@ -543,7 +555,7 @@ func (s *Service) handleSplitDelegation(ctx context.Context, hr History) error {
 	return nil
 }
 
-func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegation, tx *gorm.DB) error {
+func (s *Service) handleERC20Delegation(_ context.Context, info ERC20Delegation, tx *gorm.DB) error {
 	logger := log.With().
 		Str("source", "handle_erc20_delegates").
 		Str("block_number", fmt.Sprintf("%d", info.BlockNumber)).
@@ -551,27 +563,14 @@ func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegatio
 		Str("delegator", info.DelegatorAddress).
 		Logger()
 
-	// get space by provided original_space_id
-	delegatedDao, err := s.daoProvider.GetDaoByOriginalID(info.OriginalSpaceID)
-	if err != nil {
-		return fmt.Errorf("dp.GetIDByOriginalID: %w", err)
-	}
-
-	strategy := getDaoPrimaryStrategy(delegatedDao, sourceErc20Votes)
-	if strategy == nil {
-		logger.Warn().Msgf("no strategy found for delegated dao %s", delegatedDao.OriginalID)
-
-		return nil
-	}
-
-	existed, err := s.repo.GetSummary(
+	existed, err := s.repo.GetErc20Summary(
 		tx,
-		strings.ToLower(info.DelegatorAddress),
-		delegatedDao.ID.String(),
-		&info.ChainID,
+		info.DelegatorAddress,
+		info.Token,
+		info.ChainID,
 	)
 	if err != nil {
-		return fmt.Errorf("s.repo.GetSummaryBlockTimestamp: %w", err)
+		return fmt.Errorf("s.repo.GetErc20Summary: %w", err)
 	}
 
 	// skip this delegation due to already processed
@@ -584,37 +583,24 @@ func (s *Service) handleERC20Delegation(ctx context.Context, info ERC20Delegatio
 		}
 	}
 
-	if err = s.repo.RemoveSummary(
+	if err = s.repo.RemoveErc20Summary(
 		tx,
-		strings.ToLower(info.DelegatorAddress),
-		delegatedDao.ID.String(),
-		&info.ChainID,
+		info.DelegatorAddress,
+		info.Token,
+		info.ChainID,
 	); err != nil {
-		return fmt.Errorf("RemoveSummary: %w", err)
+		return fmt.Errorf("s.repo.RemoveErc20Summary: %w", err)
 	}
 
-	if err = s.repo.CreateSummary(tx, Summary{
-		AddressFrom:        strings.ToLower(info.DelegatorAddress),
-		AddressTo:          strings.ToLower(info.AddressTo),
-		DaoID:              delegatedDao.ID.String(),
+	if err = s.repo.CreateErc20Summary(tx, Erc20Summary{
+		Token:              info.Token,
+		ChainID:            info.ChainID,
+		AddressFrom:        info.DelegatorAddress,
+		AddressTo:          info.AddressTo,
 		LastBlockTimestamp: info.BlockTimestamp,
 		LogIndex:           info.LogIndex,
-		Type:               strategy.Name,
-		ChainID:            &info.ChainID,
-		Weight:             10000, // 100%
-		ExpiresAt:          0,
 	}); err != nil {
-		return fmt.Errorf("createSummary [%s/%s/%s]: %w", info.DelegatorAddress, info.AddressTo, delegatedDao.ID.String(), err)
-	}
-
-	event := events.DelegatePayload{
-		Initiator: strings.ToLower(info.DelegatorAddress),
-		Delegator: strings.ToLower(info.AddressTo),
-		DaoID:     delegatedDao.ID,
-	}
-
-	if err = s.publisher.PublishJSON(ctx, events.SubjectDelegateCreated, event); err != nil {
-		logger.Warn().Err(err).Msgf("failed to publish delegate payload")
+		return fmt.Errorf("s.repo.CreateErc20Summary [%s/%s/%s]: %w", info.DelegatorAddress, info.AddressTo, info.Token, err)
 	}
 
 	// move to another part
@@ -627,15 +613,10 @@ func (s *Service) UpdateERC20Delegate(
 	tx *gorm.DB,
 	update ERC20DelegateUpdate,
 ) error {
-	space, err := s.daoProvider.GetDaoByOriginalID(update.OriginalID)
-	if err != nil {
-		return fmt.Errorf("s.daoProvider.GetDaoByOriginalID: %w", err)
-	}
-
 	if update.CntDelta != nil {
 		cntDelta := *update.CntDelta
 
-		row, err := s.repo.GetERC20DelegateForUpdate(tx, update.Address, space.ID, update.ChainID)
+		row, err := s.repo.GetERC20DelegateForUpdate(tx, update.Token, update.ChainID, update.Address)
 		if err != nil {
 			return fmt.Errorf("s.repo.GetERC20DelegateForUpdate: %w", err)
 		}
@@ -649,7 +630,7 @@ func (s *Service) UpdateERC20Delegate(
 
 		newRow := &ERC20Delegate{
 			Address:        update.Address,
-			DaoID:          space.ID,
+			Token:          update.Token,
 			ChainID:        update.ChainID,
 			VP:             "0",
 			RepresentedCnt: cntDelta,
@@ -664,7 +645,7 @@ func (s *Service) UpdateERC20Delegate(
 		return nil
 	}
 
-	row, err := s.repo.GetERC20DelegateForUpdate(tx, update.Address, space.ID, update.ChainID)
+	row, err := s.repo.GetERC20DelegateForUpdate(tx, update.Token, update.ChainID, update.Address)
 	if err != nil {
 		return fmt.Errorf("s.repo.GetERC20DelegateForUpdate: %w", err)
 	}
@@ -672,7 +653,7 @@ func (s *Service) UpdateERC20Delegate(
 	if row == nil {
 		row = &ERC20Delegate{
 			Address:        update.Address,
-			DaoID:          space.ID,
+			Token:          update.Token,
 			ChainID:        update.ChainID,
 			VP:             update.VPUpdate.Value,
 			RepresentedCnt: 0,
@@ -701,27 +682,17 @@ func (s *Service) UpdateERC20Totals(
 	tx *gorm.DB,
 	update ERC20TotalChanges,
 ) error {
-	space, err := s.daoProvider.GetDaoByOriginalID(update.OriginalID)
-	if err != nil {
-		return fmt.Errorf("s.daoProvider.GetDaoByOriginalID: %w", err)
-	}
-
-	return s.repo.UpsertERC20Total(tx, space.ID, update.ChainID, update.VPDelta, update.DelegatorsDelta)
+	return s.repo.UpsertERC20Total(tx, update.Token, update.ChainID, update.VPDelta, update.DelegatorsDelta)
 }
 
 func (s *Service) UpsertERC20Balance(
 	tx *gorm.DB,
-	address string,
-	originalID string,
+	token string,
 	chainID string,
+	address string,
 	balanceDelta string,
 ) error {
-	space, err := s.daoProvider.GetDaoByOriginalID(originalID)
-	if err != nil {
-		return fmt.Errorf("s.daoProvider.GetDaoByOriginalID: %w", err)
-	}
-
-	return s.repo.UpsertERC20Balance(tx, address, space.ID, chainID, balanceDelta)
+	return s.repo.UpsertERC20Balance(tx, token, chainID, address, balanceDelta)
 }
 
 func (s *Service) processErc20Event(ctx context.Context, event ERC20Event, processor func(ctx context.Context, tx *gorm.DB) error) error {
@@ -1316,11 +1287,10 @@ func (s *Service) GetErc20Delegate(_ context.Context, daoID uuid.UUID, chainID, 
 	return delegate, nil
 }
 
-func (s *Service) GetErc20Totals(_ context.Context, daoID uuid.UUID, chainID string) (*ERC20Totals, error) {
-	delegate, err := s.repo.GetERC20Totals(s.repo.db, daoID, chainID)
-	if err != nil {
-		return nil, fmt.Errorf("repo.GetERC20Totals: %w", err)
+func (s *Service) refreshDelegatesMV(ctx context.Context) error {
+	if err := s.repo.refreshDelegatesMV(ctx); err != nil {
+		return fmt.Errorf("s.repo.refreshMV: %w", err)
 	}
 
-	return delegate, nil
+	return nil
 }

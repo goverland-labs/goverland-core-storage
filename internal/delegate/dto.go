@@ -120,10 +120,10 @@ type ERC20Event interface {
 }
 
 type ERC20Delegation struct {
+	Token            string
 	DelegatorAddress string
 	AddressFrom      string
 	AddressTo        string
-	OriginalSpaceID  string
 	ChainID          string
 	BlockNumber      int
 	BlockTimestamp   int
@@ -142,14 +142,14 @@ func (e ERC20Delegation) ConvertToHistory() *Erc20EventHistory {
 	})
 
 	return &Erc20EventHistory{
-		ID:            e.GetKey(),
-		OriginalDaoID: e.OriginalSpaceID,
-		ChainID:       e.ChainID,
-		BlockNumber:   e.BlockNumber,
-		LogIndex:      e.LogIndex,
-		Type:          "delegation",
-		Payload:       payload,
-		CreatedAt:     time.Now(),
+		ID:          e.GetKey(),
+		Token:       e.Token,
+		ChainID:     e.ChainID,
+		BlockNumber: e.BlockNumber,
+		LogIndex:    e.LogIndex,
+		Type:        "delegation",
+		Payload:     payload,
+		CreatedAt:   time.Now(),
 	}
 }
 
@@ -158,14 +158,14 @@ func generateUniqueKey(chainID string, blockNumber, logIndex int) string {
 }
 
 type ERC20VPChanges struct {
-	Address         string
-	OriginalSpaceID string
-	ChainID         string
-	BlockNumber     int
-	BlockTimestamp  int
-	LogIndex        int
-	VP              string
-	Delta           string
+	Address        string
+	Token          string
+	ChainID        string
+	BlockNumber    int
+	BlockTimestamp int
+	LogIndex       int
+	VP             string
+	Delta          string
 }
 
 func (e ERC20VPChanges) GetKey() string {
@@ -180,26 +180,26 @@ func (e ERC20VPChanges) ConvertToHistory() *Erc20EventHistory {
 	})
 
 	return &Erc20EventHistory{
-		ID:            e.GetKey(),
-		OriginalDaoID: e.OriginalSpaceID,
-		ChainID:       e.ChainID,
-		BlockNumber:   e.BlockNumber,
-		LogIndex:      e.LogIndex,
-		Type:          "vp_changes",
-		Payload:       payload,
-		CreatedAt:     time.Now(),
+		ID:          e.GetKey(),
+		Token:       e.Token,
+		ChainID:     e.ChainID,
+		BlockNumber: e.BlockNumber,
+		LogIndex:    e.LogIndex,
+		Type:        "vp_changes",
+		Payload:     payload,
+		CreatedAt:   time.Now(),
 	}
 }
 
 type ERC20Transfer struct {
-	AddressFrom     string
-	AddressTo       string
-	OriginalSpaceID string
-	ChainID         string
-	BlockNumber     int
-	BlockTimestamp  int
-	LogIndex        int
-	Amount          string
+	Token          string
+	ChainID        string
+	AddressFrom    string
+	AddressTo      string
+	BlockNumber    int
+	BlockTimestamp int
+	LogIndex       int
+	Amount         string
 }
 
 func (e ERC20Transfer) GetKey() string {
@@ -214,14 +214,14 @@ func (e ERC20Transfer) ConvertToHistory() *Erc20EventHistory {
 	})
 
 	return &Erc20EventHistory{
-		ID:            e.GetKey(),
-		OriginalDaoID: e.OriginalSpaceID,
-		ChainID:       e.ChainID,
-		BlockNumber:   e.BlockNumber,
-		LogIndex:      e.LogIndex,
-		Type:          "transfer",
-		Payload:       payload,
-		CreatedAt:     time.Now(),
+		ID:          e.GetKey(),
+		Token:       e.Token,
+		ChainID:     e.ChainID,
+		BlockNumber: e.BlockNumber,
+		LogIndex:    e.LogIndex,
+		Type:        "transfer",
+		Payload:     payload,
+		CreatedAt:   time.Now(),
 	}
 }
 
@@ -232,15 +232,15 @@ type VPUpdate struct {
 }
 
 type ERC20DelegateUpdate struct {
-	Address    string
-	OriginalID string
-	ChainID    string
-	VPUpdate   *VPUpdate
-	CntDelta   *int
+	Token    string
+	ChainID  string
+	Address  string
+	VPUpdate *VPUpdate
+	CntDelta *int
 }
 
 type ERC20TotalChanges struct {
-	OriginalID      string
+	Token           string
 	ChainID         string
 	VPDelta         string
 	DelegatorsDelta int64

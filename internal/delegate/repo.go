@@ -31,6 +31,11 @@ func (r *Repo) CreateSummary(tx *gorm.DB, sm Summary) error {
 	return tx.Create(&sm).Error
 }
 
+// CreateErc20Summary creates one summary info
+func (r *Repo) CreateErc20Summary(tx *gorm.DB, sm Erc20Summary) error {
+	return tx.Create(&sm).Error
+}
+
 func (r *Repo) CallInTx(cb func(tx *gorm.DB) error) error {
 	return r.db.Transaction(cb)
 }
@@ -45,6 +50,28 @@ func (r *Repo) GetSummary(tx *gorm.DB, addressFrom, daoID string, chainID *strin
 
 	err := query.
 		Table("delegates_summary").
+		Order("last_block_timestamp DESC").
+		First(&summary).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &summary, nil
+}
+
+func (r *Repo) GetErc20Summary(tx *gorm.DB, addressFrom, token, chainID string) (*Erc20Summary, error) {
+	var summary Erc20Summary
+
+	err := tx.
+		Table("erc20_delegations").
+		Where("token = ?", token).
+		Where("chain_id = ?", chainID).
+		Where("address_from = ?", addressFrom).
 		Order("last_block_timestamp DESC").
 		First(&summary).Error
 
@@ -129,6 +156,25 @@ func (r *Repo) RemoveSummary(tx *gorm.DB, addressFrom, daoID string, chainID *st
 	return nil
 }
 
+func (r *Repo) RemoveErc20Summary(tx *gorm.DB, addressFrom, token, chainID string) error {
+	var (
+		dump = Erc20Summary{}
+		_    = dump.AddressFrom
+		_    = dump.Token
+		_    = dump.ChainID
+	)
+
+	if err := tx.
+		Where("token = ?", token).
+		Where("chain_id = ?", chainID).
+		Where("address_from = ?", addressFrom).
+		Delete(&Summary{}).Error; err != nil {
+		return fmt.Errorf("delete erc20 summary: %w", err)
+	}
+
+	return nil
+}
+
 func (r *Repo) FindDelegator(daoID, author string) (*Summary, error) {
 	var si Summary
 	if err := r.db.
@@ -171,18 +217,18 @@ func (r *Repo) FindDelegatorsByVotes(votes []Vote) ([]summaryByVote, error) {
 	rows, err := r.db.
 		Raw(fmt.Sprintf(`
 				select 
-				    delegates_summary.address_to  delegator,
+				    mixed_delegations.address_to  delegator,
 					vote_details.voter_address as initiator,
 					dao_ids.internal_id           internal_dao_id,
 					vote_details.proposal_id,
-					delegates_summary.expires_at
+					mixed_delegations.expires_at
 				from (values %s) 
 				    as vote_details (original_dao_id, proposal_id, voter_address)
 				inner join dao_ids 
 				    on dao_ids.original_id = vote_details.original_dao_id
-				inner join delegates_summary 
-				    on uuid(delegates_summary.dao_id) = dao_ids.internal_id
-					and lower(delegates_summary.address_to) = vote_details.voter_address
+				inner join mixed_delegations 
+				    on uuid(mixed_delegations.dao_id) = dao_ids.internal_id
+					and lower(mixed_delegations.address_to) = vote_details.voter_address
 		  `, strings.Join(placeholders, ",")),
 			values...,
 		).
@@ -227,7 +273,7 @@ func (r *Repo) GetTopDelegatorsByAddress(address string, limit int) ([]Summary, 
              				expires_at,
 							ROW_NUMBER() OVER (PARTITION BY dao_id) row_number,
              				count(*) over (partition by dao_id) max_cnt
-					 FROM delegates_summary
+					 FROM mixed_delegations
 					 WHERE lower(address_to) = lower(?) ) dataset
 				WHERE dataset.row_number <= ?
 		  `,
@@ -270,12 +316,8 @@ func (r *Repo) GetTopDelegatorsMixed(address, daoID string, limit int) ([]MixedR
 					d.type AS delegation_type,
 					d.chain_id,
 					TO_TIMESTAMP(d.expires_at) AS expires_at,
-					COALESCE(ed.value, d.voting_power, 0) AS effective_vp
-				FROM storage.delegates_summary d
-				LEFT JOIN storage.erc20_balances ed
-               		ON ed.address = d.address_from
-                   		AND ed.dao_id = d.dao_id::uuid
-                   		AND ed.chain_id = d.chain_id
+					COALESCE(d.voting_power, 0) AS effective_vp
+				FROM storage.mixed_delegations d
 				WHERE lower(d.address_to) = lower(?)
 				  AND (?::text = '' OR d.dao_id = ?)
 			),
@@ -349,7 +391,7 @@ func (r *Repo) GetTopDelegatesMixed(address, daoID string, limit int) ([]MixedRa
 					d.chain_id,
 					TO_TIMESTAMP(d.expires_at) AS expires_at,
 					COALESCE(ed.vp, d.voting_power, 0) AS effective_vp
-				FROM storage.delegates_summary d
+				FROM storage.mixed_delegations d
 				LEFT JOIN storage.erc20_delegates ed
 					ON lower(ed.address) = lower(d.address_from)
 				   AND ed.dao_id = d.dao_id::uuid
@@ -431,7 +473,7 @@ func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, e
              				expires_at,
 							ROW_NUMBER() OVER (PARTITION BY dao_id) row_number,
              				count(*) over (partition by dao_id) max_cnt
-					 FROM delegates_summary
+					 FROM mixed_delegations
 					 WHERE lower(address_from) = lower(?) ) dataset
 				WHERE dataset.row_number <= ?
 		  `,
@@ -499,9 +541,7 @@ func (r *Repo) GetByFilters(filters ...Filter) ([]Summary, error) {
 }
 
 func (r *Repo) GetCnt(filters ...Filter) (int64, error) {
-	db := r.db.Model(&Summary{}).
-		InnerJoins(`inner join daos on daos.id = delegates_summary.dao_id::uuid`).
-		InnerJoins(`inner join delegate_allowed_daos wl on wl.dao_name = daos.original_id`)
+	db := r.db.Model(&MixedDelegation{})
 	for _, f := range filters {
 		db = f.Apply(db)
 	}
@@ -523,7 +563,7 @@ func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error)
 			     , dao_id
 			     , expires_at
 			     , last_block_timestamp
-			from delegates_summary
+			from mixed_delegations
 			where expires_at > ?
 			  and expires_at < ?
 			limit ?
@@ -668,6 +708,7 @@ func (r *Repo) GetProposalsCnt(daoID uuid.UUID, authors []string) (map[string]in
 func (r *Repo) GetErc20DelegatesInfo(
 	_ context.Context,
 	daoID uuid.UUID,
+	token string,
 	chainID string,
 	address *string,
 	limit, offset int,
@@ -680,14 +721,14 @@ func (r *Repo) GetErc20DelegatesInfo(
 					total_delegators,
 					voting_power AS total_voting_power
 				FROM erc20_totals
-				WHERE dao_id = ?
+				WHERE token = ?
 				  AND chain_id = ?
 			),
 			real_delegates AS (
 				SELECT 
 					DISTINCT ds.address_to AS address,
 					COUNT(DISTINCT ds.address_from) represented_cnt
-				FROM delegates_summary ds
+				FROM mixed_delegations ds
 				WHERE ds.dao_id = ?
 				  AND ds.chain_id = ?
 				GROUP BY ds.address_to
@@ -701,13 +742,13 @@ func (r *Repo) GetErc20DelegatesInfo(
 			FROM storage.erc20_delegates d
 			JOIN real_delegates rd ON rd.address = d.address
 			CROSS JOIN totals t
-			WHERE d.dao_id = ?
+			WHERE d.token = ?
 			  AND d.chain_id = ?
 			  AND (?::text IS NULL OR d.address = ?)
 			ORDER BY d.vp DESC
 			LIMIT ? OFFSET ?;
 
-	`, daoID, chainID, daoID, chainID, daoID, chainID, address, address, limit, offset).Scan(&delegates).Error
+	`, token, chainID, daoID, chainID, token, chainID, address, address, limit, offset).Scan(&delegates).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("query delegates: %w", err)
@@ -728,14 +769,10 @@ func (r *Repo) GetDelegatorsMixedInfo(
 	err := r.db.Raw(`
 		SELECT lower(d.address_from) 				 AS address,
 			   TO_TIMESTAMP(d.expires_at)            AS expires_at,
-			   COALESCE(ed.value, d.voting_power, 0) AS voting_power,
+			   COALESCE(d.voting_power, 0) AS voting_power,
 			   COALESCE(d.weight, 0)                 AS percent_of_voting_power,
 			   COUNT(*) OVER ()                      AS delegator_count
-		FROM storage.delegates_summary d
-				 LEFT JOIN storage.erc20_balances ed
-						   ON ed.address = d.address_from
-							   AND ed.dao_id = d.dao_id::uuid
-							   AND ed.chain_id = d.chain_id
+		FROM storage.mixed_delegations d
 		WHERE (?::text IS NULL OR d.chain_id = ?) 
 		  AND d.type = ?
 		  AND d.dao_id = ?
@@ -752,14 +789,14 @@ func (r *Repo) GetDelegatorsMixedInfo(
 	return delegates, nil
 }
 
-func (r *Repo) GetDelegatesCount(_ context.Context, daoID uuid.UUID, chainID string) (int32, error) {
+func (r *Repo) GetDelegatesCount(_ context.Context, token, chainID string) (int32, error) {
 	var count int32
 	err := r.db.Raw(`
 		SELECT COALESCE(total_delegators, 0)
 		FROM erc20_totals
-		WHERE dao_id = ?
+		WHERE token = ?
 		  AND chain_id = ?
-	`, daoID, chainID).Row().Scan(&count)
+	`, token, chainID).Row().Scan(&count)
 
 	if err != nil {
 		return 0, fmt.Errorf("scan: %w", err)
@@ -809,14 +846,12 @@ func (r *Repo) GetERC20DelegateByAddressDaoChain(ctx context.Context, tx *gorm.D
 
 func (r *Repo) GetERC20DelegateForUpdate(
 	tx *gorm.DB,
-	address string,
-	daoID uuid.UUID,
-	chainID string,
+	token, chainID, address string,
 ) (*ERC20Delegate, error) {
 	var delegate ERC20Delegate
 	err := tx.
 		Clauses(clause.Locking{Strength: "UPDATE"}).
-		Where("address = ? AND dao_id = ? AND chain_id = ?", address, daoID, chainID).
+		Where("token = ? AND chain_id = ? AND address = ?", token, chainID, address).
 		First(&delegate).
 		Error
 
@@ -861,22 +896,6 @@ func (r *Repo) GetERC20Balance(
 	return &balance, err
 }
 
-func (r *Repo) GetERC20Totals(
-	tx *gorm.DB,
-	daoID uuid.UUID,
-	chainID string,
-) (*ERC20Totals, error) {
-	var info ERC20Totals
-	err := tx.
-		Where("dao_id = ? AND chain_id = ?", daoID, chainID).
-		First(&info).
-		Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
-	return &info, err
-}
-
 func (r *Repo) SaveERC20Delegate(
 	tx *gorm.DB,
 	delegate *ERC20Delegate,
@@ -884,70 +903,18 @@ func (r *Repo) SaveERC20Delegate(
 	return tx.Save(delegate).Error
 }
 
-func (r *Repo) UpsertERC20Delegate(
-	tx *gorm.DB,
-	address string,
-	daoID uuid.UUID,
-	chainID string,
-	cntDelta *int,
-	vp string,
-	blockNumber int,
-	logIndex int,
-) error {
-	delegate := &ERC20Delegate{
-		Address:        address,
-		DaoID:          daoID,
-		ChainID:        chainID,
-		VP:             vp,
-		RepresentedCnt: 0,
-		BlockNumber:    blockNumber,
-		LogIndex:       logIndex,
-		UpdatedAt:      time.Now(),
-	}
-
-	doUpdates := map[string]any{
-		"updated_at": gorm.Expr("NOW()"),
-	}
-
-	if cntDelta != nil {
-		doUpdates["represented_cnt"] = gorm.Expr("erc20_delegates.represented_cnt + ?", *cntDelta)
-	}
-
-	if vp != "" {
-		// VP обновляем только если событие новее
-		doUpdates["vp"] = gorm.Expr(
-			"CASE WHEN block_number < ? OR (block_number = ? AND log_index < ?) THEN ? ELSE vp END",
-			blockNumber, blockNumber, logIndex, vp,
-		)
-		doUpdates["block_number"] = gorm.Expr("GREATEST(block_number, ?)", blockNumber)
-		doUpdates["log_index"] = gorm.Expr(
-			"CASE WHEN block_number = ? THEN GREATEST(log_index, ?) ELSE log_index END",
-			blockNumber, logIndex,
-		)
-	}
-
-	return tx.Clauses(clause.OnConflict{
-		Columns: []clause.Column{
-			{Name: "address"},
-			{Name: "dao_id"},
-			{Name: "chain_id"},
-		},
-		DoUpdates: clause.Assignments(doUpdates),
-	}).Create(delegate).Error
-}
-
-func (r *Repo) UpsertERC20Balance(tx *gorm.DB, address string, daoID uuid.UUID, chainID string, deltaValue string) error {
+func (r *Repo) UpsertERC20Balance(tx *gorm.DB, token, chainID, address string, deltaValue string) error {
 	balance := &ERC20Balance{
-		Address: address,
-		DaoID:   daoID,
+		Token:   token,
 		ChainID: chainID,
+		Address: address,
 		Value:   deltaValue,
 	}
 
 	return tx.Clauses(clause.OnConflict{
 		Columns: []clause.Column{
 			{Name: "address"},
-			{Name: "dao_id"},
+			{Name: "token"},
 			{Name: "chain_id"},
 		},
 		DoUpdates: clause.Assignments(map[string]any{
@@ -957,9 +924,9 @@ func (r *Repo) UpsertERC20Balance(tx *gorm.DB, address string, daoID uuid.UUID, 
 	}).Create(balance).Error
 }
 
-func (r *Repo) UpsertERC20Total(tx *gorm.DB, daoID uuid.UUID, chainID string, deltaVP string, deltaCnt int64) error {
+func (r *Repo) UpsertERC20Total(tx *gorm.DB, token, chainID, deltaVP string, deltaCnt int64) error {
 	vpTotal := &ERC20Totals{
-		DaoID:           daoID,
+		Token:           token,
 		ChainID:         chainID,
 		VotingPower:     deltaVP,
 		TotalDelegators: deltaCnt,
@@ -967,7 +934,7 @@ func (r *Repo) UpsertERC20Total(tx *gorm.DB, daoID uuid.UUID, chainID string, de
 
 	return tx.Clauses(clause.OnConflict{
 		Columns: []clause.Column{
-			{Name: "dao_id"},
+			{Name: "token"},
 			{Name: "chain_id"},
 		},
 		DoUpdates: clause.Assignments(map[string]interface{}{
@@ -988,15 +955,13 @@ func (r *Repo) GetErc20TopDelegators(
 	var list []AddressValue
 	err := r.db.Raw(`
 		SELECT 
-		    e.address, 
-		    e.value as token_value
-		FROM erc20_balances e
-		JOIN delegates_summary d
-			 ON e.address = d.address_from
+		    d.address_from as address, 
+		    d.voting_power as token_value
+		FROM mixed_delegations d
 		WHERE lower(d.address_to) = lower(?)
 		 AND d.dao_id = ?
 		 AND d.chain_id = ?
-		ORDER BY e.value DESC
+		ORDER BY d.voting_power DESC
 		LIMIT ? OFFSET ?
 	`, address, daoID, chainID, limit, offset).Scan(&list).Error
 
@@ -1007,39 +972,14 @@ func (r *Repo) GetErc20TopDelegators(
 	return list, nil
 }
 
-func (r *Repo) GetErc20Delegates(
-	_ context.Context,
-	daoID uuid.UUID,
-	chainID string,
-	list []string,
-) ([]Delegate, error) {
-	var delegates []Delegate
-
-	err := r.db.Raw(`
-		WITH totals AS (
-			SELECT
-				total_delegators,
-				voting_power AS total_voting_power
-			FROM erc20_totals
-			WHERE dao_id = ?
-			  AND chain_id = ?
-		)
-		SELECT
-			d.address AS address,
-			d.represented_cnt,
-			ROUND(d.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
-			d.vp,
-			ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
-		FROM erc20_delegates d
-		CROSS JOIN totals t
-		WHERE d.dao_id = ?
-		  AND d.chain_id = ?
-		  AND d.address = ANY(?)
-	`, daoID, chainID, daoID, chainID, pq.Array(list)).Scan(&delegates).Error
+func (r *Repo) refreshDelegatesMV(ctx context.Context) error {
+	err := r.db.WithContext(ctx).
+		Exec(`refresh materialized view concurrently mixed_delegations`).
+		Error
 
 	if err != nil {
-		return nil, fmt.Errorf("query delegates: %w", err)
+		return fmt.Errorf("exec refresh mv: %w", err)
 	}
 
-	return delegates, nil
+	return nil
 }

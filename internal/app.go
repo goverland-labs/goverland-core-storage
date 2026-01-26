@@ -308,6 +308,9 @@ func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) err
 	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.proposalService, a.ensService, pb, a.eventsService)
 	a.delegateService = service
 
+	rw := delegate.NewRefreshWorker(service)
+	a.manager.AddWorker(process.NewCallbackWorker("delegates-refresh-worker", rw.Start))
+
 	cs, err := delegate.NewConsumer(nc, service)
 	if err != nil {
 		return fmt.Errorf("delegates consumer: %w", err)

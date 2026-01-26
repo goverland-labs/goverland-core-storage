@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	daoErc20Set = map[string]Erc20Mapping{
+	tokenErc20Set = map[string]Erc20Mapping{
 		// [1.8M holders | 108M transactions],
 		strings.ToLower("0x912ce59144191c1204e64559fe8253a0e49e6548"): {
 			OriginalID: "arbitrumfoundation.eth",
@@ -174,6 +174,34 @@ func (Summary) TableName() string {
 	return "delegates_summary"
 }
 
+type MixedDelegation struct {
+	AddressFrom string
+	AddressTo   string
+	DaoID       string
+	Weight      int
+	ExpiresAt   int64
+	ChainID     *string
+	Type        string
+}
+
+func (MixedDelegation) TableName() string {
+	return "mixed_delegations"
+}
+
+type Erc20Summary struct {
+	Token              string
+	ChainID            string
+	AddressFrom        string
+	AddressTo          string
+	LastBlockTimestamp int
+	LogIndex           int
+	CreatedAt          time.Time
+}
+
+func (Summary) Erc20Summary() string {
+	return "erc20_delegations"
+}
+
 func (s *Summary) Expired() bool {
 	if s.ExpiresAt == 0 {
 		return false
@@ -237,14 +265,14 @@ func (a *AllowedDao) TableName() string {
 
 // Erc20EventHistory storing erc20 votes history
 type Erc20EventHistory struct {
-	ID            string
-	OriginalDaoID string `gorm:"original_dao_id"`
-	ChainID       string
-	BlockNumber   int
-	LogIndex      int
-	Type          string
-	Payload       json.RawMessage
-	CreatedAt     time.Time
+	ID          string
+	Token       string
+	ChainID     string
+	BlockNumber int
+	LogIndex    int
+	Type        string
+	Payload     json.RawMessage
+	CreatedAt   time.Time
 }
 
 func (Erc20EventHistory) TableName() string {
@@ -254,7 +282,7 @@ func (Erc20EventHistory) TableName() string {
 type ERC20Delegate struct {
 	ID             uint64
 	Address        string
-	DaoID          uuid.UUID
+	Token          string
 	ChainID        string
 	VP             string
 	BlockNumber    int
@@ -271,7 +299,7 @@ func (ERC20Delegate) TableName() string {
 type ERC20Balance struct {
 	ID        uint
 	Address   string
-	DaoID     uuid.UUID
+	Token     string
 	ChainID   string
 	Value     string `gorm:"type:numeric(78,0);not null;default:0"`
 	CreatedAt time.Time
@@ -284,7 +312,7 @@ func (ERC20Balance) TableName() string {
 
 type ERC20Totals struct {
 	ID              uint
-	DaoID           uuid.UUID
+	Token           string
 	ChainID         string
 	VotingPower     string `gorm:"type:numeric(78,0);not null;default:0"`
 	TotalDelegators int64

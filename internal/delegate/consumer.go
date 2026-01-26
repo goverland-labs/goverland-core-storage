@@ -59,19 +59,19 @@ func (c *Consumer) handleDelegates() events.DelegateHandler {
 
 func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 	return func(payload events.ERC20DelegationPayload) error {
-		daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
+		erc20Info, ok := tokenErc20Set[strings.ToLower(payload.Token)]
 		if !ok {
-			log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
+			log.Warn().Msgf("erc20 mapping not found for token %s", payload.Token)
 
 			return nil
 		}
 
 		event := ERC20Delegation{
+			Token:            strings.ToLower(payload.Token),
 			DelegatorAddress: strings.ToLower(payload.Delegator),
 			AddressFrom:      strings.ToLower(payload.AddressFrom),
 			AddressTo:        strings.ToLower(payload.AddressTo),
-			OriginalSpaceID:  daoInfo.OriginalID,
-			ChainID:          daoInfo.ChainID,
+			ChainID:          erc20Info.ChainID,
 			BlockNumber:      int(payload.BlockNumber),
 			BlockTimestamp:   int(payload.BlockTimestamp),
 			LogIndex:         int(payload.LogIndex),
@@ -85,7 +85,7 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 
 			if event.AddressTo == nullAddress {
 				if err = c.service.UpdateERC20Totals(tx, ERC20TotalChanges{
-					OriginalID:      event.OriginalSpaceID,
+					Token:           event.Token,
 					ChainID:         event.ChainID,
 					VPDelta:         "0",
 					DelegatorsDelta: -1,
@@ -95,10 +95,10 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 			} else {
 				increaseCnt := 1
 				if err = c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
-					Address:    event.AddressTo,
-					OriginalID: event.OriginalSpaceID,
-					ChainID:    event.ChainID,
-					CntDelta:   &increaseCnt,
+					Address:  event.AddressTo,
+					Token:    event.Token,
+					ChainID:  event.ChainID,
+					CntDelta: &increaseCnt,
 				}); err != nil {
 					return fmt.Errorf("c.service.UpdateERC20Delegate: increase: %w", err)
 				}
@@ -106,7 +106,7 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 
 			if event.AddressFrom == nullAddress {
 				if err = c.service.UpdateERC20Totals(tx, ERC20TotalChanges{
-					OriginalID:      event.OriginalSpaceID,
+					Token:           event.Token,
 					ChainID:         event.ChainID,
 					VPDelta:         "0",
 					DelegatorsDelta: 1,
@@ -119,10 +119,10 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 
 			decreaseCnt := -1
 			if err = c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
-				Address:    event.AddressFrom,
-				OriginalID: event.OriginalSpaceID,
-				ChainID:    event.ChainID,
-				CntDelta:   &decreaseCnt,
+				Address:  event.AddressFrom,
+				Token:    event.Token,
+				ChainID:  event.ChainID,
+				CntDelta: &decreaseCnt,
 			}); err != nil {
 				return fmt.Errorf("c.service.UpdateERC20Delegate: decrease: %w", err)
 			}
@@ -136,40 +136,40 @@ func (c *Consumer) handleERC20Delegates() events.ERC20DelegationHandler {
 
 func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
 	return func(payload events.ERC20VPChangesPayload) error {
-		daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
+		erc20Info, ok := tokenErc20Set[strings.ToLower(payload.Token)]
 		if !ok {
-			log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
+			log.Warn().Msgf("erc20 mapping not found for token %s", payload.Token)
 
 			return nil
 		}
 
 		event := ERC20VPChanges{
-			Address:         strings.ToLower(payload.Address),
-			OriginalSpaceID: daoInfo.OriginalID,
-			ChainID:         daoInfo.ChainID,
-			BlockNumber:     int(payload.BlockNumber),
-			BlockTimestamp:  int(payload.BlockTimestamp),
-			LogIndex:        int(payload.LogIndex),
-			VP:              payload.VotingPower,
-			Delta:           payload.DeltaPower,
+			Token:          strings.ToLower(payload.Token),
+			ChainID:        erc20Info.ChainID,
+			Address:        strings.ToLower(payload.Address),
+			BlockNumber:    int(payload.BlockNumber),
+			BlockTimestamp: int(payload.BlockTimestamp),
+			LogIndex:       int(payload.LogIndex),
+			VP:             payload.VotingPower,
+			Delta:          payload.DeltaPower,
 		}
 
 		processor := func(ctx context.Context, tx *gorm.DB) error {
 			if err := c.service.UpdateERC20Delegate(tx, ERC20DelegateUpdate{
-				Address:    strings.ToLower(event.Address),
-				OriginalID: event.OriginalSpaceID,
-				ChainID:    event.ChainID,
+				Token:   event.Token,
+				ChainID: event.ChainID,
+				Address: event.Address,
 				VPUpdate: &VPUpdate{
 					Value:       event.VP,
 					BlockNumber: event.BlockNumber,
 					LogIndex:    event.LogIndex,
 				},
 			}); err != nil {
-				return fmt.Errorf("c.service.UpsertERC20Delegate: vp_changes: %w", err)
+				return fmt.Errorf("c.service.UpdateERC20Delegate: vp_changes: %w", err)
 			}
 
 			if err := c.service.UpdateERC20Totals(tx, ERC20TotalChanges{
-				OriginalID:      event.OriginalSpaceID,
+				Token:           event.Token,
 				ChainID:         event.ChainID,
 				VPDelta:         event.Delta,
 				DelegatorsDelta: 0,
@@ -186,32 +186,32 @@ func (c *Consumer) handleERC20VPChanges() events.ERC20VPChangesHandler {
 
 func (c *Consumer) handleERC20Transfers() events.ERC20TransfersHandler {
 	return func(payload events.ERC20TransferPayload) error {
-		daoInfo, ok := daoErc20Set[strings.ToLower(payload.Token)]
+		erc20Info, ok := tokenErc20Set[strings.ToLower(payload.Token)]
 		if !ok {
-			log.Warn().Msgf("dao erc20 mapping not found for token %s", payload.Token)
+			log.Warn().Msgf("erc20 mapping not found for token %s", payload.Token)
 
 			return nil
 		}
 
 		event := ERC20Transfer{
-			AddressFrom:     strings.ToLower(payload.AddressFrom),
-			AddressTo:       strings.ToLower(payload.AddressTo),
-			OriginalSpaceID: daoInfo.OriginalID,
-			ChainID:         daoInfo.ChainID,
-			BlockNumber:     int(payload.BlockNumber),
-			BlockTimestamp:  int(payload.BlockTimestamp),
-			LogIndex:        int(payload.LogIndex),
-			Amount:          payload.Amount,
+			Token:          strings.ToLower(payload.Token),
+			AddressFrom:    strings.ToLower(payload.AddressFrom),
+			AddressTo:      strings.ToLower(payload.AddressTo),
+			ChainID:        erc20Info.ChainID,
+			BlockNumber:    int(payload.BlockNumber),
+			BlockTimestamp: int(payload.BlockTimestamp),
+			LogIndex:       int(payload.LogIndex),
+			Amount:         payload.Amount,
 		}
 
 		processor := func(ctx context.Context, tx *gorm.DB) error {
 			amount := event.Amount
-			if err := c.service.UpsertERC20Balance(tx, event.AddressTo, event.OriginalSpaceID, event.ChainID, amount); err != nil {
+			if err := c.service.UpsertERC20Balance(tx, event.Token, event.ChainID, event.AddressTo, amount); err != nil {
 				return fmt.Errorf("c.service.UpsertERC20Balance: increase: %w", err)
 			}
 
 			negAmount := "-" + amount
-			if err := c.service.UpsertERC20Balance(tx, event.AddressFrom, event.OriginalSpaceID, event.ChainID, negAmount); err != nil {
+			if err := c.service.UpsertERC20Balance(tx, event.Token, event.ChainID, event.AddressFrom, negAmount); err != nil {
 				return fmt.Errorf("c.service.UpsertERC20Balance: decrease: %w", err)
 			}
 
