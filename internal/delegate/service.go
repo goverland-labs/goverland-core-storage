@@ -86,7 +86,7 @@ func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvide
 func (s *Service) UpdateAllowedDaos(ctx context.Context) error {
 	for {
 		if err := s.updateAllowedDaos(); err != nil {
-			log.Error().Err(err).Msg("delegates lifetime check failed")
+			log.Error().Err(err).Msg("updateAllowedDaos check failed")
 		}
 
 		select {
@@ -188,7 +188,7 @@ func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequ
 		return nil, 0, fmt.Errorf("s.repo.GetErc20DelegatesInfo: %w", err)
 	}
 
-	total, err := s.repo.GetDelegatesCount(ctx, token, chainID)
+	total, err := s.repo.GetDelegatesCount(ctx, req.DaoID.String(), chainID)
 	if err != nil {
 		return nil, 0, fmt.Errorf("s.repo.GetDelegatesCount: %w", err)
 	}
@@ -356,7 +356,18 @@ func (s *Service) GetDelegateProfile(ctx context.Context, request GetDelegatePro
 }
 
 func (s *Service) GetErc20BalanceByAddress(ctx context.Context, address string, daoID uuid.UUID, chainID string) float64 {
-	info, err := s.repo.GetERC20Balance(ctx, address, daoID, chainID)
+	daoEntity, err := s.daoProvider.GetByID(daoID)
+	if err != nil {
+		return 0
+	}
+
+	strategy := daoEntity.GetStrategyByName(sourceErc20Votes)
+	token := ""
+	if strategy != nil && chainID == strategy.Network {
+		token = strategy.Params["address"].(string)
+	}
+
+	info, err := s.repo.GetERC20Balance(ctx, address, token, chainID)
 	if err != nil {
 		return 0
 	}

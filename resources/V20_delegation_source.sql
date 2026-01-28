@@ -313,57 +313,43 @@ values
 ('c5897bb6-9ba7-47dd-9e23-62b60a2ce6e2', lower('0xB0fFa8000886e57F86dd5264b9582b2Ad87b2b91'), '1');
 
 
-create materialized view mixed_delegations as
+create materialized view storage.mixed_delegations as
 
 -- split-delegations
-select lower(d.address_from) as address_from,
-       lower(d.address_to)   as address_to,
-       d.dao_id::text        as dao_id,
-       d.weight              as weight,
-       d.expires_at          as expires_at,
-       d.type                as type,
-       d.chain_id            as chain_id,
-       d.voting_power        as voting_power
-from delegates_summary d
-where d.type != 'erc20-votes'
+select lower(d.address_from)  as address_from,
+       lower(d.address_to)    as address_to,
+       d.dao_id::text         as dao_id,
+       d.weight               as weight,
+       d.expires_at           as expires_at,
+       d.type                 as type,
+       d.chain_id             as chain_id,
+       d.voting_power         as voting_power,
+       d.last_block_timestamp as last_block_timestamp,
+       d.created_at           as created_at
+from storage.delegates_summary d
+where d.type = 'split-delegation'
 
 union all
 
 -- ERC20 votes
-select lower(d.address_from) as address_from,
-       lower(d.address_to)   as address_to,
-       m.dao_id::text        as dao_id,
-       10000::integer        as weight,
-       null                  as expires_at,
-       'erc20-votes'::text   as type,
-       d.chain_id,
-       coalesce(ed.vp, 0)    as voting_power
+select lower(d.address_from)  as address_from,
+       lower(d.address_to)    as address_to,
+       m.dao_id::text         as dao_id,
+       10000::integer         as weight,
+       null                   as expires_at,
+       'erc20-votes'::text    as type,
+       d.chain_id             as chain_id,
+       coalesce(eb.value, 0)  as voting_power,
+       d.last_block_timestamp as last_block_timestamp,
+       d.created_at           as created_at
 from erc20_delegations d
          join erc20_token_mapping m
               on m.token = d.token
                   and m.chain_id = d.chain_id
-         left join erc20_delegates ed
-                   on lower(ed.address) = lower(d.address_from)
-                       and ed.token = m.token
-                       and ed.chain_id = d.chain_id;
-
-create unique index idx_mixed_delegations_unique
-    on mixed_delegations (
-                          address_from, address_to, dao_id, chain_id, type
-        );
-
-create index mixed_delegations_address_to_index
-    on mixed_delegations (lower(address_to));
-
-create index idx_mixed_delegations_to_dao_chain_from
-    on mixed_delegations (
-                          address_to,
-                          dao_id,
-                          chain_id,
-                          address_from
-        );
-
-refresh materialized view concurrently mixed_delegations;
+         left join erc20_balances eb
+                   on lower(eb.address) = lower(d.address_from)
+                       and eb.token = m.token
+                       and eb.chain_id = d.chain_id;
 
 alter table erc20_balances
     drop constraint if exists idx_unique_erc20_balance;
@@ -380,7 +366,7 @@ create unique index idx_unique_erc20_delegates_token
 drop index if exists idx_erc20_delegates_dao_chain;
 
 alter table erc20_totals
-    drop constraint if exists  idx_unique_erc20_totals;
+    drop constraint if exists idx_unique_erc20_totals;
 alter table erc20_totals
     add constraint idx_unique_erc20_totals_token
         unique (token, chain_id);

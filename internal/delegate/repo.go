@@ -168,7 +168,7 @@ func (r *Repo) RemoveErc20Summary(tx *gorm.DB, addressFrom, token, chainID strin
 		Where("token = ?", token).
 		Where("chain_id = ?", chainID).
 		Where("address_from = ?", addressFrom).
-		Delete(&Summary{}).Error; err != nil {
+		Delete(&Erc20Summary{}).Error; err != nil {
 		return fmt.Errorf("delete erc20 summary: %w", err)
 	}
 
@@ -390,12 +390,8 @@ func (r *Repo) GetTopDelegatesMixed(address, daoID string, limit int) ([]MixedRa
 					d.type AS delegation_type,
 					d.chain_id,
 					TO_TIMESTAMP(d.expires_at) AS expires_at,
-					COALESCE(ed.vp, d.voting_power, 0) AS effective_vp
+					COALESCE(d.voting_power, 0) AS effective_vp
 				FROM storage.mixed_delegations d
-				LEFT JOIN storage.erc20_delegates ed
-					ON lower(ed.address) = lower(d.address_from)
-				   AND ed.dao_id = d.dao_id::uuid
-				   AND ed.chain_id = d.chain_id
 				WHERE lower(d.address_from) = lower(?)
 				  AND (?::text = '' OR d.dao_id = ?)
 			),
@@ -505,12 +501,12 @@ func (r *Repo) GetTopDelegatesByAddress(address string, limit int) ([]Summary, e
 	return result, nil
 }
 
-func (r *Repo) GetDelegationByAddress(req GetDelegateProfileRequest) (*Summary, error) {
-	var summary *Summary
+func (r *Repo) GetDelegationByAddress(req GetDelegateProfileRequest) (*MixedDelegation, error) {
+	var summary *MixedDelegation
 
 	tx := r.db.
 		Where("dao_id = ?", req.DaoID.String()).
-		Where("lower(address_from) = ?", strings.ToLower(req.Address)).
+		Where("address_from = ?", strings.ToLower(req.Address)).
 		Where("type = ?", req.DelegationType)
 
 	if req.ChainID != "" {
@@ -734,17 +730,18 @@ func (r *Repo) GetErc20DelegatesInfo(
 				GROUP BY ds.address_to
 			)
 			SELECT
-				d.address,
+				rd.address,
 				rd.represented_cnt AS delegator_count,
 				ROUND(rd.represented_cnt::numeric / NULLIF(t.total_delegators, 0) * 100, 2) AS percent_of_delegators,
-				d.vp AS voting_power,
-				ROUND(d.vp / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
-			FROM storage.erc20_delegates d
-			JOIN real_delegates rd ON rd.address = d.address
+				COALESCE(d.vp, 0) AS voting_power,
+				ROUND(COALESCE(d.vp, 0) / NULLIF(t.total_voting_power, 0) * 100, 2) AS percent_of_voting_power
+			FROM real_delegates rd 
+			LEFT JOIN erc20_delegates d ON rd.address = d.address and d.token = ? AND d.chain_id = ?
 			CROSS JOIN totals t
-			WHERE d.token = ?
-			  AND d.chain_id = ?
-			  AND (?::text IS NULL OR d.address = ?)
+			WHERE (
+				  NULLIF(?::text, '') IS NULL
+				  OR rd.address = NULLIF(?::text, '')
+				)
 			ORDER BY d.vp DESC
 			LIMIT ? OFFSET ?;
 
@@ -789,14 +786,15 @@ func (r *Repo) GetDelegatorsMixedInfo(
 	return delegates, nil
 }
 
-func (r *Repo) GetDelegatesCount(_ context.Context, token, chainID string) (int32, error) {
+// todo: move unique delegates to the erc20_totals by token
+func (r *Repo) GetDelegatesCount(_ context.Context, daoID, chainID string) (int32, error) {
 	var count int32
 	err := r.db.Raw(`
-		SELECT COALESCE(total_delegators, 0)
-		FROM erc20_totals
-		WHERE token = ?
-		  AND chain_id = ?
-	`, token, chainID).Row().Scan(&count)
+		SELECT COUNT(DISTINCT address_to)
+		FROM mixed_delegations
+		WHERE dao_id = ?
+		  AND chain_id = ?;
+	`, daoID, chainID).Row().Scan(&count)
 
 	if err != nil {
 		return 0, fmt.Errorf("scan: %w", err)
@@ -882,12 +880,11 @@ func (r *Repo) GetERC20Delegate(
 func (r *Repo) GetERC20Balance(
 	_ context.Context,
 	address string,
-	daoID uuid.UUID,
-	chainID string,
+	token, chainID string,
 ) (*ERC20Balance, error) {
 	var balance ERC20Balance
 	err := r.db.
-		Where("address = ? AND dao_id = ? AND chain_id = ?", address, daoID, chainID).
+		Where("address = ? AND token = ? AND chain_id = ?", address, token, chainID).
 		First(&balance).
 		Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

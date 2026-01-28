@@ -21,60 +21,49 @@ const (
 
 var (
 	tokenErc20Set = map[string]Erc20Mapping{
-		// [1.8M holders | 108M transactions],
+		// [1.8M holders | 108M transactions], "arbitrumfoundation.eth"
 		strings.ToLower("0x912ce59144191c1204e64559fe8253a0e49e6548"): {
-			OriginalID: "arbitrumfoundation.eth",
-			ChainID:    "42161",
+			ChainID: "42161",
 		},
-		// [25K holders | 1M transactions] ,
+		// [25K holders | 1M transactions] , "etherfi-dao.eth",
 		strings.ToLower("0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27"): {
-			OriginalID: "etherfi-dao.eth",
-			ChainID:    "42161",
+			ChainID: "42161",
 		},
-		// [0,1K holders | 1K transactions],
+		// [0,1K holders | 1K transactions], "maiadao.eth",
 		strings.ToLower("0x54b6e28a869a56f4e34d1187ae0a35b7dd3be111"): {
-			OriginalID: "maiadao.eth",
-			ChainID:    "42161",
+			ChainID: "42161",
 		},
-		// [28K holders | 272K transactions],
+		// [28K holders | 272K transactions], "starknet.eth"
 		strings.ToLower("0xCa14007Eff0dB1f8135f4C25B34De49AB0d42766"): {
-			OriginalID: "integration-test.eth", // "starknet.eth" // todo: rollback after testing
-			ChainID:    "1",
+			ChainID: "1",
 		},
-		// [ 65K holders | 1.3M transactions] ,
+		// [ 65K holders | 1.3M transactions] , "ens.eth",
 		strings.ToLower("0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72"): {
-			OriginalID: "ens.eth",
-			ChainID:    "1",
+			ChainID: "1",
 		},
-		// [25K holders | 370K transactions],
+		// [25K holders | 370K transactions], "bitdao.eth", / MNT_mainnet
 		strings.ToLower("0x3c3a81e81dc49A522A592e7622A7E711c06bf354"): {
-			OriginalID: "bitdao.eth",
-			ChainID:    "1",
+			ChainID: "1",
 		},
-		// [4K holders | 159K transactions],
+		// [4K holders | 159K transactions], "eulerdao.eth",
 		strings.ToLower("0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b"): {
-			OriginalID: "eulerdao.eth",
-			ChainID:    "1",
+			ChainID: "1",
 		},
-		// [12K holders | 122K transactions],
+		// [12K holders | 122K transactions], "hop.eth",
 		strings.ToLower("0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC"): {
-			OriginalID: "hop.eth",
-			ChainID:    "1",
+			ChainID: "1",
 		},
-		// [110K holders | 1M transactions],
+		// [110K holders | 1M transactions], "etherfi-dao.eth",
 		strings.ToLower("0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb"): {
-			OriginalID: "etherfi-dao.eth",
-			ChainID:    "1",
+			ChainID: "1",
 		},
-		// [16K holders | 50K transfers],
+		// [16K holders | 50K transfers], "ARK_binance",
 		strings.ToLower("0xF5E3D1290FDBFC50ec436f021ad516D0Bcac5d28"): {
-			OriginalID: "integration-test.eth",
-			ChainID:    "56",
+			ChainID: "56",
 		},
-		// wormhole connected to parason due to comparing with previous version
+		// WORMHOLE_mainnet
 		strings.ToLower("0xB0fFa8000886e57F86dd5264b9582b2Ad87b2b91"): {
-			OriginalID: "parason.eth",
-			ChainID:    "1",
+			ChainID: "1",
 		},
 	}
 )
@@ -85,8 +74,7 @@ type DelegationDetails struct {
 }
 
 type Erc20Mapping struct {
-	OriginalID string
-	ChainID    string
+	ChainID string
 }
 
 type Delegations struct {
@@ -180,6 +168,7 @@ type MixedDelegation struct {
 	DaoID       string
 	Weight      int
 	ExpiresAt   int64
+	CreatedAt   time.Time
 	ChainID     *string
 	Type        string
 }
@@ -198,7 +187,7 @@ type Erc20Summary struct {
 	CreatedAt          time.Time
 }
 
-func (Summary) Erc20Summary() string {
+func (Erc20Summary) TableName() string {
 	return "erc20_delegations"
 }
 
