@@ -6,6 +6,7 @@ option go_package = ".;storagepb";
 
 service Ens {
   rpc GetEnsByAddresses(EnsByAddressesRequest) returns (EnsByAddressesResponse);
+  rpc GetAddressesByEnsNames(AddressesByEnsNamesRequest) returns (AddressesByEnsNamesResponse);
 }
 
 message EnsByAddressesRequest {
@@ -18,5 +19,13 @@ message EnsName {
 }
 
 message EnsByAddressesResponse {
+  repeated EnsName ens_names = 1;
+}
+
+message AddressesByEnsNamesRequest {
+  repeated string names = 1;
+}
+
+message AddressesByEnsNamesResponse {
   repeated EnsName ens_names = 1;
 }

@@ -40,6 +40,23 @@ func (s *Server) GetEnsByAddresses(_ context.Context, req *storagepb.EnsByAddres
 	}, nil
 }
 
+func (s *Server) GetAddressesByEnsNames(_ context.Context, req *storagepb.AddressesByEnsNamesRequest) (*storagepb.AddressesByEnsNamesResponse, error) {
+	list, err := s.sp.GetByNames(req.GetNames())
+	if err != nil {
+		log.Error().Err(err).Msgf("get addresses by ens names: %v", req.GetNames())
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	res := make([]*storagepb.EnsName, len(list))
+	for i, info := range list {
+		res[i] = convertEnsNameToAPI(&info)
+	}
+
+	return &storagepb.AddressesByEnsNamesResponse{
+		EnsNames: res,
+	}, nil
+}
+
 func convertEnsNameToAPI(info *EnsName) *storagepb.EnsName {
 	return &storagepb.EnsName{
 		Address: info.Address,
