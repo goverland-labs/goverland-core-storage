@@ -328,6 +328,7 @@ select lower(d.address_from)  as address_from,
        d.created_at           as created_at
 from storage.delegates_summary d
 where d.type = 'split-delegation'
+  and (d.expires_at = 0 or to_timestamp(d.expires_at) > now())
 
 union all
 
