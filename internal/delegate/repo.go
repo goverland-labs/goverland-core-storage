@@ -389,8 +389,9 @@ func (r *Repo) GetTopDelegatesMixed(address, daoID string, limit int) ([]MixedRa
 					d.address_to,
 					d.type AS delegation_type,
 					d.chain_id,
-					TO_TIMESTAMP(d.expires_at) AS expires_at,
-					COALESCE(d.voting_power, 0) AS effective_vp
+					TO_TIMESTAMP(d.expires_at) 	AS expires_at,
+					COALESCE(d.voting_power, 0) AS effective_vp,
+					COALESCE(d.weight, 0) 		AS weight
 				FROM storage.mixed_delegations d
 				WHERE lower(d.address_from) = lower(?)
 				  AND (?::text = '' OR d.dao_id = ?)
@@ -416,7 +417,8 @@ func (r *Repo) GetTopDelegatesMixed(address, daoID string, limit int) ([]MixedRa
 				chain_id,
 				effective_vp AS voting_power,
 				expires_at,
-				group_size
+				group_size,
+				weight
 			FROM ranked
 			WHERE rn <= ?
 			ORDER BY dao_id, delegation_type, chain_id, rn;
@@ -443,6 +445,7 @@ func (r *Repo) GetTopDelegatesMixed(address, daoID string, limit int) ([]MixedRa
 			&row.VotingPower,
 			&row.ExpiresAt,
 			&row.DelegatorCount,
+			&row.Weight,
 		); err != nil {
 			return nil, fmt.Errorf("scan: %w", err)
 		}

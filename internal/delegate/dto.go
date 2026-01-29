@@ -82,6 +82,7 @@ type Delegate struct {
 type MixedRaw struct {
 	Address        string
 	DelegatorCount int32
+	Weight         int
 	VotingPower    float64
 	ExpiresAt      *time.Time
 	DaoID          uuid.UUID

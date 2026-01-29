@@ -1037,10 +1037,11 @@ func (s *Service) getTopDelegatesMixed(_ context.Context, address, daoID string)
 		delegates := make([]Delegate, 0, len(list))
 		for _, info := range list {
 			delegates = append(delegates, Delegate{
-				Address:     info.Address,
-				ENSName:     ensNames[info.Address],
-				VotingPower: info.VotingPower,
-				ExpiresAt:   info.ExpiresAt,
+				Address:              info.Address,
+				ENSName:              ensNames[info.Address],
+				VotingPower:          info.VotingPower,
+				ExpiresAt:            info.ExpiresAt,
+				PercentOfVotingPower: float64(info.Weight),
 			})
 		}
 
