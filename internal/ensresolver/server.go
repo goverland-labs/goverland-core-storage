@@ -41,9 +41,16 @@ func (s *Server) GetEnsByAddresses(_ context.Context, req *storagepb.EnsByAddres
 }
 
 func (s *Server) GetAddressesByEnsNames(_ context.Context, req *storagepb.AddressesByEnsNamesRequest) (*storagepb.AddressesByEnsNamesResponse, error) {
-	list, err := s.sp.GetByNames(req.GetNames())
+	names := req.GetNames()
+	if len(names) == 0 {
+		return &storagepb.AddressesByEnsNamesResponse{
+			EnsNames: []*storagepb.EnsName{},
+		}, nil
+	}
+
+	list, err := s.sp.GetByNames(names)
 	if err != nil {
-		log.Error().Err(err).Msgf("get addresses by ens names: %v", req.GetNames())
+		log.Error().Err(err).Msgf("get addresses by ens names: %v", names)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
