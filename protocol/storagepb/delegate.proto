@@ -10,6 +10,8 @@ option go_package = ".;storagepb";
 service Delegate {
   // GetDelegates returns list of delegates get from Snapshot
   rpc GetDelegates(GetDelegatesRequest) returns (GetDelegatesResponse);
+  // GetDelegators returns list of delegators based on internal data filtered by params
+  rpc GetDelegators(GetDelegatorsRequest) returns (GetDelegatorsResponse);
   rpc GetDelegateProfile(GetDelegateProfileRequest) returns (GetDelegateProfileResponse);
 
   // GetTopDelegates returns list of first 5 addresses of delegations based on internal data grouped by dao
@@ -22,6 +24,16 @@ service Delegate {
   rpc GetDelegatesByDao(GetDelegatesByDaoRequest) returns (GetDelegatesByDaoResponse);
   // GetDelegatorsByDao returns list of delegations based on internal data filtered by params
   rpc GetDelegatorsByDao(GetDelegatorsByDaoRequest) returns (GetDelegatorsByDaoResponse);
+
+  // Version 2: separated getting split-delegation + erc20, etc
+  // GetDelegatesV2 returns list of delegates based on internal data filtered by params
+  rpc GetDelegatesV2(GetDelegatesV2Request) returns (GetDelegatesV2Response);
+  // GetDelegatorsV2 returns list of delegators based on internal data filtered by params
+  rpc GetDelegatorsV2(GetDelegatorsV2Request) returns (GetDelegatorsV2Response);
+  // GetTopDelegatesV2 returns list of first 5 addresses of delegations based on internal data grouped by dao
+  rpc GetTopDelegatesV2(GetTopDelegatesV2Request) returns (GetTopDelegatesV2Response);
+  // GetTopDelegatorsV2 returns list of first 5 addresses of delegators based on internal data grouped by dao
+  rpc GetTopDelegatorsV2(GetTopDelegatorsV2Request) returns (GetTopDelegatorsV2Response);
 }
 
 message GetDelegatesRequest {
@@ -30,11 +42,21 @@ message GetDelegatesRequest {
   optional string sort = 3;
   int32 limit = 4;
   int32 offset = 5;
+  optional DelegationType delegation_type = 6;
+  optional string chain_id = 7;
 }
 
 message GetDelegatesResponse {
   repeated DelegateEntry delegates = 1;
   int32 total = 2;
+}
+
+enum DelegationType {
+  DELEGATION_TYPE_UNSPECIFIED = 0;
+  DELEGATION_TYPE_SPLIT_DELEGATION = 1;
+  DELEGATION_TYPE_DELEGATION = 2;
+  DELEGATION_TYPE_ERC20_VOTES = 3;
+  DELEGATION_TYPE_UNRECOGNIZED = 4;
 }
 
 message DelegateEntry {
@@ -48,11 +70,21 @@ message DelegateEntry {
   string statement = 8;
   int32 votes_count = 9;
   int32 created_proposals_count = 10;
+  DelegationType delegation_type = 11;
+  optional string chain_id = 12;
+}
+
+message DelegatorEntry {
+  string address = 1;
+  string ens_name = 2;
+  string token_value = 5;
 }
 
 message GetDelegateProfileRequest {
   string dao_id = 1;
   string address = 2;
+  DelegationType delegation_type = 3;
+  optional string chain_id = 4;
 }
 
 message GetDelegateProfileResponse {
@@ -166,4 +198,137 @@ message GetDelegatorsByDaoResponse {
   repeated DelegationDetails list = 1;
   // number of delegators in this DAO
   int32 total_count = 2;
+}
+
+message GetDelegatorsRequest {
+  string dao_id = 1;
+  string chain_id = 2;
+  string address = 3;
+  uint32 limit = 4;
+  optional uint32 offset = 5;
+  DelegationType delegation_type = 6;
+}
+
+message GetDelegatorsResponse {
+  // List of delegators
+  repeated DelegatorEntry list = 1;
+  // number of delegators in this DAO
+  int32 total_count = 2;
+}
+
+// V2 implementation
+message GetDelegatesV2Request {
+  string dao_id = 1;
+  repeated string query_accounts = 2;
+  optional string sort = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+  DelegationType delegation_type = 6;
+  optional string chain_id = 7;
+}
+
+message TokenValue {
+  string value = 1;
+  string symbol = 2;
+  int32 decimals = 3;
+}
+
+// Unified structure for delegation entry (split-delegation/erc20-votes)
+message DelegateEntryV2 {
+  // The delegation address
+  string address = 1;
+  // Resolved ens name
+  string ens_name = 2;
+  optional int32 delegator_count = 3;
+  // Percentage of delegation in basis points
+  optional double percent_of_delegators = 4;
+  // Percentage of voting power in basis points
+  optional double percent_of_voting_power = 5;
+  // Text description
+  optional string about = 6;
+  // Text description
+  optional string statement = 7;
+  // Total votes in our DB
+  optional int32 votes_count = 8;
+  // Total proposals in our DB
+  optional int32 created_proposals_count = 9;
+  // Delegation value is different for delegation types
+  // for split-delegation
+  optional double voting_power = 10;
+  // for erc20-votes
+  optional TokenValue token_value = 11;
+  // Expires at date. If 0 the expiration is not set
+  optional google.protobuf.Timestamp expiration = 12;
+}
+
+message DelegatesWrapper {
+  // Dao identified
+  string dao_id = 1;
+  // Delegation type
+  DelegationType delegation_type = 2;
+  // Chain ID if provided (empty for split-delegation)
+  optional string chain_id = 3;
+  // List of delegates
+  repeated DelegateEntryV2 delegates = 4;
+  // Total count of delegates
+  int32 total_cnt = 5;
+}
+
+message GetDelegatesV2Response {
+  // List of delegates grouped by specific delegation type and chain_id
+  repeated DelegatesWrapper list = 1;
+  // Total count of delegates from all lists
+  int32 total_cnt = 4;
+}
+
+message GetDelegatorsV2Request {
+  string dao_id = 1;
+  repeated string query_accounts = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+  DelegationType delegation_type = 5;
+  optional string chain_id = 6;
+}
+
+message GetDelegatorsV2Response {
+  // List of delegators
+  repeated DelegatesWrapper list = 1;
+  // Total count of delegates from all lists
+  int32 total_cnt = 2;
+}
+
+message GetTopDelegatesV2Request {
+  // The account address that initiates the delegation
+  string address = 1;
+  // specific dao_id for filtering
+  optional string dao_id = 2;
+  // Which delegation type used
+  DelegationType delegation_type = 3;
+  // In which chain
+  optional string chain_id = 4;
+}
+
+message GetTopDelegatesV2Response {
+  // Total count of delegates from all lists
+  int32 total_cnt = 1;
+  // List of delegates grouped by dao, delegation_type and chain_id and sorted by popularity index
+  repeated DelegatesWrapper list = 2;
+}
+
+message GetTopDelegatorsV2Request {
+  // The account address that initiates the delegation
+  string address = 1;
+  // specific dao_id for filtering
+  optional string dao_id = 2;
+  // Which delegation type used
+  DelegationType delegation_type = 3;
+  // In which chain
+  optional string chain_id = 4;
+}
+
+message GetTopDelegatorsV2Response {
+  // Total count of delegates from all lists
+  int32 total_cnt = 1;
+  // List of delegates grouped by dao, delegation_type and chain_id and sorted by popularity index
+  repeated DelegatesWrapper list = 2;
 }

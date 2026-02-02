@@ -8,6 +8,12 @@ import (
 	events "github.com/goverland-labs/goverland-platform-events/events/core"
 )
 
+const (
+	StrategyNameSplitDelegation = "split-delegation"
+	StrategyNameDelegation      = "delegation"
+	StrategyNameErc20Votes      = "erc20-votes"
+)
+
 type Treasury struct {
 	Name    string
 	Address string
@@ -116,6 +122,16 @@ type Dao struct {
 	TokenSymbol         string
 	VerificationStatus  string
 	VerificationComment string
+}
+
+func (d *Dao) GetStrategyByName(name string) *Strategy {
+	for _, info := range d.Strategies {
+		if info.Name == name {
+			return &info
+		}
+	}
+
+	return nil
 }
 
 func convertToCoreEvent(dao Dao) events.DaoPayload {

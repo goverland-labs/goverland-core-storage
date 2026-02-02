@@ -82,20 +82,20 @@ func (c *FungibleChainWorker) process() error {
 		for _, chainItem := range fData.Attributes.Implementations {
 			chainExInfo, ok := chainsMap[chainItem.ChainID]
 			if !ok {
-				log.Error().Msgf("chain %s not found in chains map", chainItem.ChainID)
+				log.Warn().Msgf("chain %s not found in chains map", chainItem.ChainID)
 				continue
 			}
 
 			cutHex, _ := strings.CutPrefix(strings.ToLower(chainExInfo.Attributes.ExternalID), "0x")
 			decVal, err := strconv.ParseInt(cutHex, 16, 64)
 			if err != nil {
-				log.Error().Err(err).Msgf("parse chain external id %s to decimal", chainExInfo.Attributes.ExternalID)
+				log.Warn().Err(err).Msgf("parse chain external id %s to decimal", chainExInfo.Attributes.ExternalID)
 				continue
 			}
 			decValStr := strconv.FormatInt(decVal, 10)
 
 			if _, ok := allDaoChains[decValStr]; !ok {
-				log.Error().Msgf("dao %s has no strategy for chain %s", dao.Name, chainItem.ChainID)
+				log.Warn().Msgf("dao %s has no strategy for chain %s", dao.Name, chainItem.ChainID)
 				continue
 			}
 

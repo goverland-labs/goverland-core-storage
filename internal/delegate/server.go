@@ -17,6 +17,10 @@ import (
 	"github.com/goverland-labs/goverland-core-storage/internal/dao"
 )
 
+const (
+	defaultLimit = 10
+)
+
 type DaoSearcher interface {
 	GetByFilters(filters []dao.Filter) (dao.DaoList, error)
 }
@@ -45,12 +49,19 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
 	}
 
+	limit := int(req.GetLimit())
+	if limit == 0 {
+		limit = defaultLimit
+	}
+
 	delegatesResponse, err := s.sp.GetDelegates(ctx, GetDelegatesRequest{
-		DaoID:         daoID,
-		QueryAccounts: req.GetQueryAccounts(),
-		Sort:          req.Sort,
-		Limit:         int(req.GetLimit()),
-		Offset:        int(req.GetOffset()),
+		DaoID:          daoID,
+		QueryAccounts:  req.GetQueryAccounts(),
+		Sort:           req.Sort,
+		Limit:          limit,
+		Offset:         int(req.GetOffset()),
+		ChainID:        req.ChainId,
+		DelegationType: convertDelegationType(req.GetDelegationType()),
 	})
 	if err != nil {
 		log.Error().
@@ -74,6 +85,8 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 			Statement:             d.Statement,
 			VotesCount:            d.VotesCount,
 			CreatedProposalsCount: d.CreatedProposalsCount,
+			DelegationType:        req.GetDelegationType(),
+			ChainId:               req.ChainId,
 		})
 	}
 
@@ -81,6 +94,19 @@ func (s *Server) GetDelegates(ctx context.Context, req *storagepb.GetDelegatesRe
 		Delegates: delegatesResult,
 		Total:     delegatesResponse.Total,
 	}, nil
+}
+
+func convertDelegationType(dt storagepb.DelegationType) DelegationType {
+	switch dt {
+	case storagepb.DelegationType_DELEGATION_TYPE_SPLIT_DELEGATION:
+		return DelegationTypeSplitDelegation
+	case storagepb.DelegationType_DELEGATION_TYPE_DELEGATION:
+		return DelegationTypeDelegation
+	case storagepb.DelegationType_DELEGATION_TYPE_ERC20_VOTES:
+		return DelegationTypeERC20Votes
+	default:
+		return DelegationTypeUnrecognized
+	}
 }
 
 func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDelegateProfileRequest) (*storagepb.GetDelegateProfileResponse, error) {
@@ -94,8 +120,10 @@ func (s *Server) GetDelegateProfile(ctx context.Context, req *storagepb.GetDeleg
 	}
 
 	profile, err := s.sp.GetDelegateProfile(ctx, GetDelegateProfileRequest{
-		DaoID:   daoID,
-		Address: req.GetAddress(),
+		DaoID:          daoID,
+		Address:        req.GetAddress(),
+		DelegationType: convertDelegationType(req.GetDelegationType()),
+		ChainID:        req.GetChainId(),
 	})
 	if err != nil {
 		log.Error().
@@ -430,5 +458,59 @@ func (s *Server) GetDelegatorsByDao(_ context.Context, req *storagepb.GetDelegat
 	return &storagepb.GetDelegatorsByDaoResponse{
 		List:       converted,
 		TotalCount: int32(cnt),
+	}, nil
+}
+
+// GetDelegators returns list of erc20 delegators based on internal info ordered by voting power desc
+func (s *Server) GetDelegators(
+	ctx context.Context,
+	req *storagepb.GetDelegatorsRequest,
+) (*storagepb.GetDelegatorsResponse, error) {
+	if req.GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid address")
+	}
+
+	daoID, err := uuid.Parse(req.GetDaoId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid dao ID format")
+	}
+
+	delegate, err := s.sp.GetErc20Delegate(ctx, daoID, req.GetChainId(), req.GetAddress())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get erc20 delegate")
+	}
+
+	list, err := s.sp.GetDelegators(ctx, ERC20DelegatorsRequest{
+		Address: req.GetAddress(),
+		ChainID: req.GetChainId(),
+		DaoID:   daoID,
+		Limit:   int(req.GetLimit()),
+		Offset:  int(req.GetOffset()),
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get delegators")
+	}
+
+	addresses := make([]string, 0, len(list))
+	for _, d := range list {
+		addresses = append(addresses, d.Address)
+	}
+	ensNames, err := s.sp.resolveAddressesName(addresses)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to resolve ens names")
+	}
+
+	converted := make([]*storagepb.DelegatorEntry, 0, len(list))
+	for _, info := range list {
+		converted = append(converted, &storagepb.DelegatorEntry{
+			Address:    info.Address,
+			EnsName:    ensNames[info.Address],
+			TokenValue: info.TokenValue,
+		})
+	}
+
+	return &storagepb.GetDelegatorsResponse{
+		List:       converted,
+		TotalCount: int32(delegate.RepresentedCnt),
 	}, nil
 }
