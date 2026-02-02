@@ -189,6 +189,20 @@ func (mr *MockPublisherMockRecorder) PublishJSON(arg0, arg1, arg2 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishJSON", reflect.TypeOf((*MockPublisher)(nil).PublishJSON), arg0, arg1, arg2)
 }
 
+// GetTokenPrice mocks base method.
+func (m *MockDaoProvider) GetTokenPrice(arg0 uuid.UUID, arg1 int) float64 {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTokenPrice", arg0, arg1)
+	ret0, _ := ret[0].(float64)
+	return ret0
+}
+
+// GetTokenPrice indicates an expected call of GetTokenPrice.
+func (mr *MockDaoProviderMockRecorder) GetTokenPrice(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenPrice", reflect.TypeOf((*MockDaoProvider)(nil).GetTokenPrice), arg0, arg1)
+}
+
 // MockEventRegistered is a mock of EventRegistered interface.
 type MockEventRegistered struct {
 	ctrl     *gomock.Controller

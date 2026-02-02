@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.28] - 2026-02-02
+
+### Added
+- Token price when proposal is created
+
 ## [0.4.27] - 2025-07-30
 
 ### Added

@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"slices"
+	"sort"
+	"sync"
+	"time"
+
 	"github.com/goverland-labs/goverland-core-storage/internal/discord"
 	"golang.org/x/text/language"
 	message2 "golang.org/x/text/message"
-	"reflect"
-	"slices"
-	"sync"
-	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -628,6 +630,31 @@ func (s *Service) GetTokenInfo(id uuid.UUID) (*TokenInfo, error) {
 		FungibleID:            dao.FungibleId,
 		Chains:                chains,
 	}, nil
+}
+
+func (s *Service) GetTokenPrice(id uuid.UUID, created int) float64 {
+	data, err := s.GetTokenChart(id, "hour")
+	if err != nil || data == nil {
+		return 0
+	}
+
+	points := data.ChartAttributes.Points
+	if len(points) == 0 {
+		return 0
+	}
+
+	createdTime := time.Unix(int64(created), 0)
+
+	idx := sort.Search(len(points), func(i int) bool {
+		return points[i].Time.After(createdTime)
+	})
+
+	if idx == 0 {
+		// All points are after created time
+		return 0
+	}
+
+	return points[idx-1].Price
 }
 
 func (s *Service) GetTokenChart(id uuid.UUID, period string) (*zerion.ChartData, error) {

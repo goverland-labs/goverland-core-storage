@@ -44,6 +44,7 @@ type DataProvider interface {
 
 type DaoProvider interface {
 	GetIDByOriginalID(string) (uuid.UUID, error)
+	GetTokenPrice(uuid.UUID, int) float64
 }
 
 type EventRegistered interface {
@@ -138,6 +139,7 @@ func (s *Service) processNew(ctx context.Context, p Proposal) error {
 
 	p.DaoID = daoID
 	p.State = p.CalculateState()
+	p.InitialTokenPrice = s.dp.GetTokenPrice(daoID, p.Created)
 	err = s.repo.Create(p)
 	if err != nil {
 		return fmt.Errorf("create proposal: %w", err)
@@ -223,6 +225,7 @@ func compare(p1, p2 Proposal) bool {
 	p1.State = p2.State
 	p1.EnsName = p2.EnsName
 	p1.SucceededChoices = p2.SucceededChoices
+	p1.InitialTokenPrice = p2.InitialTokenPrice
 
 	return reflect.DeepEqual(p1, p2)
 }

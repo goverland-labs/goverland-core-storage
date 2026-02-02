@@ -24,6 +24,7 @@ var defaultPublisher = func(ctrl *gomock.Controller) Publisher {
 var defaultDaoProvider = func(ctrl *gomock.Controller) DaoProvider {
 	m := NewMockDaoProvider(ctrl)
 	m.EXPECT().GetIDByOriginalID(gomock.Any()).AnyTimes().Return(uuid.New(), nil)
+	m.EXPECT().GetTokenPrice(gomock.Any(), gomock.Any()).AnyTimes().Return(0.0)
 	return m
 }
 

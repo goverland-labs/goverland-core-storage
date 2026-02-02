@@ -51,40 +51,41 @@ func convertToStrategies(list Strategies) []events.StrategyPayload {
 // Proposal model
 // todo: check queries to the DB and add indexes
 type Proposal struct {
-	ID               string `gorm:"primary_key"`
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
-	Ipfs             string
-	Author           string
-	Created          int
-	DaoOriginalID    string `gorm:"-"`
-	DaoID            uuid.UUID
-	Network          string
-	Symbol           string
-	Type             string
-	Strategies       Strategies `gorm:"serializer:json"`
-	Title            string
-	Body             string
-	Discussion       string
-	Choices          Choices `gorm:"serializer:json"`
-	Start            int
-	End              int
-	Quorum           float64
-	Privacy          string
-	Snapshot         string
-	State            State
-	OriginalState    string
-	Link             string
-	App              string
-	Scores           Scores `gorm:"serializer:json"`
-	ScoresState      string
-	ScoresTotal      float32
-	ScoresUpdated    int
-	Votes            int
-	Timeline         Timeline `gorm:"serializer:json"`
-	EnsName          string
-	Spam             bool
-	SucceededChoices Choices `gorm:"-"`
+	ID                string `gorm:"primary_key"`
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	Ipfs              string
+	Author            string
+	Created           int
+	DaoOriginalID     string `gorm:"-"`
+	DaoID             uuid.UUID
+	Network           string
+	Symbol            string
+	Type              string
+	Strategies        Strategies `gorm:"serializer:json"`
+	Title             string
+	Body              string
+	Discussion        string
+	Choices           Choices `gorm:"serializer:json"`
+	Start             int
+	End               int
+	Quorum            float64
+	Privacy           string
+	Snapshot          string
+	State             State
+	OriginalState     string
+	Link              string
+	App               string
+	Scores            Scores `gorm:"serializer:json"`
+	ScoresState       string
+	ScoresTotal       float32
+	ScoresUpdated     int
+	Votes             int
+	Timeline          Timeline `gorm:"serializer:json"`
+	EnsName           string
+	Spam              bool
+	SucceededChoices  Choices `gorm:"-"`
+	InitialTokenPrice float64
 }
 
 type DaoSucceededChoices struct {
