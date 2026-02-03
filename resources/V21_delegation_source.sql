@@ -350,7 +350,8 @@ from erc20_delegations d
          left join erc20_balances eb
                    on lower(eb.address) = lower(d.address_from)
                        and eb.token = m.token
-                       and eb.chain_id = d.chain_id;
+                       and eb.chain_id = d.chain_id
+where d.address_to <> '0x0000000000000000000000000000000000000000';
 
 alter table erc20_balances
     drop constraint if exists idx_unique_erc20_balance;
