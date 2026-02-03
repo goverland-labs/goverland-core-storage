@@ -190,10 +190,10 @@ func (r *Repo) FindDelegator(daoID, author string) (*Summary, error) {
 	return &si, nil
 }
 
-func (r *Repo) FindDelegates(daoID string, offset, limit int) ([]Summary, error) {
-	var list []Summary
+func (r *Repo) FindDelegates(daoID string, offset, limit int) ([]MixedDelegation, error) {
+	var list []MixedDelegation
 	if err := r.db.
-		Where(Summary{
+		Where(MixedDelegation{
 			DaoID: daoID,
 		}).
 		Offset(offset).
@@ -553,7 +553,7 @@ func (r *Repo) GetCnt(filters ...Filter) (int64, error) {
 	return cnt, nil
 }
 
-func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error) {
+func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]MixedDelegation, error) {
 	daysWindow := 5
 	rows, err := r.db.
 		Raw(`
@@ -578,10 +578,10 @@ func (r *Repo) GetDelegatesWithExpirations(offset, limit int) ([]Summary, error)
 		return nil, fmt.Errorf("raw exec: %w", err)
 	}
 
-	result := make([]Summary, 0, limit)
+	result := make([]MixedDelegation, 0, limit)
 	defer rows.Close()
 	for rows.Next() {
-		si := Summary{}
+		si := MixedDelegation{}
 		if err = rows.Scan(
 			&si.AddressFrom,
 			&si.AddressTo,

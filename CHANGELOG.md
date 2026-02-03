@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-02-03
+
+### Fixed
+- Getting delegates for lifetime worker
+
 ## [0.5.0] - 2026-02-02
 
 ### Changed
