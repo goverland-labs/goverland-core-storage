@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-02-03
+
+### Fixed
+- Save initial token price
+
 ## [0.5.1] - 2026-02-03
 
 ### Fixed

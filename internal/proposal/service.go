@@ -169,6 +169,7 @@ func (s *Service) processExisted(ctx context.Context, new, existed Proposal) err
 	new.State = new.CalculateState()
 	new.EnsName = existed.EnsName
 	new.Timeline = existed.Timeline
+	new.InitialTokenPrice = existed.InitialTokenPrice
 	err := s.repo.Update(new)
 	if err != nil {
 		return fmt.Errorf("update proposal #%s: %w", new.ID, err)
