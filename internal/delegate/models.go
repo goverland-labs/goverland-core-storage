@@ -163,18 +163,33 @@ func (Summary) TableName() string {
 }
 
 type MixedDelegation struct {
-	AddressFrom string
-	AddressTo   string
-	DaoID       string
-	Weight      int
-	ExpiresAt   int64
-	CreatedAt   time.Time
-	ChainID     *string
-	Type        string
+	AddressFrom        string
+	AddressTo          string
+	DaoID              string
+	Weight             int
+	ExpiresAt          int64
+	CreatedAt          time.Time
+	ChainID            *string
+	Type               string
+	LastBlockTimestamp int
+
+	// virtual property
+	ProposalID string `gorm:"-"`
 }
 
 func (MixedDelegation) TableName() string {
 	return "mixed_delegations"
+}
+func (d *MixedDelegation) Expired() bool {
+	if d.ExpiresAt == 0 {
+		return false
+	}
+
+	return time.Now().Unix() > d.ExpiresAt
+}
+
+func (d *MixedDelegation) SelfDelegation() bool {
+	return strings.EqualFold(d.AddressTo, d.AddressFrom)
 }
 
 type Erc20Summary struct {

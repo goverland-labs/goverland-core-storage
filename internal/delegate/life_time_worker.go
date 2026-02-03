@@ -74,7 +74,7 @@ func (s *Service) checkLifeTime(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) registerEventOnce(ctx context.Context, delegate Summary, subject string) {
+func (s *Service) registerEventOnce(ctx context.Context, delegate MixedDelegation, subject string) {
 	group := fmt.Sprintf("delegation_%s_%s_%d_%s", subject, delegate.DaoID, delegate.LastBlockTimestamp, delegate.ProposalID)
 
 	var err error
@@ -92,7 +92,7 @@ func (s *Service) registerEventOnce(ctx context.Context, delegate Summary, subje
 	}
 }
 
-func convertToCoreEvent(info Summary) coreevents.DelegatePayload {
+func convertToCoreEvent(info MixedDelegation) coreevents.DelegatePayload {
 	var dueDate *time.Time
 	if info.ExpiresAt != 0 {
 		expAt := time.Unix(info.ExpiresAt, 0)

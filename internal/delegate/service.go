@@ -853,7 +853,7 @@ func (s *Service) handleVotesFetched(ctx context.Context, prId string) error {
 			return nil
 		}
 
-		delegators := make(map[string]Summary, len(delegates))
+		delegators := make(map[string]MixedDelegation, len(delegates))
 		addresses := make([]string, 0, len(delegates))
 
 		for _, info := range delegates {
