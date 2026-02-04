@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Ens_GetEnsByAddresses_FullMethodName = "/storagepb.Ens/GetEnsByAddresses"
+	Ens_GetEnsByAddresses_FullMethodName      = "/storagepb.Ens/GetEnsByAddresses"
+	Ens_GetAddressesByEnsNames_FullMethodName = "/storagepb.Ens/GetAddressesByEnsNames"
 )
 
 // EnsClient is the client API for Ens service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EnsClient interface {
 	GetEnsByAddresses(ctx context.Context, in *EnsByAddressesRequest, opts ...grpc.CallOption) (*EnsByAddressesResponse, error)
+	GetAddressesByEnsNames(ctx context.Context, in *AddressesByEnsNamesRequest, opts ...grpc.CallOption) (*AddressesByEnsNamesResponse, error)
 }
 
 type ensClient struct {
@@ -47,11 +49,22 @@ func (c *ensClient) GetEnsByAddresses(ctx context.Context, in *EnsByAddressesReq
 	return out, nil
 }
 
+func (c *ensClient) GetAddressesByEnsNames(ctx context.Context, in *AddressesByEnsNamesRequest, opts ...grpc.CallOption) (*AddressesByEnsNamesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddressesByEnsNamesResponse)
+	err := c.cc.Invoke(ctx, Ens_GetAddressesByEnsNames_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EnsServer is the server API for Ens service.
 // All implementations must embed UnimplementedEnsServer
 // for forward compatibility.
 type EnsServer interface {
 	GetEnsByAddresses(context.Context, *EnsByAddressesRequest) (*EnsByAddressesResponse, error)
+	GetAddressesByEnsNames(context.Context, *AddressesByEnsNamesRequest) (*AddressesByEnsNamesResponse, error)
 	mustEmbedUnimplementedEnsServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedEnsServer struct{}
 
 func (UnimplementedEnsServer) GetEnsByAddresses(context.Context, *EnsByAddressesRequest) (*EnsByAddressesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetEnsByAddresses not implemented")
+}
+func (UnimplementedEnsServer) GetAddressesByEnsNames(context.Context, *AddressesByEnsNamesRequest) (*AddressesByEnsNamesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAddressesByEnsNames not implemented")
 }
 func (UnimplementedEnsServer) mustEmbedUnimplementedEnsServer() {}
 func (UnimplementedEnsServer) testEmbeddedByValue()             {}
@@ -104,6 +120,24 @@ func _Ens_GetEnsByAddresses_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Ens_GetAddressesByEnsNames_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddressesByEnsNamesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EnsServer).GetAddressesByEnsNames(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Ens_GetAddressesByEnsNames_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EnsServer).GetAddressesByEnsNames(ctx, req.(*AddressesByEnsNamesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Ens_ServiceDesc is the grpc.ServiceDesc for Ens service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var Ens_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEnsByAddresses",
 			Handler:    _Ens_GetEnsByAddresses_Handler,
+		},
+		{
+			MethodName: "GetAddressesByEnsNames",
+			Handler:    _Ens_GetAddressesByEnsNames_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

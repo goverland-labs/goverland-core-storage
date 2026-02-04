@@ -161,6 +161,94 @@ func (x *EnsByAddressesResponse) GetEnsNames() []*EnsName {
 	return nil
 }
 
+type AddressesByEnsNamesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Names         []string               `protobuf:"bytes,1,rep,name=names,proto3" json:"names,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddressesByEnsNamesRequest) Reset() {
+	*x = AddressesByEnsNamesRequest{}
+	mi := &file_storagepb_ens_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddressesByEnsNamesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddressesByEnsNamesRequest) ProtoMessage() {}
+
+func (x *AddressesByEnsNamesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_ens_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddressesByEnsNamesRequest.ProtoReflect.Descriptor instead.
+func (*AddressesByEnsNamesRequest) Descriptor() ([]byte, []int) {
+	return file_storagepb_ens_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *AddressesByEnsNamesRequest) GetNames() []string {
+	if x != nil {
+		return x.Names
+	}
+	return nil
+}
+
+type AddressesByEnsNamesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnsNames      []*EnsName             `protobuf:"bytes,1,rep,name=ens_names,json=ensNames,proto3" json:"ens_names,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddressesByEnsNamesResponse) Reset() {
+	*x = AddressesByEnsNamesResponse{}
+	mi := &file_storagepb_ens_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddressesByEnsNamesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddressesByEnsNamesResponse) ProtoMessage() {}
+
+func (x *AddressesByEnsNamesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_storagepb_ens_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddressesByEnsNamesResponse.ProtoReflect.Descriptor instead.
+func (*AddressesByEnsNamesResponse) Descriptor() ([]byte, []int) {
+	return file_storagepb_ens_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AddressesByEnsNamesResponse) GetEnsNames() []*EnsName {
+	if x != nil {
+		return x.EnsNames
+	}
+	return nil
+}
+
 var File_storagepb_ens_proto protoreflect.FileDescriptor
 
 const file_storagepb_ens_proto_rawDesc = "" +
@@ -172,9 +260,14 @@ const file_storagepb_ens_proto_rawDesc = "" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"I\n" +
 	"\x16EnsByAddressesResponse\x12/\n" +
-	"\tens_names\x18\x01 \x03(\v2\x12.storagepb.EnsNameR\bensNames2_\n" +
+	"\tens_names\x18\x01 \x03(\v2\x12.storagepb.EnsNameR\bensNames\"2\n" +
+	"\x1aAddressesByEnsNamesRequest\x12\x14\n" +
+	"\x05names\x18\x01 \x03(\tR\x05names\"N\n" +
+	"\x1bAddressesByEnsNamesResponse\x12/\n" +
+	"\tens_names\x18\x01 \x03(\v2\x12.storagepb.EnsNameR\bensNames2\xc8\x01\n" +
 	"\x03Ens\x12X\n" +
-	"\x11GetEnsByAddresses\x12 .storagepb.EnsByAddressesRequest\x1a!.storagepb.EnsByAddressesResponseB\rZ\v.;storagepbb\x06proto3"
+	"\x11GetEnsByAddresses\x12 .storagepb.EnsByAddressesRequest\x1a!.storagepb.EnsByAddressesResponse\x12g\n" +
+	"\x16GetAddressesByEnsNames\x12%.storagepb.AddressesByEnsNamesRequest\x1a&.storagepb.AddressesByEnsNamesResponseB\rZ\v.;storagepbb\x06proto3"
 
 var (
 	file_storagepb_ens_proto_rawDescOnce sync.Once
@@ -188,21 +281,26 @@ func file_storagepb_ens_proto_rawDescGZIP() []byte {
 	return file_storagepb_ens_proto_rawDescData
 }
 
-var file_storagepb_ens_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_storagepb_ens_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_storagepb_ens_proto_goTypes = []any{
-	(*EnsByAddressesRequest)(nil),  // 0: storagepb.EnsByAddressesRequest
-	(*EnsName)(nil),                // 1: storagepb.EnsName
-	(*EnsByAddressesResponse)(nil), // 2: storagepb.EnsByAddressesResponse
+	(*EnsByAddressesRequest)(nil),       // 0: storagepb.EnsByAddressesRequest
+	(*EnsName)(nil),                     // 1: storagepb.EnsName
+	(*EnsByAddressesResponse)(nil),      // 2: storagepb.EnsByAddressesResponse
+	(*AddressesByEnsNamesRequest)(nil),  // 3: storagepb.AddressesByEnsNamesRequest
+	(*AddressesByEnsNamesResponse)(nil), // 4: storagepb.AddressesByEnsNamesResponse
 }
 var file_storagepb_ens_proto_depIdxs = []int32{
 	1, // 0: storagepb.EnsByAddressesResponse.ens_names:type_name -> storagepb.EnsName
-	0, // 1: storagepb.Ens.GetEnsByAddresses:input_type -> storagepb.EnsByAddressesRequest
-	2, // 2: storagepb.Ens.GetEnsByAddresses:output_type -> storagepb.EnsByAddressesResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	1, // 1: storagepb.AddressesByEnsNamesResponse.ens_names:type_name -> storagepb.EnsName
+	0, // 2: storagepb.Ens.GetEnsByAddresses:input_type -> storagepb.EnsByAddressesRequest
+	3, // 3: storagepb.Ens.GetAddressesByEnsNames:input_type -> storagepb.AddressesByEnsNamesRequest
+	2, // 4: storagepb.Ens.GetEnsByAddresses:output_type -> storagepb.EnsByAddressesResponse
+	4, // 5: storagepb.Ens.GetAddressesByEnsNames:output_type -> storagepb.AddressesByEnsNamesResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_storagepb_ens_proto_init() }
@@ -216,7 +314,7 @@ func file_storagepb_ens_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_storagepb_ens_proto_rawDesc), len(file_storagepb_ens_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
