@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-02-04
+
+### Added
+- Add support for ENS names in paths with new RPC methods
+
 ## [0.5.2] - 2026-02-03
 
 ### Fixed
