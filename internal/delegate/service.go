@@ -15,6 +15,7 @@ import (
 	protoany "github.com/golang/protobuf/ptypes/any"
 	"github.com/google/uuid"
 	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/delegatepb"
+	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/userspb"
 	events "github.com/goverland-labs/goverland-platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -59,6 +60,7 @@ type EnsResolver interface {
 
 type Service struct {
 	delegateClient   delegatepb.DelegateClient
+	usersClient      userspb.UsersClient
 	daoProvider      DaoProvider
 	proposalProvider ProposalProvider
 	ensResolver      EnsResolver
@@ -70,9 +72,10 @@ type Service struct {
 	allowedDaoIDs []uuid.UUID
 }
 
-func NewService(repo *Repo, dc delegatepb.DelegateClient, daoProvider DaoProvider, prProvider ProposalProvider, ensResolver EnsResolver, ep Publisher, er EventRegistered) *Service {
+func NewService(repo *Repo, dc delegatepb.DelegateClient, usersClient userspb.UsersClient, daoProvider DaoProvider, prProvider ProposalProvider, ensResolver EnsResolver, ep Publisher, er EventRegistered) *Service {
 	return &Service{
 		delegateClient:   dc,
+		usersClient:      usersClient,
 		daoProvider:      daoProvider,
 		proposalProvider: prProvider,
 		ensResolver:      ensResolver,
@@ -1087,12 +1090,22 @@ func (s *Service) getEnrichedDelegates(ctx context.Context, req GetDelegatesRequ
 
 	votesCnt, err := s.repo.GetVotesCnt(req.DaoID, respAddresses)
 	if err != nil {
-		return nil, total, fmt.Errorf("failed to get votes count: %w", err)
+		return nil, total, fmt.Errorf("s.repo.GetVotesCnt: %w", err)
 	}
 
 	prCnt, err := s.repo.GetProposalsCnt(req.DaoID, respAddresses)
 	if err != nil {
-		return nil, total, fmt.Errorf("failed to get votes count: %w", err)
+		return nil, total, fmt.Errorf("s.repo.GetProposalsCnt: %w", err)
+	}
+
+	statements, err := s.getDelegateStatements(ctx, req.DaoID, respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("s.getDelegateStatements: %w", err)
+	}
+
+	abouts, err := s.getUserAbouts(ctx, respAddresses)
+	if err != nil {
+		return nil, total, fmt.Errorf("s.getUserAbouts: %w", err)
 	}
 
 	// enrich with our stats
@@ -1102,9 +1115,47 @@ func (s *Service) getEnrichedDelegates(ctx context.Context, req GetDelegatesRequ
 		delegates[idx].ENSName = ensNames[address]
 		delegates[idx].VotesCount = int32(votesCnt[address])
 		delegates[idx].CreatedProposalsCount = int32(prCnt[address])
+		delegates[idx].About = abouts[address]
+		delegates[idx].Statement = statements[address]
 	}
 
 	return delegates, total, nil
+}
+
+func (s *Service) getDelegateStatements(ctx context.Context, daoID uuid.UUID, addresses []string) (map[string]string, error) {
+	daoInfo, err := s.daoProvider.GetByID(daoID)
+	if err != nil {
+		return nil, fmt.Errorf("dp.GetByID: %w", err)
+	}
+
+	list, err := s.delegateClient.GetDelegatesStatement(ctx, &delegatepb.GetDelegatesStatementRequest{
+		DaoOriginalId: daoInfo.OriginalID,
+		Addresses:     addresses,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("delegateClient.GetDelegatesStatement: %w", err)
+	}
+
+	result := make(map[string]string, len(list.GetList()))
+	for _, item := range list.GetList() {
+		result[strings.ToLower(item.GetAddress())] = item.GetStatement()
+	}
+
+	return result, nil
+}
+
+func (s *Service) getUserAbouts(ctx context.Context, addresses []string) (map[string]string, error) {
+	list, err := s.usersClient.GetUsersInfo(ctx, &userspb.GetUsersInfoRequest{Addresses: addresses})
+	if err != nil {
+		return nil, fmt.Errorf("s.usersClient.GetUsersInfo: %w", err)
+	}
+
+	result := make(map[string]string, len(list.GetList()))
+	for _, item := range list.GetList() {
+		result[strings.ToLower(item.GetAddress())] = item.GetAbout()
+	}
+
+	return result, nil
 }
 
 func (s *Service) getEnrichedDelegators(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {

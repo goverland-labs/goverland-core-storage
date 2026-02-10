@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/delegatepb"
+	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/userspb"
 	"github.com/goverland-labs/goverland-datasource-snapshot/protocol/votingpb"
 	"github.com/goverland-labs/goverland-helpers-ens-resolver/protocol/enspb"
 	"github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
@@ -305,7 +306,8 @@ func (a *Application) initDelegates(nc *nats.Conn, pb *natsclient.Publisher) err
 	}
 
 	delegateClient := delegatepb.NewDelegateClient(dsConn)
-	service := delegate.NewService(a.delegateRepo, delegateClient, a.daoService, a.proposalService, a.ensService, pb, a.eventsService)
+	usersClient := userspb.NewUsersClient(dsConn)
+	service := delegate.NewService(a.delegateRepo, delegateClient, usersClient, a.daoService, a.proposalService, a.ensService, pb, a.eventsService)
 	a.delegateService = service
 
 	rw := delegate.NewRefreshWorker(service)
