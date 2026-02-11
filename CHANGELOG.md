@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-02-11
+
 ### Changed
 - Enrich delegates endpoint with about and statements info
 
