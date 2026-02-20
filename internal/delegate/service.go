@@ -170,7 +170,7 @@ func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequ
 	}
 
 	var searchAddress *string
-	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 {
+	if len(req.QueryAccounts) > 0 {
 		address := strings.ToLower(req.QueryAccounts[0])
 		searchAddress = &address
 	}
@@ -201,11 +201,11 @@ func (s *Service) getInternalDelegates(ctx context.Context, req GetDelegatesRequ
 
 func (s *Service) getInternalDelegators(ctx context.Context, req GetDelegatesRequest) ([]Delegate, int32, error) {
 	var reqAddress *string
-	if req.QueryAccounts != nil && len(req.QueryAccounts) > 0 && req.QueryAccounts[0] != "" {
+	if len(req.QueryAccounts) > 0 && req.QueryAccounts[0] != "" {
 		reqAddress = &req.QueryAccounts[0]
 	}
 	var searchAddress *string
-	if req.QueryAccounts != nil && len(req.QueryAccounts) > 1 && req.QueryAccounts[1] != "" {
+	if len(req.QueryAccounts) > 1 && req.QueryAccounts[1] != "" {
 		searchAddress = &req.QueryAccounts[1]
 	}
 	delegates, err := s.repo.GetDelegatorsMixedInfo(ctx, req.DaoID, string(req.DelegationType), req.ChainID, reqAddress, searchAddress, req.Limit, req.Offset)
@@ -573,7 +573,7 @@ func (s *Service) handleERC20Delegation(_ context.Context, info ERC20Delegation,
 	logger := log.With().
 		Str("source", "handle_erc20_delegates").
 		Str("block_number", fmt.Sprintf("%d", info.BlockNumber)).
-		Str("chain_id", fmt.Sprintf("%d", info.ChainID)).
+		Str("chain_id", info.ChainID).
 		Str("delegator", info.DelegatorAddress).
 		Logger()
 
@@ -1228,15 +1228,7 @@ func (s *Service) getDelegatesMixed(ctx context.Context, req GetDelegatesMixedRe
 		}
 	}
 
-	delegates, total, err := s.getEnrichedDelegates(ctx, GetDelegatesRequest{
-		DaoID:          req.DaoID,
-		QueryAccounts:  req.QueryAccounts,
-		Sort:           req.Sort,
-		Limit:          req.Limit,
-		Offset:         req.Offset,
-		DelegationType: req.DelegationType,
-		ChainID:        req.ChainID,
-	})
+	delegates, total, err := s.getEnrichedDelegates(ctx, GetDelegatesRequest(req))
 	if err != nil {
 		return nil, fmt.Errorf("s.getEnrichedDelegates: %w", err)
 	}
@@ -1277,15 +1269,7 @@ func (s *Service) getDelegatorsMixed(ctx context.Context, req GetDelegatesMixedR
 		}
 	}
 
-	delegates, total, err := s.getEnrichedDelegators(ctx, GetDelegatesRequest{
-		DaoID:          req.DaoID,
-		QueryAccounts:  req.QueryAccounts,
-		Sort:           req.Sort,
-		Limit:          req.Limit,
-		Offset:         req.Offset,
-		DelegationType: req.DelegationType,
-		ChainID:        req.ChainID,
-	})
+	delegates, total, err := s.getEnrichedDelegators(ctx, GetDelegatesRequest(req))
 	if err != nil {
 		return nil, fmt.Errorf("s.getEnrichedDelegators: %w", err)
 	}
