@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-02-20
+
+### Added
+- Add `order` parameter to proposal list API for custom sorting (e.g. `state_created_desc`, `created_desc`)
+
 ## [0.5.4] - 2026-02-11
 
 ### Changed
