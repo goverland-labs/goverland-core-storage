@@ -94,7 +94,26 @@ var (
 		Field:     "created",
 		Direction: DirectionAsc,
 	}
+	OrderByCreatedDesc = Order{
+		Field:     "created",
+		Direction: DirectionDesc,
+	}
 )
+
+func parseOrderBy(s string) []Order {
+	switch s {
+	case "created_desc":
+		return []Order{OrderByCreatedDesc}
+	case "created_asc":
+		return []Order{OrderByCreated}
+	case "state_created_desc":
+		return []Order{OrderByStates, OrderByCreatedDesc}
+	case "votes_created":
+		return []Order{OrderByVotes, OrderByCreated}
+	default:
+		return nil
+	}
+}
 
 func (f OrderFilter) Apply(db *gorm.DB) *gorm.DB {
 	var ordering []string

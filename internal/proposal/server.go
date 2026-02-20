@@ -90,21 +90,18 @@ func (s *Server) GetByFilter(_ context.Context, req *storagepb.ProposalByFilterR
 		}
 
 		if req.GetTitle() != "" {
-			filters = append(filters,
-				TitleFilter{Title: req.GetTitle()},
-				OrderFilter{
-					Orders: []Order{
-						OrderByStates,
-						OrderByVotes,
-						OrderByCreated,
-					},
-				})
+			filters = append(filters, TitleFilter{Title: req.GetTitle()})
+		}
+
+		if orders := parseOrderBy(req.GetOrder()); orders != nil {
+			filters = append(filters, OrderFilter{Orders: orders})
+		} else if req.GetTitle() != "" {
+			filters = append(filters, OrderFilter{
+				Orders: []Order{OrderByStates, OrderByVotes, OrderByCreated},
+			})
 		} else {
 			filters = append(filters, OrderFilter{
-				Orders: []Order{
-					OrderByVotes,
-					OrderByCreated,
-				},
+				Orders: []Order{OrderByVotes, OrderByCreated},
 			})
 		}
 
